@@ -39,6 +39,7 @@ Offline -> PWA + TensorFlow Lite + SQLite
     - lacinska
     - angielska
     - przydomki
+- zdjecie
 - gatunek
     - drzewo / kwiat / krzew / grzyb
 - wyglad    
