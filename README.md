@@ -1,36 +1,34 @@
-# ML-herb-recognition
-# ML-rozpoznawanie-ziół
-Mashine Learning Herb Recognition
+# 🌿 ML-herb-recognition 🌿
+# 🌿 ML-rozpoznawanie-ziół 🌿
+---
+Projekt inżynierski łączący uczenie maszynowe, backend API oraz relacyjną bazę danych, umożliwiający rozpoznawanie roślin na podstawie cech morfologicznych oraz zdjęcia.
+
+---
+## Cel projektu
+- Rozpoznawanie ziół na podstawie zdjęcia
+- Wyszukiwanie roślin na podstawie filtrów morfologicznych
+- Dodawanie nowych roślin do bazy (po zatwierdzeniu przez właściciela)
+- Przeglądanie właściwości zdrowotnych i produktów powiązanych z rośliną
+- Działanie online na stronie web
+- Zwracanie top 5 wyników na podstawie danych wprowadzonych przez uzytkownika
+---
+## Design Bazy danych
+Baza została maksymalnie znormalizowana aby umożliwic dokladne odwzorowanie cech morfologicznych roślin oraz umożliwić filtrowanie po cechach. 
+
+Baza uzmozliwia tez pokazanie powiazan pomiedzy rozlinami a produktami
+Większość niezbeznych danych zbiera sie w tabeli **PLANTS** co umozliwia optymalny sposob pisania zapytan, bez niepotrzebnego rozbudowania
+
+---
+## Po co?
+
+Aplikacja dla osób które chcą znaleźć najszersze źródło wiedzy o ziołach razem z przepisami i ich właściwościami. 
+Wszystko w jednym miejscu bez potrzeby przeszukiwania wielu aplikacji
+Bez ograniczenia tylko do roślin leczniczych.
+
+Aplikacja składajaca sie z bazy danych, połączeń API oraz strony Web do przeglądania danych o roślinach leczniczych.
+
+Tryb rozpoznawania aplikacji:
+Uzytkownik poprzez wypełnianie formularza wprowadza dane o napotkanej roślinie i następnie wysyła zapytanie do bazy. Baza przetwarza jego zapytanie i zwraca 5 najbardziej prawdopodobnych wyników.
 
 
-plan dzialania i oczekiwania:
-chcce stworzyc strone (stojaca samodzielnie ale napisana w pelni przeze mnie) do rozpoznawania zioł, chce moc w tle dac zdjecie ziola i fragment bazy, najpopularniesze wyszukiwanie z filtrami po polach z bazy i w miejscach wybranych przeze mnie opcje wyboru (interakcja z uzytkownikiem): rozpoznanie albo dodanie do bazy
-
-- rozpoznanie: oddzielna strona, w tle obrazek wstawiony z zewnatrz i w odpowiednich miejscach pola do wyboru opcji z dostepnych + dodatkowa do wpisania
-
-- dodanie do bazy: formularz dodajacy rosline do zaakceptowania po stronie administratora (mnie), mozliwosc wypelnienia wszystkich pol jak np srednia wysokosc, czy kwitnie (jak tak to jaki kolor, ksztalt kwiatow, wielkosc itd), kolor lisci, ksztalt lisci, lodyka ksztalt, czy jest kolące i dodatkowe informacje
-
-chce zeby strona dzialala na podstawie uczenia maszynowego, klasyfikacji do konkretnej rosliny i wyprowadzala wyniki z 5 najpewniejszych wynikow przy opcji wyszukania ziola
-chce tez aby przy kazdej roslinie byla mozliwosc dopisania np przepisu i dodania zdjec oraz podpiecia zdjec z google
-
-pytania:
-w jakich technologiach powinnam to pisac -> 
-czego uzywac zeby bylo najmniej awaryjne, 
-jakiej bazy uzyc, 
-gdzie postawic serwer bazy i strone aby dzialala 24/7 i bylo najtaniej
-jakiego modelu uzyc
-
-projekt do CV i do uzytku prywatnego na posade zwiazana z uczeniem maszynowym i modelami uczenia
-docelowo chcialabym zeby mozna bylo sciagnac baze do siebie np na telefon i dzialac offline
-
-Technologie i jezyki oraz biblioteki:
-Frontend -> React + Tailwind
-Backend -> FastAPI (Python)
-ML Model -> MobileNetV2 (TensorFlow + transfer learning)
-Baza danych -> PostgreSQL (Supabase)
-Hosting -> Railway / Render / Supabase / Vercel (frontend)
-Offline -> PWA + TensorFlow Lite + SQLite
-
-
-
-**Przechowywane dane o ziołach znajdują sie w _Herb-Regognition-Compressed.pdf_**
+**Sposób przechowywania danych o ziołach znajduje sie w _Herb-Regognition-Compressed.pdf_**
