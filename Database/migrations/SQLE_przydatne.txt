@@ -1,0 +1,17 @@
+sprawdzenie typow danych w tabeli
+SELECT
+    column_name,
+    data_type,
+    is_identity,
+    column_default
+FROM information_schema.columns
+WHERE table_name = 'fruit';
+
+usuniecie identycznosci
+ALTER TABLE table ALTER COLUMN kolumna DROP IDENTITY;
+
+usuniecie danych z tabeli
+delete from table
+
+reset licznika id kiedy id jest automatyczne
+TRUNCATE TABLE nazwa RESTART IDENTITY;

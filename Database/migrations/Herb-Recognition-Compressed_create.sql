@@ -30,7 +30,7 @@ CREATE TABLE Disease (
 -- Table: Flavour
 CREATE TABLE Flavour (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    Flavor varchar(50)  NOT NULL,
+    Flavour varchar(50)  NOT NULL,
     CONSTRAINT Flavour_pk PRIMARY KEY (Id)
 );
 
@@ -38,8 +38,8 @@ CREATE TABLE Flavour (
 CREATE TABLE Flower (
     Id INT GENERATED ALWAYS AS IDENTITY,
     SizeInCm decimal(5,2)  NOT NULL,
-    ColorId INT GENERATED ALWAYS AS IDENTITY,
-    ShapeId INT GENERATED ALWAYS AS IDENTITY,
+    ColorId int NOT NULL, --DODAWANE RECZNIE NOT NULL ZAMIAST GENERATED ALWAYS AS IDENTITY
+    ShapeId int NOT NULL, --DODAWANE RECZNIE NOT NULL ZAMIAST GENERATED ALWAYS AS IDENTITY
     FlavourId int  NULL,
     ScentPower int  NOT NULL,
     CONSTRAINT Flower_pk PRIMARY KEY (Id)
@@ -48,21 +48,21 @@ CREATE TABLE Flower (
 -- Table: Fruit
 CREATE TABLE Fruit (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    FlavorId int  NULL,
-    ShapeId INT GENERATED ALWAYS AS IDENTITY,
-    ColorId INT GENERATED ALWAYS AS IDENTITY,
-    SurfaceId INT GENERATED ALWAYS AS IDENTITY,
-    ThicknessId INT GENERATED ALWAYS AS IDENTITY,
+    FlavourId int  NULL,
+    ShapeId int NOT NULL, --DODAWANE RECZNIE NOT NULL ZAMIAST GENERATED ALWAYS AS IDENTITY
+    ColorId INT NOT NULL, --DODAWANE RECZNIE NOT NULL ZAMIAST GENERATED ALWAYS AS IDENTITY
+    SurfaceId INT NOT NULL, --DODAWANE RECZNIE NOT NULL ZAMIAST GENERATED ALWAYS AS IDENTITY
+    ThicknessId INT NOT NULL, --DODAWANE RECZNIE NOT NULL ZAMIAST GENERATED ALWAYS AS IDENTITY
     CONSTRAINT Fruit_pk PRIMARY KEY (Id)
 );
 
 -- Table: Hat
 CREATE TABLE Hat (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    ColorId INT GENERATED ALWAYS AS IDENTITY,
-    ShapeId INT GENERATED ALWAYS AS IDENTITY,
-    ThicknessId INT GENERATED ALWAYS AS IDENTITY,
-    SurfaceId INT GENERATED ALWAYS AS IDENTITY,
+    ColorId INT NOT NULL,
+    ShapeId INT NOT NULL,
+    ThicknessId INT NOT NULL,
+    SurfaceId INT NOT NULL,
     HasSpots boolean  NOT NULL,
     HasGills boolean  NOT NULL,
     CONSTRAINT Hat_pk PRIMARY KEY (Id)
@@ -72,8 +72,8 @@ CREATE TABLE Hat (
 CREATE TABLE HealthProperty (
     Id INT GENERATED ALWAYS AS IDENTITY,
     Property varchar(300)  NOT NULL,
-    ActiveSubstanceId INT GENERATED ALWAYS AS IDENTITY,
-    DiseaseId INT GENERATED ALWAYS AS IDENTITY,
+    ActiveSubstanceId INT NOT NULL,
+    DiseaseId INT NOT NULL,
     CONSTRAINT HealthProperty_pk PRIMARY KEY (Id)
 );
 
@@ -83,12 +83,12 @@ CREATE TABLE Leaf (
     Stripes boolean  NOT NULL,
     Spots boolean  NOT NULL,
     Holes boolean  NOT NULL,
-    LeafShapeId INT GENERATED ALWAYS AS IDENTITY,
-    LeafColorId INT GENERATED ALWAYS AS IDENTITY,
-    SurfaceId INT GENERATED ALWAYS AS IDENTITY,
-    Length decimal(3,0)  NOT NULL,
-    ThicknessId INT GENERATED ALWAYS AS IDENTITY,
-    FlavoursId int  NULL,
+    LeafShapeId INT NOT NULL,
+    LeafColorId INT NOT NULL,
+    SurfaceId INT NOT NULL,
+    LeafLength decimal(3,0)  NOT NULL,
+    ThicknessId INT NOT NULL,
+    FlavourId int  NULL,
     CONSTRAINT Leaf_pk PRIMARY KEY (Id)
 );
 
@@ -102,7 +102,7 @@ CREATE TABLE Occurance (
 -- Table: Picture
 CREATE TABLE Picture (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    PlantId INT GENERATED ALWAYS AS IDENTITY,
+    PlantId INT NOT NULL,
     PictureLink text  NOT NULL,
     CONSTRAINT Picture_pk PRIMARY KEY (Id)
 );
@@ -114,11 +114,11 @@ CREATE TABLE Plant (
     PolishName varchar(50)  NOT NULL,
     LatinName varchar(50)  NULL,
     Subriquet varchar(50)  NULL,
-    PlantTypeId INT GENERATED ALWAYS AS IDENTITY,
+    PlantTypeId INT NOT NULL,
     SapId int  NULL,
     RootId int  NULL,
-    StalkId INT GENERATED ALWAYS AS IDENTITY,
-    OccuranceId INT GENERATED ALWAYS AS IDENTITY,
+    StalkId INT NOT NULL,
+    OccuranceId INT NOT NULL,
     HatId int  NULL,
     LeafId int  NULL,
     FlowerId int  NULL,
@@ -138,8 +138,8 @@ CREATE TABLE PlantType (
 -- Table: Plant_Product
 CREATE TABLE Plant_Product (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    PlantsId INT GENERATED ALWAYS AS IDENTITY,
-    ProductsId INT GENERATED ALWAYS AS IDENTITY,
+    PlantsId INT NOT NULL,
+    ProductsId INT NOT NULL,
     CONSTRAINT Plant_Product_pk PRIMARY KEY (Id)
 );
 
@@ -155,9 +155,9 @@ CREATE TABLE Product (
     Id INT GENERATED ALWAYS AS IDENTITY,
     Name varchar(300)  NOT NULL,
     Recipe text  NOT NULL,
-    HealthPropertyId INT GENERATED ALWAYS AS IDENTITY,
+    HealthPropertyId INT NOT NULL,
     Contraindication varchar(100)  NULL,
-    ProductTypeId INT GENERATED ALWAYS AS IDENTITY,
+    ProductTypeId INT NOT NULL,
     CONSTRAINT Product_pk PRIMARY KEY (Id)
 );
 
@@ -171,16 +171,16 @@ CREATE TABLE ProductType (
 -- Table: Root
 CREATE TABLE Root (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    ColorId INT GENERATED ALWAYS AS IDENTITY,
-    SurfaceId INT GENERATED ALWAYS AS IDENTITY,
-    ThicknessId INT GENERATED ALWAYS AS IDENTITY,
+    ColorId INT NOT NULL,
+    SurfaceId INT NOT NULL,
+    ThicknessId INT NOT NULL,
     CONSTRAINT Root_pk PRIMARY KEY (Id)
 );
 
 -- Table: Sap
 CREATE TABLE Sap (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    ColorId INT GENERATED ALWAYS AS IDENTITY,
+    ColorId INT NOT NULL,
     LeavesStains boolean  NOT NULL,
     Sticky boolean  NOT NULL,
     CONSTRAINT Sap_pk PRIMARY KEY (Id)
@@ -196,9 +196,9 @@ CREATE TABLE Shape (
 -- Table: Stalk
 CREATE TABLE Stalk (
     Id INT GENERATED ALWAYS AS IDENTITY,
-    ShapeId INT GENERATED ALWAYS AS IDENTITY,
-    ColorId INT GENERATED ALWAYS AS IDENTITY,
-    SurfaceId INT GENERATED ALWAYS AS IDENTITY,
+    ShapeId INT NOT NULL,
+    ColorId INT NOT NULL,
+    SurfaceId INT NOT NULL,
     CONSTRAINT Stalk_pk PRIMARY KEY (Id)
 );
 
@@ -210,7 +210,7 @@ CREATE TABLE Surface (
 );
 
 -- Table: Thicknesse
-CREATE TABLE Thicknesse (
+CREATE TABLE Thickness (
     Id INT GENERATED ALWAYS AS IDENTITY,
     Thickness varchar(50)  NOT NULL,
     CONSTRAINT Thicknesse_pk PRIMARY KEY (Id)
@@ -299,7 +299,7 @@ ALTER TABLE Fruit ADD CONSTRAINT Fruit_DictSurface
 
 -- Reference: Fruit_Flavor (table: Fruit)
 ALTER TABLE Fruit ADD CONSTRAINT Fruit_Flavor
-    FOREIGN KEY (FlavorId)
+    FOREIGN KEY (FlavourId)
     REFERENCES Flavour (Id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
@@ -308,7 +308,7 @@ ALTER TABLE Fruit ADD CONSTRAINT Fruit_Flavor
 -- Reference: Fruit_Thickness (table: Fruit)
 ALTER TABLE Fruit ADD CONSTRAINT Fruit_Thickness
     FOREIGN KEY (ThicknessId)
-    REFERENCES Thicknesse (Id)  
+    REFERENCES Thickness (Id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
 ;
@@ -340,7 +340,7 @@ ALTER TABLE Hat ADD CONSTRAINT Hat_DictSurface
 -- Reference: Hat_Thickness (table: Hat)
 ALTER TABLE Hat ADD CONSTRAINT Hat_Thickness
     FOREIGN KEY (ThicknessId)
-    REFERENCES Thicknesse (Id)  
+    REFERENCES Thickness (Id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
 ;
@@ -388,14 +388,14 @@ ALTER TABLE Leaf ADD CONSTRAINT Leaf_LeafShape
 -- Reference: Leaf_Thickness (table: Leaf)
 ALTER TABLE Leaf ADD CONSTRAINT Leaf_Thickness
     FOREIGN KEY (ThicknessId)
-    REFERENCES Thicknesse (Id)  
+    REFERENCES Thickness (Id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
 ;
 
 -- Reference: Leafs_Flavours (table: Leaf)
 ALTER TABLE Leaf ADD CONSTRAINT Leafs_Flavours
-    FOREIGN KEY (FlavoursId)
+    FOREIGN KEY (FlavourId)
     REFERENCES Flavour (Id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
@@ -516,7 +516,7 @@ ALTER TABLE Root ADD CONSTRAINT Root_DictSurface
 -- Reference: Root_Thickness (table: Root)
 ALTER TABLE Root ADD CONSTRAINT Root_Thickness
     FOREIGN KEY (ThicknessId)
-    REFERENCES Thicknesse (Id)  
+    REFERENCES Thickness (Id)  
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
 ;
