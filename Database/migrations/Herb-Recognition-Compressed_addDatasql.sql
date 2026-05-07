@@ -1,4 +1,5 @@
 -- dodawanie danych
+TRUNCATE TABLE activesubstance RESTART IDENTITY CASCADE;
 INSERT INTO activesubstance (activesubstance) VALUES 
 ('Flavanoids'),
 ('Phytosterols'),
@@ -21,6 +22,7 @@ INSERT INTO activesubstance (activesubstance) VALUES
 ('Mineral compounds'),
 ('Bitters');
 
+TRUNCATE TABLE color RESTART IDENTITY CASCADE;
 INSERT INTO color (Color, R, G, B) VALUES
 ('White', 255, 255, 255),
 ('Cream', 245, 245, 220),
@@ -50,6 +52,7 @@ INSERT INTO color (Color, R, G, B) VALUES
 ('Black', 0, 0, 0),
 ('Transparent', 255, 255, 255);
 
+TRUNCATE TABLE disease RESTART IDENTITY CASCADE;
 INSERT INTO disease (Name, Symptoms) VALUES
 ('Flu', 'fever, chills, muscle pain, fatigue'),
 ('Cold', 'runny nose, cough, sore throat'),
@@ -67,6 +70,7 @@ INSERT INTO disease (Name, Symptoms) VALUES
 ('Wounds', 'skin damage, bleeding'),
 ('Burns', 'redness, pain, skin damage');
 
+TRUNCATE TABLE flavour RESTART IDENTITY CASCADE;
 INSERT INTO flavour (Flavour) VALUES
 ('Sweet'),
 ('Sour'),
@@ -88,6 +92,7 @@ INSERT INTO flavour (Flavour) VALUES
 ('Sharp'),
 ('Aromatic');
 
+TRUNCATE TABLE shape RESTART IDENTITY CASCADE;
 INSERT INTO shape (Shape) VALUES
 ('Round'),
 ('Oval'),
@@ -99,6 +104,7 @@ INSERT INTO shape (Shape) VALUES
 ('Linear'),
 ('Irregular');
 
+TRUNCATE TABLE flower RESTART IDENTITY CASCADE;
 INSERT INTO flower (SizeInCm, ColorId, ShapeId, FlavourId, ScentPower) VALUES
 (3, 23, 8, NULL, 1),
 (3, 4, 8, NULL, 1),
@@ -108,6 +114,7 @@ INSERT INTO flower (SizeInCm, ColorId, ShapeId, FlavourId, ScentPower) VALUES
 (0.03, 12, 8, 15, 3),
 (2, 1, 1, 10, 2);
 
+TRUNCATE TABLE surface RESTART IDENTITY CASCADE;
 INSERT INTO surface (Surface) VALUES
 ('Smooth'),
 ('Rough'),
@@ -120,6 +127,7 @@ INSERT INTO surface (Surface) VALUES
 ('Glossy'),
 ('Matte');
 
+TRUNCATE TABLE thickness RESTART IDENTITY CASCADE;
 INSERT INTO thickness (Thickness) VALUES
 ('Thin'),
 ('Limp'),
@@ -129,6 +137,7 @@ INSERT INTO thickness (Thickness) VALUES
 ('Hard'),
 ('Woody');
 
+TRUNCATE TABLE fruit RESTART IDENTITY CASCADE;
 INSERT INTO fruit (FlavourId, ShapeId, ColorId, SurfaceId, ThicknessId) VALUES
 (NULL, 2, 9, 5, 1),
 (NULL, 3, 10, 2, 7),
@@ -136,11 +145,13 @@ INSERT INTO fruit (FlavourId, ShapeId, ColorId, SurfaceId, ThicknessId) VALUES
 (NULL, 8, 9, 5, 1),
 (NULL, 2, 20, 5, 1);
 
+TRUNCATE TABLE hat RESTART IDENTITY CASCADE;
 INSERT INTO hat (ColorId, ShapeId, ThicknessId, SurfaceId, HasSpots, HasGills) VALUES
 (5, 9, 4, 1, false, true),
 (6, 1, 4, 6, true, true),
 (4, 1, 5, 1, false, true);
 
+TRUNCATE TABLE healthproperty RESTART IDENTITY CASCADE;
 INSERT INTO healthproperty (Property, ActiveSubstanceId, DiseaseId) VALUES
 ('Anti-inflammatory', 1, 3),
 ('Antibacterial', 7, 4),
@@ -158,6 +169,7 @@ INSERT INTO healthproperty (Property, ActiveSubstanceId, DiseaseId) VALUES
 ('Skin healing', 5, 14),
 ('Laxative', 16, 11);
 
+TRUNCATE TABLE leaf RESTART IDENTITY CASCADE;
 INSERT INTO leaf (Stripes, Spots, Holes, LeafShapeId, LeafColorId, SurfaceId, LeafLength, ThicknessId, FlavourId) VALUES
 (false, false, false, 3, 21, 1, 5, 1, 3),
 (false, false, false, 8, 22, 7, 5, 3, 17),
@@ -167,6 +179,7 @@ INSERT INTO leaf (Stripes, Spots, Holes, LeafShapeId, LeafColorId, SurfaceId, Le
 (false, false, false, 2, 21, 6, 5, 2, 15),
 (false, false, false, 9, 20, 10, 6, 2, 10);
 
+TRUNCATE TABLE occurance RESTART IDENTITY CASCADE;
 INSERT INTO occurance (Occurance) VALUES
 ('In full sun'),
 ('in partial shade'),
@@ -184,6 +197,7 @@ INSERT INTO occurance (Occurance) VALUES
 ('in gardens'),
 ('in pots inside');
 
+TRUNCATE TABLE root RESTART IDENTITY CASCADE;
 INSERT INTO root (ColorId, SurfaceId, ThicknessId) VALUES
 (11, 2, 5),
 (10, 2, 7),
@@ -192,8 +206,39 @@ INSERT INTO root (ColorId, SurfaceId, ThicknessId) VALUES
 (11, 2, 3),
 (11, 1, 2);
 
---TODO OD TEGO MOMENTU DODAWANIE
+TRUNCATE TABLE sap RESTART IDENTITY CASCADE;
+INSERT INTO sap (ColorId, LeavesStains, Sticky) VALUES
+(27, false, false),
+(4, true, true),
+(1, true, false),
+(27, false, true);
 
+TRUNCATE TABLE STALK RESTART IDENTITY CASCADE;
+INSERT INTO stalk (ShapeId, ColorId, SurfaceId) VALUES
+(1, 1, 1),
+(1, 8, 2),
+(1, 21, 7),
+(1, 3, 10),
+(1, 1, 6),
+(1, 22, 3),
+(4, 22, 6),
+(1, 21, 1);
+
+TRUNCATE TABLE POISONABILITY RESTART IDENTITY CASCADE;
+INSERT INTO poisonability (Description) VALUES
+('May cause mild irritation or allergic reaction'),
+('Can cause nausea, vomiting or skin irritation'),
+('Toxic - causes serious symptoms like dizziness, strong vomiting, diarrhea'),
+('Highly toxic - can cause organ damage, breathing problems'),
+('Extremely toxic - can cause paralysis or death');
+
+TRUNCATE TABLE PLANTTYPE RESTART IDENTITY CASCADE;
+INSERT INTO planttype (Name) VALUES
+('Tree'),
+('Herb'),
+('Fungus');
+
+TRUNCATE TABLE plant RESTART IDENTITY CASCADE;
 INSERT INTO plant (
     Name,
     PolishName,
@@ -222,6 +267,7 @@ INSERT INTO plant (
 ('Mint', 'Mięta pieprzowa', 'Mentha piperita', NULL, 2, NULL, 6, 7, 9, NULL, 6, 6, 1, NULL, 1),
 ('Chamomile', 'Rumianek', 'Matricaria', NULL, 2, NULL, 6, 8, 9, NULL, 7, 7, 4, NULL, 1);
 
+TRUNCATE TABLE picture RESTART IDENTITY CASCADE;
 INSERT INTO picture (PlantId, PictureLink) VALUES
 (1, 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Illustration_Betula_pendula_very_clean.jpg/960px-Illustration_Betula_pendula_very_clean.jpg'),
 (1, 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/B._pendula%2C_Koivu_Birch_end_of_Sept.jpg/960px-B._pendula%2C_Koivu_Birch_end_of_Sept.jpg'),
@@ -249,4 +295,33 @@ INSERT INTO picture (PlantId, PictureLink) VALUES
 (10, 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Atlas_roslin_pl_Rumianek_pospolity_2097_7384.jpg/960px-Atlas_roslin_pl_Rumianek_pospolity_2097_7384.jpg'),
 (3, 'https://images.immediate.co.uk/production/volatile/sites/63/2024/08/ff8e4324ecdc5d98c32d405ec76cf431b1550108-a8c902d.jpeg?quality=90&resize=800,534');
 
-SELECT * FROM plant;
+TRUNCATE TABLE PRODUCTTYPE RESTART IDENTITY CASCADE;
+INSERT INTO producttype (Name) VALUES
+('Infusion'),
+('Decoction'),
+('Tincture'),
+('Ointment'),
+('Extract'),
+('Syrup'),
+('Tea blend'),
+('Powder'),
+('Juice'),
+('Compress');
+
+TRUNCATE TABLE PRODUCT RESTART IDENTITY CASCADE;
+INSERT INTO product (Name, Recipe, HealthPropertyId, Contraindication, ProductTypeId) VALUES
+('Dandelion syrup', 'Boil dandelion flowers in water, strain, add sugar and lemon juice, simmer until thick.', 2, 'allergy to Asteraceae plants', 6),
+('Pine shoot syrup', 'Layer young pine shoots with sugar, leave for several weeks until syrup forms, strain.', 12, 'asthma (in some cases), allergy', 6),
+('Chamomile infusion', 'Pour hot water over dried chamomile flowers, steep for 10 minutes', 9, 'allergy to chamomile', 1),
+('Nettle juice', 'Blend fresh nettle leaves with water, strain the liquid', 11, 'kidney disorders, pregnancy', 9),
+('Mint tea blend', 'Mix dried mint leaves with other herbs, pour hot water and steep', 7, 'gastric reflux (in excess)', 7);
+
+TRUNCATE TABLE PLANT_PRODUCT RESTART IDENTITY CASCADE;
+INSERT INTO plant_product (PlantsId, ProductsId) VALUES
+(3, 1),
+(2, 2),
+(10, 3),
+(8, 4),
+(9, 5);
+
+-- koniec pliku
