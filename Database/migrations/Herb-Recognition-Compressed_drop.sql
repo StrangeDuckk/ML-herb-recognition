@@ -175,5 +175,7 @@ DROP TABLE Surface;
 
 DROP TABLE Thickness;
 
+drop table userinput;
+
 -- End of file.
 
