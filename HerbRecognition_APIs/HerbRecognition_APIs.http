@@ -1,0 +1,6 @@
+@HerbRecognition_APIs_HostAddress = http://localhost:5223
+
+GET {{HerbRecognition_APIs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
