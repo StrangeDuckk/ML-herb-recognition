@@ -204,18 +204,34 @@ public partial class HerbRecognitionDbContext : DbContext
 
         modelBuilder.Entity<Fruit>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("fruit_pk");
+            entity.HasKey(e => e.Id)
+                .HasName("fruit_pk");
 
             entity.ToTable("fruit");
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Colorid).HasColumnName("colorid");
-            entity.Property(e => e.Flavourid).HasColumnName("flavourid");
-            entity.Property(e => e.Shapeid).HasColumnName("shapeid");
-            entity.Property(e => e.Surfaceid).HasColumnName("surfaceid");
-            entity.Property(e => e.Thicknessid).HasColumnName("thicknessid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Flavourid)
+                .HasColumnName("flavourid");
+            
+            entity.Property(e => e.Shapeid)
+                .HasColumnName("shapeid")
+                .IsRequired();
+
+            entity.Property(e => e.Colorid)
+                .HasColumnName("colorid")
+                .IsRequired();
+
+            entity.Property(e => e.Surfaceid)
+                .HasColumnName("surfaceid")
+                .IsRequired();
+
+            entity.Property(e => e.Thicknessid)
+                .HasColumnName("thicknessid")
+                .IsRequired();
 
             entity.HasOne(d => d.Color).WithMany(p => p.Fruits)
                 .HasForeignKey(d => d.Colorid)
@@ -250,13 +266,32 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Colorid).HasColumnName("colorid");
-            entity.Property(e => e.Hasgills).HasColumnName("hasgills");
-            entity.Property(e => e.Hasspots).HasColumnName("hasspots");
-            entity.Property(e => e.Shapeid).HasColumnName("shapeid");
-            entity.Property(e => e.Surfaceid).HasColumnName("surfaceid");
-            entity.Property(e => e.Thicknessid).HasColumnName("thicknessid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Colorid)
+                .HasColumnName("colorid")
+                .IsRequired();
+
+            entity.Property(e => e.Shapeid)
+                .HasColumnName("shapeid")
+                .IsRequired();
+
+            entity.Property(e => e.Thicknessid)
+                .HasColumnName("thicknessid")
+                .IsRequired();
+
+            entity.Property(e => e.Surfaceid)
+                .HasColumnName("surfaceid")
+                .IsRequired();
+
+            entity.Property(e => e.Hasspots)
+                .HasColumnName("hasspots")
+                .IsRequired();
+
+            entity.Property(e => e.Hasgills)
+                .HasColumnName("hasgills")
+                .IsRequired();
 
             entity.HasOne(d => d.Color).WithMany(p => p.Hats)
                 .HasForeignKey(d => d.Colorid)
@@ -281,18 +316,28 @@ public partial class HerbRecognitionDbContext : DbContext
 
         modelBuilder.Entity<Healthproperty>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("healthproperty_pk");
+            entity.HasKey(e => e.Id)
+                .HasName("healthproperty_pk");
 
             entity.ToTable("healthproperty");
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Activesubstanceid).HasColumnName("activesubstanceid");
-            entity.Property(e => e.Diseaseid).HasColumnName("diseaseid");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Property)
                 .HasMaxLength(300)
-                .HasColumnName("property");
+                .HasColumnName("property")
+                .IsRequired();
+
+            entity.Property(e => e.Activesubstanceid)
+                .HasColumnName("activesubstanceid")
+                .IsRequired();
+
+            entity.Property(e => e.Diseaseid)
+                .HasColumnName("diseaseid")
+                .IsRequired();
 
             entity.HasOne(d => d.Activesubstance).WithMany(p => p.Healthproperties)
                 .HasForeignKey(d => d.Activesubstanceid)
@@ -313,18 +358,44 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Flavourid).HasColumnName("flavourid");
-            entity.Property(e => e.Holes).HasColumnName("holes");
-            entity.Property(e => e.Leafcolorid).HasColumnName("leafcolorid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Stripes)
+                .HasColumnName("stripes")
+                .IsRequired();                
+
+            entity.Property(e => e.Spots)
+                .HasColumnName("spots")
+                .IsRequired();
+
+            entity.Property(e => e.Holes)
+                .HasColumnName("holes")
+                .IsRequired();
+
+            entity.Property(e => e.Leafshapeid)
+                .HasColumnName("leafshapeid");
+
+            entity.Property(e => e.Leafcolorid)
+                .HasColumnName("leafcolorid")
+                .IsRequired();
+
+            entity.Property(e => e.Surfaceid)
+                .HasColumnName("surfaceid")
+                .IsRequired();
+
             entity.Property(e => e.Leaflength)
                 .HasPrecision(3)
-                .HasColumnName("leaflength");
-            entity.Property(e => e.Leafshapeid).HasColumnName("leafshapeid");
-            entity.Property(e => e.Spots).HasColumnName("spots");
-            entity.Property(e => e.Stripes).HasColumnName("stripes");
-            entity.Property(e => e.Surfaceid).HasColumnName("surfaceid");
-            entity.Property(e => e.Thicknessid).HasColumnName("thicknessid");
+                .HasColumnName("leaflength")
+                .IsRequired();
+
+            entity.Property(e => e.Thicknessid)
+                .HasColumnName("thicknessid")
+                .IsRequired();
+
+            entity.Property(e => e.Flavourid)
+                .HasColumnName("flavourid");
+
 
             entity.HasOne(d => d.Flavour).WithMany(p => p.Leaves)
                 .HasForeignKey(d => d.Flavourid)
