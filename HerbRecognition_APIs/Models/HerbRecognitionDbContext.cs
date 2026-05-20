@@ -430,10 +430,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Occurance1)
                 .HasMaxLength(150)
-                .HasColumnName("occurance");
+                .HasColumnName("occurance")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Picture>(entity =>
@@ -444,9 +447,16 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Picturelink).HasColumnName("picturelink");
-            entity.Property(e => e.Plantid).HasColumnName("plantid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Plantid)
+                .HasColumnName("plantid")
+                .IsRequired();
+
+            entity.Property(e => e.Picturelink)
+                .HasColumnName("picturelink")
+                .IsRequired();
 
             entity.HasOne(d => d.Plant).WithMany(p => p.Pictures)
                 .HasForeignKey(d => d.Plantid)
@@ -462,30 +472,62 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Flowerid).HasColumnName("flowerid");
-            entity.Property(e => e.Fruitid).HasColumnName("fruitid");
-            entity.Property(e => e.Hatid).HasColumnName("hatid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .HasColumnName("name")
+                .IsRequired();
+
+            entity.Property(e => e.Polishname)
+                .HasMaxLength(50)
+                .HasColumnName("polishname")
+                .IsRequired();
+
             entity.Property(e => e.Latinname)
                 .HasMaxLength(50)
                 .HasColumnName("latinname");
-            entity.Property(e => e.Leafid).HasColumnName("leafid");
-            entity.Property(e => e.Name)
-                .HasMaxLength(50)
-                .HasColumnName("name");
-            entity.Property(e => e.Occuranceid).HasColumnName("occuranceid");
-            entity.Property(e => e.Planttypeid).HasColumnName("planttypeid");
-            entity.Property(e => e.Poisonabilityid).HasColumnName("poisonabilityid");
-            entity.Property(e => e.Polishname)
-                .HasMaxLength(50)
-                .HasColumnName("polishname");
-            entity.Property(e => e.Rootid).HasColumnName("rootid");
-            entity.Property(e => e.Sapid).HasColumnName("sapid");
-            entity.Property(e => e.Similarplantsid).HasColumnName("similarplantsid");
-            entity.Property(e => e.Stalkid).HasColumnName("stalkid");
+
             entity.Property(e => e.Subriquet)
                 .HasMaxLength(50)
                 .HasColumnName("subriquet");
+
+            entity.Property(e => e.Planttypeid)
+                .HasColumnName("planttypeid")
+                .IsRequired();
+
+            entity.Property(e => e.Sapid)
+                .HasColumnName("sapid");
+
+            entity.Property(e => e.Rootid)
+                .HasColumnName("rootid");
+
+            entity.Property(e => e.Stalkid)
+                .HasColumnName("stalkid")
+                .IsRequired();
+
+            entity.Property(e => e.Occuranceid)
+                .HasColumnName("occuranceid")
+                .IsRequired();
+
+            entity.Property(e => e.Hatid)
+                .HasColumnName("hatid");
+
+            entity.Property(e => e.Leafid)
+                .HasColumnName("leafid");
+
+            entity.Property(e => e.Flowerid)
+                .HasColumnName("flowerid");
+
+            entity.Property(e => e.Fruitid)
+                .HasColumnName("fruitid");
+
+            entity.Property(e => e.Similarplantsid)
+                .HasColumnName("similarplantsid");
+
+            entity.Property(e => e.Poisonabilityid)
+                .HasColumnName("poisonabilityid");
 
             entity.HasOne(d => d.Flower).WithMany(p => p.Plants)
                 .HasForeignKey(d => d.Flowerid)
