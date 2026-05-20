@@ -189,7 +189,7 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.HasOne(d => d.Color).WithMany(p => p.Flowers)
                 .HasForeignKey(d => d.Colorid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("flower_dictcolor");
 
             entity.HasOne(d => d.Flavour).WithMany(p => p.Flowers)
@@ -198,7 +198,7 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.HasOne(d => d.Shape).WithMany(p => p.Flowers)
                 .HasForeignKey(d => d.Shapeid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("flower_dictshape");
         });
 
@@ -585,9 +585,16 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Plantsid).HasColumnName("plantsid");
-            entity.Property(e => e.Productsid).HasColumnName("productsid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Plantsid)
+                .HasColumnName("plantsid")
+                .IsRequired();
+
+            entity.Property(e => e.Productsid)
+                .HasColumnName("productsid")
+                .IsRequired();
 
             entity.HasOne(d => d.Plants).WithMany(p => p.PlantProducts)
                 .HasForeignKey(d => d.Plantsid)
@@ -608,10 +615,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
-                .HasColumnName("name");
+                .HasColumnName("name")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Poisonability>(entity =>
@@ -622,10 +632,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Description)
                 .HasMaxLength(300)
-                .HasColumnName("description");
+                .HasColumnName("description")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Product>(entity =>
@@ -636,16 +649,29 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Name)
+                .HasMaxLength(300)
+                .HasColumnName("name")
+                .IsRequired();
+
+            entity.Property(e => e.Recipe)
+                .HasColumnName("recipe")
+                .IsRequired();
+
+            entity.Property(e => e.Healthpropertyid)
+                .HasColumnName("healthpropertyid")
+                .IsRequired();
+
             entity.Property(e => e.Contraindication)
                 .HasMaxLength(100)
                 .HasColumnName("contraindication");
-            entity.Property(e => e.Healthpropertyid).HasColumnName("healthpropertyid");
-            entity.Property(e => e.Name)
-                .HasMaxLength(300)
-                .HasColumnName("name");
-            entity.Property(e => e.Producttypeid).HasColumnName("producttypeid");
-            entity.Property(e => e.Recipe).HasColumnName("recipe");
+
+            entity.Property(e => e.Producttypeid)
+                .HasColumnName("producttypeid")
+                .IsRequired();
 
             entity.HasOne(d => d.Healthproperty).WithMany(p => p.Products)
                 .HasForeignKey(d => d.Healthpropertyid)
@@ -666,10 +692,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
-                .HasColumnName("name");
+                .HasColumnName("name")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Root>(entity =>
@@ -680,10 +709,20 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Colorid).HasColumnName("colorid");
-            entity.Property(e => e.Surfaceid).HasColumnName("surfaceid");
-            entity.Property(e => e.Thicknessid).HasColumnName("thicknessid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Colorid)
+                .HasColumnName("colorid")
+                .IsRequired();                
+
+            entity.Property(e => e.Surfaceid)
+                .HasColumnName("surfaceid")
+                .IsRequired();
+
+            entity.Property(e => e.Thicknessid)
+                .HasColumnName("thicknessid")
+                .IsRequired();
 
             entity.HasOne(d => d.Color).WithMany(p => p.Roots)
                 .HasForeignKey(d => d.Colorid)
@@ -709,10 +748,20 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Colorid).HasColumnName("colorid");
-            entity.Property(e => e.Leavesstains).HasColumnName("leavesstains");
-            entity.Property(e => e.Sticky).HasColumnName("sticky");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Colorid)
+                .HasColumnName("colorid")
+                .IsRequired();
+
+            entity.Property(e => e.Leavesstains)
+                .HasColumnName("leavesstains")
+                .IsRequired();
+
+            entity.Property(e => e.Sticky)
+                .HasColumnName("sticky")
+                .IsRequired();
 
             entity.HasOne(d => d.Color).WithMany(p => p.Saps)
                 .HasForeignKey(d => d.Colorid)
@@ -728,10 +777,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Shape1)
                 .HasMaxLength(50)
-                .HasColumnName("shape");
+                .HasColumnName("shape")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Stalk>(entity =>
@@ -742,10 +794,20 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Colorid).HasColumnName("colorid");
-            entity.Property(e => e.Shapeid).HasColumnName("shapeid");
-            entity.Property(e => e.Surfaceid).HasColumnName("surfaceid");
+                .HasColumnName("id")
+                .IsRequired();
+
+            entity.Property(e => e.Shapeid)
+                .HasColumnName("shapeid")
+                .IsRequired();
+
+            entity.Property(e => e.Colorid)
+                .HasColumnName("colorid")
+                .IsRequired();
+
+            entity.Property(e => e.Surfaceid)
+                .HasColumnName("surfaceid")
+                .IsRequired();
 
             entity.HasOne(d => d.Color).WithMany(p => p.Stalks)
                 .HasForeignKey(d => d.Colorid)
@@ -771,10 +833,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Surface1)
                 .HasMaxLength(50)
-                .HasColumnName("surface");
+                .HasColumnName("surface")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Thickness>(entity =>
@@ -785,10 +850,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Thickness1)
                 .HasMaxLength(50)
-                .HasColumnName("thickness");
+                .HasColumnName("thickness")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Userinput>(entity =>
@@ -799,10 +867,13 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Inputdata)
                 .HasColumnType("jsonb")
-                .HasColumnName("inputdata");
+                .HasColumnName("inputdata")
+                .IsRequired();
         });
 
         OnModelCreatingPartial(modelBuilder);
