@@ -87,7 +87,8 @@ public partial class HerbRecognitionDbContext : DbContext
 
         modelBuilder.Entity<Color>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("color_pk");
+            entity.HasKey(e => e.Id)
+                .HasName("color_pk");
 
             entity.ToTable("color");
 
@@ -99,8 +100,7 @@ public partial class HerbRecognitionDbContext : DbContext
             entity.Property(e => e.Color1)
                 .HasMaxLength(50)
                 .HasColumnName("color")
-                .IsRequired()
-                .HasMaxLength(50);
+                .IsRequired();
 
             entity.Property(e => e.B)
                 .HasColumnName("b")
@@ -117,49 +117,75 @@ public partial class HerbRecognitionDbContext : DbContext
 
         modelBuilder.Entity<Disease>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("disease_pk");
+            entity.HasKey(e => e.Id)
+                .HasName("disease_pk");
 
             entity.ToTable("disease");
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Name)
                 .HasMaxLength(300)
-                .HasColumnName("name");
-            entity.Property(e => e.Symptoms).HasColumnName("symptoms");
+                .HasColumnName("name")
+                .IsRequired();
+
+            entity.Property(e => e.Symptoms)
+                .HasColumnName("symptoms")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Flavour>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("flavour_pk");
+            entity.HasKey(e => e.Id)
+                .HasName("flavour_pk");
 
             entity.ToTable("flavour");
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Flavour1)
                 .HasMaxLength(50)
-                .HasColumnName("flavour");
+                .HasColumnName("flavour")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Flower>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("flower_pk");
+            entity.HasKey(e => e.Id)
+                .HasName("flower_pk");
 
             entity.ToTable("flower");
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Colorid).HasColumnName("colorid");
-            entity.Property(e => e.Flavourid).HasColumnName("flavourid");
-            entity.Property(e => e.Scentpower).HasColumnName("scentpower");
-            entity.Property(e => e.Shapeid).HasColumnName("shapeid");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Sizeincm)
                 .HasPrecision(5, 2)
-                .HasColumnName("sizeincm");
+                .HasColumnName("sizeincm")
+                .IsRequired();
+
+            entity.Property(e => e.Colorid)
+                .HasColumnName("colorid")
+                .IsRequired();
+
+            entity.Property(e => e.Shapeid)
+                .HasColumnName("shapeid")
+                .IsRequired();
+
+            entity.Property(e => e.Flavourid)
+                .HasColumnName("flavourid");
+
+            entity.Property(e => e.Scentpower)
+                .HasColumnName("scentpower")
+                .IsRequired();
 
             entity.HasOne(d => d.Color).WithMany(p => p.Flowers)
                 .HasForeignKey(d => d.Colorid)
