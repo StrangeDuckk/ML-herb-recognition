@@ -93,13 +93,26 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.B).HasColumnName("b");
+                .HasColumnName("id")
+                .IsRequired();
+
             entity.Property(e => e.Color1)
                 .HasMaxLength(50)
-                .HasColumnName("color");
-            entity.Property(e => e.G).HasColumnName("g");
-            entity.Property(e => e.R).HasColumnName("r");
+                .HasColumnName("color")
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.B)
+                .HasColumnName("b")
+                .IsRequired();
+
+            entity.Property(e => e.G)
+                .HasColumnName("g")
+                .IsRequired();
+
+            entity.Property(e => e.R)
+                .HasColumnName("r")
+                .IsRequired();
         });
 
         modelBuilder.Entity<Disease>(entity =>
