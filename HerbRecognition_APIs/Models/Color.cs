@@ -7,7 +7,7 @@ public partial class Color
 {
     public int Id { get; set; }
 
-    public string Color1 { get; set; } = null!;
+    public string ColorName { get; set; } = null!;
 
     public int R { get; set; }
 

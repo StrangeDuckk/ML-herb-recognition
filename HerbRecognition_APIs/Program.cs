@@ -1,4 +1,5 @@
 using HerbRecognition_APIs.Models;
+using HerbRecognition_APIs.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,8 @@ builder.Services.AddDbContext<HerbRecognitionDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
+
+builder.Services.AddScoped<IDbService, DbService>();
 
 var app = builder.Build();
 

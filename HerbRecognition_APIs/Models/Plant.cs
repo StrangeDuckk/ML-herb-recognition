@@ -61,7 +61,8 @@ public partial class Plant
 
     public virtual Sap? Sap { get; set; }
 
-    public virtual Plant? Similarplants { get; set; }
-
+    //public virtual List<Plant>? Similarplants { get; set; }//todo sprawdzic czy nie bedzie powodowac bledow, rekord -> list
+    public virtual ICollection<PlantSimilarPlant> SimilarPlants { get; set; } = new List<PlantSimilarPlant>();
+    public virtual ICollection<PlantSimilarPlant> SimilarTo { get; set; } = new List<PlantSimilarPlant>();
     public virtual Stalk Stalk { get; set; } = null!;
 }

@@ -7,7 +7,7 @@ public partial class Surface
 {
     public int Id { get; set; }
 
-    public string Surface1 { get; set; } = null!;
+    public string SurfaceName { get; set; } = null!;
 
     public virtual ICollection<Fruit> Fruits { get; set; } = new List<Fruit>();
 

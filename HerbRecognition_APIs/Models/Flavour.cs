@@ -7,7 +7,7 @@ public partial class Flavour
 {
     public int Id { get; set; }
 
-    public string Flavour1 { get; set; } = null!;
+    public string FlavourName { get; set; } = null!;
 
     public virtual ICollection<Flower> Flowers { get; set; } = new List<Flower>();
 

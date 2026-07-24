@@ -123,7 +123,7 @@ CREATE TABLE Plant (
     LeafId int  NULL,
     FlowerId int  NULL,
     FruitId int  NULL,
-    SimilarPlantsId int  NULL,
+    --SimilarPlantsId int  NULL,
     Poisonabilityid int  NULL,
     CONSTRAINT Plant_pk PRIMARY KEY (Id)
 );
@@ -442,12 +442,12 @@ ALTER TABLE Plant ADD CONSTRAINT Plants_Leaf
 ;
 
 -- Reference: Plants_Plants (table: Plant)
-ALTER TABLE Plant ADD CONSTRAINT Plants_Plants
-    FOREIGN KEY (SimilarPlantsId)
-    REFERENCES Plant (Id)  
-    NOT DEFERRABLE 
-    INITIALLY IMMEDIATE
-;
+-- ALTER TABLE Plant ADD CONSTRAINT Plants_Plants
+--     FOREIGN KEY (SimilarPlantsId)
+--     REFERENCES Plant (Id)  
+--     NOT DEFERRABLE 
+--     INITIALLY IMMEDIATE
+-- ;
 
 -- Reference: Plants_Poisonability (table: Plant)
 ALTER TABLE Plant ADD CONSTRAINT Plants_Poisonability

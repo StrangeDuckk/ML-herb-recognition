@@ -63,9 +63,10 @@ public partial class HerbRecognitionDbContext : DbContext
 
     public virtual DbSet<Userinput> Userinputs { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("DefaultConnection");
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseNpgsql("DefaultConnection");
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,7 +98,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("id")
                 .IsRequired();
 
-            entity.Property(e => e.Color1)
+            entity.Property(e => e.ColorName)
                 .HasMaxLength(50)
                 .HasColumnName("color")
                 .IsRequired();
@@ -149,7 +150,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("id")
                 .IsRequired();
 
-            entity.Property(e => e.Flavour1)
+            entity.Property(e => e.FlavourName)
                 .HasMaxLength(50)
                 .HasColumnName("flavour")
                 .IsRequired();
@@ -433,7 +434,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("id")
                 .IsRequired();
 
-            entity.Property(e => e.Occurance1)
+            entity.Property(e => e.OccuranceName)
                 .HasMaxLength(150)
                 .HasColumnName("occurance")
                 .IsRequired();
@@ -567,14 +568,43 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasForeignKey(d => d.Sapid)
                 .HasConstraintName("entity_sap");
 
-            entity.HasOne(d => d.Similarplants).WithMany(p => p.InverseSimilarplants)
-                .HasForeignKey(d => d.Similarplantsid)
-                .HasConstraintName("plants_plants");
+            //entity.HasOne(d => d.SimilarPlants).WithMany(p => p.InverseSimilarPlants)
+            //    .HasForeignKey(d => d.Similarplantsid)
+            //    .HasConstraintName("plants_plants");
 
             entity.HasOne(d => d.Stalk).WithMany(p => p.Plants)
                 .HasForeignKey(d => d.Stalkid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("entity_stalk");
+        });
+
+        modelBuilder.Entity<PlantSimilarPlant>(entity =>
+        {
+            entity.ToTable("plant_similarplant");
+
+            entity.HasKey(e => e.PlantId)
+                .HasName("plant_similarplant_pk");
+
+            entity.Property(e => e.PlantId)
+                .HasColumnName("id");
+
+            entity.Property(e => e.PlantId)
+                .HasColumnName("plantid");
+
+            entity.Property(e => e.SimilarPlantId)
+                .HasColumnName("similarplantid");
+
+            entity.HasOne(d => d.Plant)
+                .WithMany(p => p.SimilarPlants)
+                .HasForeignKey(d => d.PlantId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("plant_similarplant_plant");
+
+            entity.HasOne(d => d.SimilarPlant)
+                .WithMany(p => p.SimilarTo)
+                .HasForeignKey(d => d.SimilarPlantId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("plant_similarplant_similar");
         });
 
         modelBuilder.Entity<PlantProduct>(entity =>
@@ -780,7 +810,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("id")
                 .IsRequired();
 
-            entity.Property(e => e.Shape1)
+            entity.Property(e => e.ShapeName)
                 .HasMaxLength(50)
                 .HasColumnName("shape")
                 .IsRequired();
@@ -836,7 +866,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("id")
                 .IsRequired();
 
-            entity.Property(e => e.Surface1)
+            entity.Property(e => e.SurfaceName)
                 .HasMaxLength(50)
                 .HasColumnName("surface")
                 .IsRequired();
@@ -853,7 +883,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("id")
                 .IsRequired();
 
-            entity.Property(e => e.Thickness1)
+            entity.Property(e => e.ThicknessName)
                 .HasMaxLength(50)
                 .HasColumnName("thickness")
                 .IsRequired();

@@ -7,7 +7,7 @@ public partial class Shape
 {
     public int Id { get; set; }
 
-    public string Shape1 { get; set; } = null!;
+    public string ShapeName { get; set; } = null!;
 
     public virtual ICollection<Flower> Flowers { get; set; } = new List<Flower>();
 

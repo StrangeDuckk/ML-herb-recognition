@@ -7,7 +7,7 @@ public partial class Thickness
 {
     public int Id { get; set; }
 
-    public string Thickness1 { get; set; } = null!;
+    public string ThicknessName { get; set; } = null!;
 
     public virtual ICollection<Fruit> Fruits { get; set; } = new List<Fruit>();
 

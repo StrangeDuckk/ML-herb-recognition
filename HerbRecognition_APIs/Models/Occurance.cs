@@ -7,7 +7,7 @@ public partial class Occurance
 {
     public int Id { get; set; }
 
-    public string Occurance1 { get; set; } = null!;
+    public string OccuranceName { get; set; } = null!;
 
     public virtual ICollection<Plant> Plants { get; set; } = new List<Plant>();
 }
