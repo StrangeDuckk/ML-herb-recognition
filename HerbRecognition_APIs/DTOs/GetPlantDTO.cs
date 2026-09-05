@@ -9,7 +9,7 @@
         public string? Subriquet { get; set; }
 
         // ----- type -----
-        public string PlantTypeName { get; set; } = null!;
+        public GetPlantTypeDTO PlantTypeDTO { get; set; } = null!;
 
         // ----- sap -----
         public GetSapDTO? GetSapDTO { get; set; }
@@ -21,7 +21,7 @@
         public GetStalkDTO GetStalkDTO { get; set; } = null!;
 
         // ----- occurance -----
-        public string Occurance { get; set; } = null!;
+        public GetOccuranceDTO Occurance { get; set; } = null!;
 
         // ----- hat -----
         public GetHatDTO? GetHatDTO { get; set; }
@@ -36,7 +36,7 @@
         public GetFruitDTO? GetFruitDTO { get; set; }
 
         // ----- similarPlants ----- wiele
-        public List<SimilarPlantDTO>? SimiliarPlantDTO { get; set; }
+        public List<GetSimilarPlantDTO>? SimiliarPlantDTO { get; set; }
 
         // ----- poisonability -----
         public string? PoisonabilityDescription { get; set; }

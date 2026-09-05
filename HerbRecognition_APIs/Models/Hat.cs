@@ -19,6 +19,8 @@ public partial class Hat
 
     public bool Hasgills { get; set; }
 
+    public bool HasRing { get; set; }
+
     public virtual Color Color { get; set; } = null!;
 
     public virtual ICollection<Plant> Plants { get; set; } = new List<Plant>();

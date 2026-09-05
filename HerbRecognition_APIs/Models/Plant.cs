@@ -33,7 +33,7 @@ public partial class Plant
 
     public int? Fruitid { get; set; }
 
-    public int? Similarplantsid { get; set; }
+    public PlantSimilarPlant? Similarplants { get; set; }
 
     public int? Poisonabilityid { get; set; }
 

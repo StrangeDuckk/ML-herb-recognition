@@ -1,0 +1,18 @@
+dodac has ring do hat
+additional info do plant jako text
+
+zrobic wszystkie CRUDy
+uruchomic BLAZORa do polaczenia sie z crudami API
+zaczac pisac frontend
+
+
+
+//  ---------------------------------------------------------
+// pisanie create api
+// ----- jesli endpoint tworzy nowe slowniki -----
+[Required]
+public CreateXDTO xPole { get; set; } = null!;
+
+// ----- jesli endpoint nie tworzy nowych rekordow
+[Required]
+public int xPoleId {get; set;}

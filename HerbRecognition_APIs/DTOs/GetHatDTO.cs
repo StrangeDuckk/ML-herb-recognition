@@ -8,5 +8,6 @@
         public string HatSurfaceName { get; set; } = null!;
         public bool HatHasSpots { get; set; }
         public bool HatHasGills { get; set; }
+        public bool HatHasRing{ get; set; }
     }
 }

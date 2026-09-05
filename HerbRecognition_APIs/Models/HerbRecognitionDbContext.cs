@@ -39,6 +39,8 @@ public partial class HerbRecognitionDbContext : DbContext
 
     public virtual DbSet<Plant> Plants { get; set; }
 
+    public virtual DbSet<PlantSimilarPlant> PlantSimilarplants { get; set; }
+
     public virtual DbSet<PlantProduct> PlantProducts { get; set; }
 
     public virtual DbSet<Planttype> Planttypes { get; set; }
@@ -294,6 +296,10 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("hasgills")
                 .IsRequired();
 
+            entity.Property(e => e.HasRing)
+                .HasColumnName("hasring")
+                .IsRequired();
+
             entity.HasOne(d => d.Color).WithMany(p => p.Hats)
                 .HasForeignKey(d => d.Colorid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -524,7 +530,7 @@ public partial class HerbRecognitionDbContext : DbContext
             entity.Property(e => e.Fruitid)
                 .HasColumnName("fruitid");
 
-            entity.Property(e => e.Similarplantsid)
+            entity.Property(e => e.SimilarPlants)
                 .HasColumnName("similarplantsid");
 
             entity.Property(e => e.Poisonabilityid)
@@ -582,11 +588,14 @@ public partial class HerbRecognitionDbContext : DbContext
         {
             entity.ToTable("plant_similarplant");
 
+            entity.HasKey(e => new
+            {
+                e.PlantId,
+                e.SimilarPlantId
+            });
+
             entity.HasKey(e => e.PlantId)
                 .HasName("plant_similarplant_pk");
-
-            entity.Property(e => e.PlantId)
-                .HasColumnName("id");
 
             entity.Property(e => e.PlantId)
                 .HasColumnName("plantid");

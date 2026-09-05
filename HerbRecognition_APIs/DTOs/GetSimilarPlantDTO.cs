@@ -1,6 +1,6 @@
 ﻿namespace HerbRecognition_APIs.DTOs
 {
-    public class SimilarPlantDTO
+    public class GetSimilarPlantDTO
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
