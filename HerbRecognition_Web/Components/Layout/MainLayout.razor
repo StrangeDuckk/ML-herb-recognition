@@ -1,6 +1,70 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
+<div class="app">
+
+    <header class="top-bar">
+        <div class="top-bar-content">
+
+            <a class="brand" href="/">
+                <span class="brand-icon">🌿</span>
+                <span>Herb Recognition</span>
+            </a>
+
+            <nav class="main-nav">
+                <NavLink href="/plants" class="nav-link">
+                    Wszystkie zioła
+                </NavLink>
+            </nav>
+
+        </div>
+    </header>
+
+
+    <main class="main-content">
+        @Body
+    </main>
+
+
+    <footer class="footer">
+        <div class="footer-content">
+
+            <div class="footer-description">
+                <h3>Herb Recognition</h3>
+
+                <p>
+                    Aplikacja wspierająca rozpoznawanie i poznawanie
+                    właściwości roślin na podstawie ich charakterystycznych cech.
+                </p>
+            </div>
+
+            <div class="footer-links">
+                <a href="https://github.com/StrangeDuckk/ML-herb-recognition"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    GitHub ↗
+                </a>
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+            <span>© 2026 Herb Recognition</span>
+        </div>
+    </footer>
+
+</div>
+
+
+<div id="blazor-error-ui" data-nosnippet>
+    Wystąpił nieoczekiwany błąd.
+    <a href="." class="reload">Odśwież stronę</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+
+
+ 
+@* <div class="page">
     <div class="sidebar">
         <NavMenu />
     </div>
@@ -20,4 +84,4 @@
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
-</div>
+</div> *@
