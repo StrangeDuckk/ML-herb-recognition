@@ -125,15 +125,23 @@ namespace HerbRecognition_APIs.Services
                         FruitThicnkessName = p.Fruit.Thickness.ThicknessName
                     },
 
-                    SimiliarPlantDTO = p.SimilarPlants == null ? null :
-                        p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
-                        {
-                            Id = sp.SimilarPlant.Id,
-                            Name = sp.SimilarPlant.Name,
-                            PolishName = sp.SimilarPlant.Polishname
-                        }).ToList(),
+                    SimiliarPlantDTO = p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
+                    {
+                        Id = sp.SimilarPlant.Id,
+                        Name = sp.SimilarPlant.Name,
+                        PolishName = sp.SimilarPlant.Polishname
+                    })
+                    .ToList(),
 
-                    PoisonabilityDescription = p.Poisonability.Description
+                    //SimiliarPlantDTO = p.SimilarPlants == null ? null :
+                    //    p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
+                    //    {
+                    //        Id = sp.SimilarPlant.Id,
+                    //        Name = sp.SimilarPlant.Name,
+                    //        PolishName = sp.SimilarPlant.Polishname
+                    //    }).ToList(),
+
+                    PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
                 })
                 .ToListAsync();
 

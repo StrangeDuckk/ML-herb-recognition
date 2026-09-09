@@ -32,4 +32,39 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider
+        .GetRequiredService<HerbRecognitionDbContext>();
+
+    var entity = db.Model.FindEntityType(typeof(PlantSimilarPlant));
+
+    Console.WriteLine("=== PROPERTIES ===");
+
+    foreach (var property in entity!.GetProperties())
+    {
+        Console.WriteLine(
+            $"Property: {property.Name}, Column: {property.GetColumnName()}");
+    }
+
+    Console.WriteLine("=== FOREIGN KEYS ===");
+
+    foreach (var foreignKey in entity.GetForeignKeys())
+    {
+        Console.WriteLine(
+            $"FK: {string.Join(", ", foreignKey.Properties.Select(p => p.Name))}" +
+            $" -> {foreignKey.PrincipalEntityType.ClrType.Name}");
+    }
+
+    Console.WriteLine("=== NAVIGATIONS ===");
+
+    foreach (var navigation in entity.GetNavigations())
+    {
+        Console.WriteLine(
+            $"Navigation: {navigation.Name}, " +
+            $"FK: {string.Join(", ", navigation.ForeignKey.Properties.Select(p => p.Name))}");
+    }
+}
+
+
 app.Run();

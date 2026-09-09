@@ -72,6 +72,8 @@ public partial class HerbRecognitionDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<PlantSimilarPlant>().Ignore("PlantId1");
+
         modelBuilder.Entity<Activesubstance>(entity =>
         {
             entity.HasKey(e => e.Id)
@@ -530,8 +532,8 @@ public partial class HerbRecognitionDbContext : DbContext
             entity.Property(e => e.Fruitid)
                 .HasColumnName("fruitid");
 
-            entity.Property(e => e.SimilarPlants)
-                .HasColumnName("similarplantsid");
+            //entity.Property(e => e.SimilarPlants)
+            //    .HasColumnName("similarplantsid");
 
             entity.Property(e => e.Poisonabilityid)
                 .HasColumnName("poisonabilityid");
@@ -592,9 +594,7 @@ public partial class HerbRecognitionDbContext : DbContext
             {
                 e.PlantId,
                 e.SimilarPlantId
-            });
-
-            entity.HasKey(e => e.PlantId)
+            })
                 .HasName("plant_similarplant_pk");
 
             entity.Property(e => e.PlantId)
