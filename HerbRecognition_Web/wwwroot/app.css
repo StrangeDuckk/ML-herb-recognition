@@ -335,6 +335,225 @@ a {
         line-height: 1.7;
     }
 
+/* =========================
+   PLANTS PAGE
+   ========================= */
+
+.plants-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+}
+
+.plants-header {
+    margin-bottom: 60px;
+}
+
+    .plants-header h1 {
+        margin: 0;
+        font-size: clamp(3rem, 6vw, 5rem);
+        line-height: 1;
+        letter-spacing: -0.06em;
+    }
+
+    .plants-header p {
+        max-width: 600px;
+        margin-top: 24px;
+        color: #536158;
+        font-size: 1.1rem;
+        line-height: 1.7;
+    }
+
+
+/* =========================
+   GRID
+   ========================= */
+
+.plants-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+
+/* =========================
+   CARD
+   ========================= */
+
+.plant-card {
+    min-height: 310px;
+    background: #ffffff;
+    border: 1px solid #e0e6df;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+    .plant-card:hover {
+        transform: translateY(-5px);
+        border-color: #b7c7b7;
+        box-shadow: 0 18px 40px rgba(29, 43, 33, 0.08);
+    }
+
+.plant-card-content {
+    height: 100%;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+.plant-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.plant-type {
+    padding: 6px 10px;
+    border-radius: 20px;
+    background: #eaf0e8;
+    color: #52745a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.plant-id {
+    color: #a0aaa2;
+    font-size: 0.8rem;
+}
+
+.plant-card h2 {
+    margin: 0;
+    color: #1d2b21;
+    font-size: 1.7rem;
+    letter-spacing: -0.03em;
+}
+
+.plant-name {
+    margin: 5px 0 0;
+    color: #536158;
+    font-size: 1rem;
+}
+
+.plant-latin {
+    margin: 18px 0 0;
+    color: #7a857c;
+    font-family: Georgia, serif;
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+.plant-subriquet {
+    margin: 10px 0 0;
+    color: #7a857c;
+    font-size: 0.85rem;
+}
+
+.plant-card-link {
+    margin-top: auto;
+    padding-top: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #315c3e;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+    .plant-card-link span {
+        transition: transform 0.2s ease;
+    }
+
+.plant-card:hover .plant-card-link span {
+    transform: translateX(5px);
+}
+
+
+/* =========================
+   LOADING
+   ========================= */
+
+.plants-status {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #536158;
+}
+
+.loading-spinner {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 20px;
+    border: 3px solid #dfe6df;
+    border-top-color: #52745a;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================
+   ERROR
+   ========================= */
+
+.plants-error {
+    padding: 40px;
+    border: 1px solid #e2caca;
+    border-radius: 12px;
+    background: #faf2f2;
+    text-align: center;
+}
+
+    .plants-error h2 {
+        margin-top: 0;
+    }
+
+    .plants-error p {
+        color: #795454;
+    }
+
+    .plants-error button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 7px;
+        background: #315c3e;
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 950px) {
+    .plants-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .plants-page {
+        padding: 60px 20px 80px;
+    }
+
+    .plants-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
 /* =========================
    RESPONSIVE

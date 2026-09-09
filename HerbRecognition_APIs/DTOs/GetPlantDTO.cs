@@ -3,6 +3,7 @@
     public class GetPlantDTO
     {
         // ----- mandatory -----
+        public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string PolishName { get; set; } = null!;
         public string? LatinName { get; set; }

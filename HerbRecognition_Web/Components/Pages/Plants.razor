@@ -1,5 +1,154 @@
 ﻿@page "/plants"
 
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject PlantApiService PlantApiService
+
+<PageTitle>Wszystkie rośliny</PageTitle>
+
+<div class="plants-page">
+
+    <section class="plants-header">
+
+        <div>
+            <span class="section-label">HERB RECOGNITION</span>
+
+            <h1>Wszystkie rośliny</h1>
+
+            <p>
+                Odkrywaj rośliny znajdujące się w bazie Herb Recognition.
+            </p>
+        </div>
+
+    </section>
+
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie roślin...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się pobrać roślin</h2>
+
+            <p>@errorMessage</p>
+
+            <button @onclick="LoadPlantsAsync">
+                Spróbuj ponownie
+            </button>
+        </div>
+    }
+    else if (plants.Count == 0)
+    {
+        <div class="plants-status">
+            <h2>Brak roślin</h2>
+            <p>Baza nie zawiera jeszcze żadnych roślin.</p>
+        </div>
+    }
+    else
+    {
+        <section class="plants-grid">
+
+            @foreach (var plant in plants)
+            {
+                <article class="plant-card">
+
+                    <div class="plant-card-content">
+
+                        <div class="plant-card-top">
+
+                            <span class="plant-type">
+                                @(plant.PlantTypeDTO?.Name ?? "Unknown")
+                            </span>
+
+                            <span class="plant-id">
+                                #@plant.Id
+                            </span>
+
+                        </div>
+
+
+                        <h2>@plant.PolishName</h2>
+
+                        <p class="plant-name">
+                            @plant.Name
+                        </p>
+
+                        <p class="plant-latin">
+                            @plant.LatinName
+                        </p>
+
+
+                        @if (!string.IsNullOrWhiteSpace(plant.Subriquet))
+                        {
+                            <p class="plant-subriquet">
+                                „@plant.Subriquet”
+                            </p>
+                        }
+
+
+                        <a href="@($"/plants/{plant.Id}")"
+                           class="plant-card-link">
+
+                            Zobacz szczegóły
+                            <span>→</span>
+
+                        </a>
+
+                    </div>
+
+                </article>
+            }
+
+        </section>
+    }
+
+</div>
+
+
+@code {
+
+    private List<PlantDTO> plants = new();
+
+    private bool isLoading = true;
+
+    private string? errorMessage;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlantsAsync();
+    }
+
+
+    private async Task LoadPlantsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            plants = await PlantApiService.GetAllPlantsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Wystąpił problem podczas komunikacji z API.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
+
+
+@* @page "/plants"
+
 <PageTitle>Wszystkie rośliny</PageTitle>
 
 <div class="placeholder-page">
@@ -17,4 +166,4 @@
         ← Wróć na stronę główną
     </a>
 
-</div>
+</div> *@

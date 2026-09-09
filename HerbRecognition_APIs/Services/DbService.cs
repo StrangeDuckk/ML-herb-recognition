@@ -52,6 +52,7 @@ namespace HerbRecognition_APIs.Services
             var plants = await data.Plants
                 .Select(p => new GetPlantDTO
                 {
+                    Id = p.Id,
                     Name = p.Name,
                     PolishName = p.Polishname,
                     LatinName = p.Latinname,
