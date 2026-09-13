@@ -13,6 +13,14 @@ namespace HerbRecognition_APIs.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPlants()
         {
+            var plants = await dbService.GetPlantsAsync();
+
+            return Ok(plants);
+        }
+
+        [HttpGet("/all")]
+        public async Task<IActionResult> GetAllPlants()
+        {
             var plants = await dbService.GetAllPlantsAsync();
 
             return Ok(plants);

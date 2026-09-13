@@ -12,6 +12,7 @@ namespace HerbRecognition_APIs.Services
         Task<Plant> CreatePlantAsync(CreatePlantDTO dto);
         Task<IEnumerable<GetPlantDTO>> GetAllPlantsAsync();
         Task<List<GetPlantTypeDTO>> GetAllPlantTypesAsync();
+        Task<IEnumerable<GetPlantDTO>> GetPlantsAsync();
     }
 
     public class DbService(HerbRecognitionDbContext data) : IDbService
@@ -134,19 +135,36 @@ namespace HerbRecognition_APIs.Services
                     })
                     .ToList(),
 
-                    //SimiliarPlantDTO = p.SimilarPlants == null ? null :
-                    //    p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
-                    //    {
-                    //        Id = sp.SimilarPlant.Id,
-                    //        Name = sp.SimilarPlant.Name,
-                    //        PolishName = sp.SimilarPlant.Polishname
-                    //    }).ToList(),
-
                     PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
                 })
                 .ToListAsync();
 
             return plants;
+        }
+
+        public async Task<IEnumerable<GetPlantDTO>> GetPlantsAsync() // tylko do wyswietlenia preview w bibliotece
+        {
+            var plants_preview = await data.Plants
+               .Select(
+                    p => new GetPlantDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        PolishName = p.Polishname,
+                        LatinName = p.Latinname,
+                        Subriquet = p.Subriquet,
+                        
+                        PlantTypeDTO = new GetPlantTypeDTO
+                        {
+                            Name = p.Planttype.Name
+                        },
+                        PoisonabilityDescription = p.Poisonability == null? null :p.Poisonability.Description
+                    }
+                )
+               .OrderBy(p => p.PolishName)
+               .ToListAsync();
+
+            return plants_preview;
         }
         public async Task<Plant> CreatePlantAsync(CreatePlantDTO dto)
         {
