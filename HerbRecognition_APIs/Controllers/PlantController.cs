@@ -25,15 +25,17 @@ namespace HerbRecognition_APIs.Controllers
 
             return Ok(plants);
         }
-        //[HttpGet("{id: int}")]
-        //public async Task<IActionResult> GetPlantsById(int id)//todo
-        //{
-        //    throw new NotImplementedException();
 
-        //    var plants = await dbService.GetPlantByIdAsync(id);
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetPlantsById(int id)
+        {
+            var plant = await dbService.GetPlantByIdAsync(id);
 
-        //    return Ok(plants);
-        //}
+            if (plant == null)
+                return NotFound();
+
+            return Ok(plant);
+        }
 
         //[HttpPost]//todo w przyszlosci tez patch albo put
         //public async Task<IActionResult> CreatePlant([FromBody] CreatePlantDTO dto)

@@ -1,0 +1,587 @@
+﻿@page "/plants/{Id:int}"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject PlantApiService PlantApiService
+
+<PageTitle>
+    @(plant is null ? "Szczegóły rośliny" : plant.PolishName)
+</PageTitle>
+
+<div class="plant-details-page">
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie informacji o roślinie...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się pobrać rośliny</h2>
+            <p>@errorMessage</p>
+
+            <a href="/plants" class="back-link">
+                ← Wróć do listy roślin
+            </a>
+        </div>
+    }
+    else if (plant is null)
+    {
+        <div class="plants-status">
+            <h2>Nie znaleziono rośliny</h2>
+            <p>Roślina o podanym identyfikatorze nie istnieje.</p>
+
+            <a href="/plants" class="back-link">
+                ← Wróć do listy roślin
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="plant-details-container">
+
+            <a href="/plants" class="back-link">
+                ← Wszystkie rośliny
+            </a>
+
+            <section class="plant-hero">
+
+                <div class="plant-hero-main">
+
+                    <div class="plant-type-badge">
+                        @(plant.PlantTypeDTO?.Name ?? "Unknown")
+                    </div>
+
+                    <h1>@plant.PolishName</h1>
+
+                    <p class="plant-common-name">
+                        @plant.Name
+                    </p>
+
+                    <p class="plant-latin-name">
+                        @plant.LatinName
+                    </p>
+
+                    @if (!string.IsNullOrWhiteSpace(plant.Subriquet))
+                    {
+                        <p class="plant-subriquet">
+                            „@plant.Subriquet”
+                        </p>
+                    }
+
+                </div>
+
+                <div class="plant-id">
+                    #@plant.Id
+                </div>
+
+            </section>
+
+
+            <section class="plant-section">
+
+                <div class="section-heading">
+                    <span class="section-label">INFORMACJE</span>
+                    <h2>Podstawowe informacje</h2>
+                </div>
+
+                <div class="plant-info-grid">
+
+                    <div class="info-item">
+                        <span class="info-label">Nazwa</span>
+                        <span class="info-value">@plant.Name</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Nazwa polska</span>
+                        <span class="info-value">@plant.PolishName</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Nazwa łacińska</span>
+                        <span class="info-value">@plant.LatinName</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Typ</span>
+                        <span class="info-value">
+                            @(plant.PlantTypeDTO?.Name ?? "Brak informacji")
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Występowanie</span>
+                        <span class="info-value">
+                            @(plant.Occurance?.Occurance ?? "Brak informacji")
+                        </span>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            @if (plant.PoisonabilityDescription is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">BEZPIECZEŃSTWO</span>
+                        <h2>Toksyczność</h2>
+                    </div>
+
+                    <div class="poisonability-card">
+                        <p>@plant.PoisonabilityDescription</p>
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.GetSapDTO is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">CECHA ROŚLINY</span>
+                        <h2>Sok</h2>
+                    </div>
+
+                    <div class="plant-info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Kolor</span>
+                            <span class="info-value">
+                                @plant.GetSapDTO.SapColor
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Pozostawia plamy na liściach</span>
+                            <span class="info-value">
+                                @(plant.GetSapDTO.SapLeavesStains ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Lepkość</span>
+                            <span class="info-value">
+                                @(plant.GetSapDTO.SapSticky ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.GetRootDTO is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">CECHA ROŚLINY</span>
+                        <h2>Korzeń</h2>
+                    </div>
+
+                    <div class="plant-info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Kolor</span>
+                            <span class="info-value">
+                                @plant.GetRootDTO.RootColorName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Powierzchnia</span>
+                            <span class="info-value">
+                                @plant.GetRootDTO.RootSurfaceName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Grubość</span>
+                            <span class="info-value">
+                                @plant.GetRootDTO.RootThicknessName
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.GetStalkDTO is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">CECHA ROŚLINY</span>
+                        <h2>Łodyga</h2>
+                    </div>
+
+                    <div class="plant-info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Kolor</span>
+                            <span class="info-value">
+                                @plant.GetStalkDTO.StalkColorName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Kształt</span>
+                            <span class="info-value">
+                                @plant.GetStalkDTO.StalkShapeName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Powierzchnia</span>
+                            <span class="info-value">
+                                @plant.GetStalkDTO.StalkSurfaceName
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.GetLeafDTO is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">CECHA ROŚLINY</span>
+                        <h2>Liść</h2>
+                    </div>
+
+                    <div class="plant-info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Kształt</span>
+                            <span class="info-value">
+                                @plant.GetLeafDTO.LeafShapeName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Kolor</span>
+                            <span class="info-value">
+                                @plant.GetLeafDTO.LeafColorName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Powierzchnia</span>
+                            <span class="info-value">
+                                @plant.GetLeafDTO.LeafSurfaceName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Długość</span>
+                            <span class="info-value">
+                                @plant.GetLeafDTO.LeafLength
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Grubość</span>
+                            <span class="info-value">
+                                @plant.GetLeafDTO.LeafThicknessName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Smak</span>
+                            <span class="info-value">
+                                @plant.GetLeafDTO.LeafFlavourName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Paski</span>
+                            <span class="info-value">
+                                @(plant.GetLeafDTO.LeafHasStripes ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Plamy</span>
+                            <span class="info-value">
+                                @(plant.GetLeafDTO.LeafHasSpots ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Dziury</span>
+                            <span class="info-value">
+                                @(plant.GetLeafDTO.LeafHasHoles ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.GetFlowerDTO is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">CECHA ROŚLINY</span>
+                        <h2>Kwiat</h2>
+                    </div>
+
+                    <div class="plant-info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Rozmiar</span>
+                            <span class="info-value">
+                                @plant.GetFlowerDTO.FlowerSizeInCm cm
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Kolor</span>
+                            <span class="info-value">
+                                @plant.GetFlowerDTO.FlowerColorName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Kształt</span>
+                            <span class="info-value">
+                                @plant.GetFlowerDTO.FlowerShapeName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Smak</span>
+                            <span class="info-value">
+                                @plant.GetFlowerDTO.FlowerFlavourName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Intensywność zapachu</span>
+                            <span class="info-value">
+                                @plant.GetFlowerDTO.FlowerScentPower
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.GetFruitDTO is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">CECHA ROŚLINY</span>
+                        <h2>Owoc</h2>
+                    </div>
+
+                    <div class="plant-info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Smak</span>
+                            <span class="info-value">
+                                @plant.GetFruitDTO.FruitFlavourName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Kształt</span>
+                            <span class="info-value">
+                                @plant.GetFruitDTO.FruitShapeName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Kolor</span>
+                            <span class="info-value">
+                                @plant.GetFruitDTO.FruitColorName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Powierzchnia</span>
+                            <span class="info-value">
+                                @plant.GetFruitDTO.FruitSurfaceName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Grubość</span>
+                            <span class="info-value">
+                                @plant.GetFruitDTO.FruitThicnkessName
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.GetHatDTO is not null)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">CECHA GRZYBA</span>
+                        <h2>Kapelusz</h2>
+                    </div>
+
+                    <div class="plant-info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">Kolor</span>
+                            <span class="info-value">
+                                @plant.GetHatDTO.HatColorName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Kształt</span>
+                            <span class="info-value">
+                                @plant.GetHatDTO.HatShapeName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Powierzchnia</span>
+                            <span class="info-value">
+                                @plant.GetHatDTO.HatSurfaceName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Grubość</span>
+                            <span class="info-value">
+                                @plant.GetHatDTO.HatThicknessName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Blaszki</span>
+                            <span class="info-value">
+                                @(plant.GetHatDTO.HatHasGills ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Plamy</span>
+                            <span class="info-value">
+                                @(plant.GetHatDTO.HatHasSpots ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Pierścień</span>
+                            <span class="info-value">
+                                @(plant.GetHatDTO.HatHasRing ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+            }
+
+
+            @if (plant.SimiliarPlantDTO is not null &&
+                    plant.SimiliarPlantDTO.Count > 0)
+            {
+                <section class="plant-section">
+
+                    <div class="section-heading">
+                        <span class="section-label">POWIĄZANE</span>
+                        <h2>Podobne rośliny</h2>
+                    </div>
+
+                    <div class="similar-plants">
+
+                        @foreach (var similarPlant in plant.SimiliarPlantDTO)
+                        {
+                            <a href="@($"/plants/{similarPlant.Id}")"
+                               class="similar-plant-card">
+
+                                <div>
+                                    <h3>@similarPlant.PolishName</h3>
+                                    <p>@similarPlant.Name</p>
+                                </div>
+
+                                <span>→</span>
+
+                            </a>
+                        }
+
+                    </div>
+
+                </section>
+            }
+
+        </div>
+    }
+
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private GetPlantDTO? plant;
+
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadPlantAsync();
+    }
+
+    private async Task LoadPlantAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        plant = null;
+
+        try
+        {
+            plant = await PlantApiService.GetPlantByIdAsync(Id);
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage =
+                "Nie udało się połączyć z API. Sprawdź, czy serwer API jest uruchomiony.";
+        }
+        catch (Exception)
+        {
+            errorMessage =
+                "Wystąpił nieoczekiwany problem podczas pobierania danych.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

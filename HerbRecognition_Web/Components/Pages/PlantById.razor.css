@@ -1,0 +1,428 @@
+﻿/* =========================================================
+   PLANT DETAILS
+   ========================================================= */
+
+.plant-details-page {
+    min-height: 100vh;
+    background: #f6f7f2;
+    color: #26352b;
+}
+
+.plant-details-container {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 40px 0 80px;
+}
+
+
+/* =========================================================
+   BACK LINK
+   ========================================================= */
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    color: #55705b;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+    .back-link:hover {
+        color: #2f5238;
+        transform: translateX(-3px);
+    }
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.plant-hero {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    min-height: 310px;
+    padding: 52px 56px;
+    margin-bottom: 48px;
+    overflow: hidden;
+    background: radial-gradient( circle at 90% 10%, rgba(130, 164, 135, 0.22), transparent 35% ), linear-gradient( 135deg, #e7eee5 0%, #f2f4ed 100% );
+    border: 1px solid #dce5da;
+    border-radius: 28px;
+    box-shadow: 0 18px 45px rgba(46, 66, 51, 0.08);
+}
+
+    .plant-hero::after {
+        content: "🌿";
+        position: absolute;
+        right: 55px;
+        top: 35px;
+        font-size: 8rem;
+        opacity: 0.08;
+        transform: rotate(15deg);
+        pointer-events: none;
+    }
+
+.plant-hero-main {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+}
+
+.plant-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    margin-bottom: 20px;
+    border-radius: 999px;
+    background: #d4e3d2;
+    color: #36563d;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.plant-hero h1 {
+    margin: 0;
+    color: #24372a;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+    font-weight: 750;
+}
+
+.plant-common-name {
+    margin: 16px 0 0;
+    color: #53675a;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.plant-latin-name {
+    margin: 7px 0 0;
+    color: #718074;
+    font-size: 1.05rem;
+    font-style: italic;
+}
+
+.plant-subriquet {
+    display: inline-block;
+    margin: 22px 0 0;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 10px;
+    color: #526456;
+    font-size: 0.95rem;
+}
+
+.plant-hero > .plant-id {
+    position: relative;
+    z-index: 1;
+    color: #849287;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.plant-section {
+    margin-bottom: 48px;
+}
+
+.section-heading {
+    margin-bottom: 22px;
+}
+
+.section-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #759078;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: #2c3d31;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+
+/* =========================================================
+   INFORMATION GRID
+   ========================================================= */
+
+.plant-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 92px;
+    padding: 20px 22px;
+    background: #ffffff;
+    border: 1px solid #e5e9e3;
+    border-radius: 16px;
+    box-shadow: 0 5px 18px rgba(42, 61, 47, 0.035);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+    .info-item:hover {
+        transform: translateY(-2px);
+        border-color: #d2ddd0;
+        box-shadow: 0 9px 24px rgba(42, 61, 47, 0.07);
+    }
+
+.info-label {
+    margin-bottom: 7px;
+    color: #879389;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.info-value {
+    color: #334438;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   SAFETY / POISONABILITY
+   ========================================================= */
+
+.poisonability-card {
+    position: relative;
+    padding: 24px 28px 24px 64px;
+    background: #fffdf8;
+    border: 1px solid #ebe3d1;
+    border-radius: 18px;
+    box-shadow: 0 5px 18px rgba(80, 67, 43, 0.04);
+}
+
+    .poisonability-card::before {
+        content: "⚠";
+        position: absolute;
+        left: 24px;
+        top: 22px;
+        font-size: 1.25rem;
+    }
+
+    .poisonability-card p {
+        margin: 0;
+        color: #665c48;
+        font-size: 0.98rem;
+        line-height: 1.7;
+    }
+
+
+/* =========================================================
+   SIMILAR PLANTS
+   ========================================================= */
+
+.similar-plants {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.similar-plant-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 105px;
+    padding: 20px 22px;
+    background: #ffffff;
+    border: 1px solid #e2e8e0;
+    border-radius: 18px;
+    color: inherit;
+    text-decoration: none;
+    box-shadow: 0 5px 18px rgba(42, 61, 47, 0.035);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+    .similar-plant-card:hover {
+        transform: translateY(-4px);
+        border-color: #bfd0bd;
+        box-shadow: 0 12px 28px rgba(42, 61, 47, 0.09);
+    }
+
+    .similar-plant-card h3 {
+        margin: 0 0 5px;
+        color: #304435;
+        font-size: 1rem;
+    }
+
+    .similar-plant-card p {
+        margin: 0;
+        color: #89948b;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    .similar-plant-card > span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: #edf3eb;
+        color: #55725a;
+        font-size: 1.1rem;
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .similar-plant-card:hover > span {
+        background: #dce9da;
+        transform: translateX(3px);
+    }
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.plants-status {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #66766a;
+}
+
+.loading-spinner {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 18px;
+    border: 4px solid #dce6da;
+    border-top-color: #5d7d62;
+    border-radius: 50%;
+    animation: plant-spin 0.8s linear infinite;
+}
+
+@keyframes plant-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.plants-error {
+    max-width: 600px;
+    margin: 100px auto;
+    padding: 40px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #e5e8e4;
+    border-radius: 22px;
+    box-shadow: 0 12px 35px rgba(42, 61, 47, 0.06);
+}
+
+    .plants-error h2 {
+        margin: 0 0 10px;
+        color: #334638;
+    }
+
+    .plants-error p {
+        margin-bottom: 24px;
+        color: #788278;
+    }
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .plant-info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .similar-plants {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .plant-hero {
+        padding: 42px;
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .plant-details-container {
+        width: min(100% - 24px, 1180px);
+        padding-top: 24px;
+    }
+
+    .plant-hero {
+        min-height: auto;
+        padding: 32px 26px;
+        border-radius: 22px;
+        align-items: flex-start;
+    }
+
+        .plant-hero::after {
+            right: -5px;
+            top: 20px;
+            font-size: 5rem;
+        }
+
+        .plant-hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .plant-hero > .plant-id {
+            position: absolute;
+            right: 25px;
+            bottom: 22px;
+        }
+
+    .plant-info-grid,
+    .similar-plants {
+        grid-template-columns: 1fr;
+    }
+
+    .plant-section {
+        margin-bottom: 38px;
+    }
+
+    .section-heading h2 {
+        font-size: 1.5rem;
+    }
+
+    .info-item {
+        min-height: 80px;
+    }
+
+    .poisonability-card {
+        padding: 22px 22px 22px 56px;
+    }
+}

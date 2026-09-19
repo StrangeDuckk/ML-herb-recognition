@@ -1,9 +1,15 @@
-dodac has ring do hat
-additional info do plant jako text
+- api dla konkretnych roslin ze wszystkimi informacjami o nich
+- front do api dla konkretnych
 
-zrobic wszystkie CRUDy
-uruchomic BLAZORa do polaczenia sie z crudami API
-zaczac pisac frontend
+- zrobic formularz dla uzytkownika do dodawania, ma byc przechowywane w jsonie do momentu dodania do bazy
+
+- zajac sie zdjeciami kwiatkow
+
+- zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika
+
+- zrobic dodawanie przepisow
+
+- zrobic widok ladna pierewsza strone (np losowane informacje o x roslince z bazy)
 
 
 
