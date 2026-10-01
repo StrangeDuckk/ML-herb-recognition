@@ -25,5 +25,14 @@ namespace HerbRecognition_Web.Communication.Services
                     $"api/plants/{id}"
                 );
         }
+
+        public async Task<List<GetPlantDTO>> GetPlantsByNameAsync(string name)
+        {
+            var plants = await _httpClient.GetFromJsonAsync<List<GetPlantDTO>>(
+                    $"api/plants/{Uri.EscapeDataString(name)}"//dzieki uri moga byc spacje
+                );
+
+            return plants ?? new List<GetPlantDTO>();
+        }
     }
 }

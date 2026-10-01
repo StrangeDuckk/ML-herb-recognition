@@ -37,6 +37,17 @@ namespace HerbRecognition_APIs.Controllers
             return Ok(plant);
         }
 
+        [HttpGet("{name}")]
+        public async Task<IActionResult> GetPlantsByName(string name)
+        {
+            var plants = await dbService.GetPlantByNameAsync(name);
+
+            if (!plants.Any())
+                return NotFound();
+
+            return Ok(plants);
+        }
+
         //[HttpPost]//todo w przyszlosci tez patch albo put
         //public async Task<IActionResult> CreatePlant([FromBody] CreatePlantDTO dto)
         //{

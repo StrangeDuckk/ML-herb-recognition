@@ -13,6 +13,7 @@ namespace HerbRecognition_APIs.Services
         Task<IEnumerable<GetPlantDTO>> GetAllPlantsAsync();
         Task<List<GetPlantTypeDTO>> GetAllPlantTypesAsync();
         Task<GetPlantDTO?> GetPlantByIdAsync(int id);
+        Task<IEnumerable<GetPlantDTO?>> GetPlantByNameAsync(string name);
         Task<IEnumerable<GetPlantDTO>> GetPlantsAsync();
     }
 
@@ -374,21 +375,8 @@ namespace HerbRecognition_APIs.Services
             {
                 await transaction.RollbackAsync();
                 throw;
-            } 
+            }
         }
-
-        // ----------- dictionaries Controller api/dictionaries/ ------
-        public async Task<List<GetPlantTypeDTO>> GetAllPlantTypesAsync() // planttype
-        {
-            var planttypes = await data.Planttypes
-                .Select(p => new GetPlantTypeDTO
-                {
-                    Name = p.Name
-                }).ToListAsync();
-
-            return planttypes;
-        }
-
         public async Task<GetPlantDTO?> GetPlantByIdAsync(int id)
         {
             var plant = await data.Plants
@@ -482,6 +470,161 @@ namespace HerbRecognition_APIs.Services
                 .FirstAsync();
 
             return plant;
+        }
+
+        public static bool IsSimilar(string? text, string search)
+        {
+            if(string.IsNullOrWhiteSpace(text)) return false;
+
+            text = text.Trim().ToLowerInvariant();
+            search = search.Trim().ToLowerInvariant();
+
+            //dokladna nazwa
+            if (text ==  search) return true; 
+
+            //czesciowe
+            if(text.Contains(search)) return true;
+
+            //literowki
+            var literowkaDistance = LevenshteinDistance(text, search);
+
+            return literowkaDistance <= 2;//maksymalnie dwie różnice
+        }
+
+        private static int LevenshteinDistance(string a, string b)//o ile liter roznia sie od siebie dwa wyrazy
+        {//zalozenie ze poczatek jest w miare poprawny
+            var matrix = new int[a.Length + 1, b.Length + 1];
+
+            //porownanie roznicy pomiedzy dwoma wyrazami,
+            //porownanie najpierw pierwszego do pustego, potem pierwszego do 1 chata z drugiego
+            for (int i = 0; i <= a.Length; i++)
+                matrix[i, 0] = i;
+
+            //potem drugiego do pierwszego w ten sam sposob
+            for (int j = 0; j <= b.Length; j++)
+                matrix[0, j] = j;
+
+            for (int i = 1; i <= a.Length; i++)
+            {
+                for (int j = 1; j <= b.Length; j++)
+                {
+                    //obliczenie jaki jest koszt przejscia z kazda na kazda kombinacje
+                    var cost = a[i - 1] == b[j - 1] ? 0 : 1; //sprawdzenie czy aktualne znaki sa takie same
+
+                    matrix[i, j] = Math.Min( //wybranie najtanszej mozliwosci (dodanie znaku, usuniecie znaku albo zmiana znaku)
+                        Math.Min(
+                            matrix[i - 1, j] + 1,
+                            matrix[i, j - 1] + 1
+                        ),
+                        matrix[i - 1, j - 1] + cost
+                    );
+                }
+            }
+
+            return matrix[a.Length, b.Length];
+        }
+
+        public async Task<IEnumerable<GetPlantDTO?>> GetPlantByNameAsync(string name)
+        {
+            if(string.IsNullOrWhiteSpace(name))
+                return Enumerable.Empty<GetPlantDTO?>();
+
+            var query = data.Plants
+                .Select(p => new GetPlantDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PolishName = p.Polishname,
+                    LatinName = p.Latinname,
+                    Subriquet = p.Subriquet,
+
+                    PlantTypeDTO = new GetPlantTypeDTO
+                    {
+                        Name = p.Planttype.Name
+                    },
+
+                    PoisonabilityDescription =
+                        p.Poisonability == null
+                            ? null
+                            : p.Poisonability.Description
+                });
+
+            name = name.Trim();
+
+            //najpierw wyszukanie dla contains
+            var containsSearchPlants = await data.Plants
+                .Where(p =>
+                    p.Name.Contains(name) ||
+                    p.Polishname.Contains(name) ||
+                    p.Latinname.Contains(name) ||
+                    p.Subriquet.Contains(name)
+                )
+                .Select(
+                    p => new GetPlantDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        PolishName = p.Polishname,
+                        LatinName = p.Latinname,
+                        Subriquet = p.Subriquet,
+
+                        PlantTypeDTO = new GetPlantTypeDTO
+                        {
+                            Name = p.Planttype.Name
+                        },
+                        PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
+                    }
+                )
+               .OrderBy(p => p.PolishName)
+               .ToListAsync();
+
+            if (containsSearchPlants.Any())
+                return containsSearchPlants;
+
+            //awaryjne wyszukanie dla literowek
+            var allPlantsCandidates = await data.Plants
+                .Select(
+                    p => new GetPlantDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        PolishName = p.Polishname,
+                        LatinName = p.Latinname,
+                        Subriquet = p.Subriquet,
+
+                        PlantTypeDTO = new GetPlantTypeDTO
+                        {
+                            Name = p.Planttype.Name
+                        },
+                        PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
+                    }
+                )
+               .ToListAsync();
+
+            // fuzzy search
+            var plants = allPlantsCandidates
+                .Where(p =>
+                    IsSimilar(p.Name, name) ||
+                    IsSimilar(p.PolishName, name) ||
+                    IsSimilar(p.LatinName, name) ||
+                    IsSimilar(p.Subriquet, name))
+                .OrderBy(p => p.PolishName)
+                .ToList();
+
+
+            return plants;
+        }
+
+        // ----------- dictionaries Controller api/dictionaries/ ------
+        public async Task<List<GetPlantTypeDTO>> GetAllPlantTypesAsync() // planttype
+        {
+            var planttypes = await data.Planttypes
+                .Select(p => new GetPlantTypeDTO
+                {
+                    Name = p.Name
+                }).ToListAsync();
+
+            return planttypes;
         }
     }
 }

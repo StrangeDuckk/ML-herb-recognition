@@ -1,0 +1,169 @@
+﻿@page "/search"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject PlantApiService PlantApiService
+
+<PageTitle>Wyniki wyszukiwania</PageTitle>
+
+<div class="plants-page">
+
+    <section class="plants-header">
+
+        <div>
+            <span class="section-label">HERB RECOGNITION</span>
+
+            <h1>Wyniki wyszukiwania</h1>
+
+            @if (!string.IsNullOrWhiteSpace(SearchName))
+            {
+                <p>
+                    Wyniki dla: <strong>@SearchName</strong>
+                </p>
+            }
+        </div>
+
+        <HerbRecognition_Web.Components.Shared.SearchBar/>
+
+    </section>
+
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Wyszukiwanie roślin...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="plants-error">
+
+            <h2>Nie znaleziono roślin</h2>
+
+            <p>@errorMessage</p>
+
+        </div>
+    }
+    else if (plants.Count == 0)
+    {
+        <div class="plants-status">
+
+            <h2>Brak wyników</h2>
+
+            <p>
+                Nie znaleziono rośliny pasującej do:
+                <strong>@SearchName</strong>
+            </p>
+
+        </div>
+    }
+    else
+    {
+        <section class="plants-grid">
+
+            @foreach (var plant in plants)
+            {
+                <article class="plant-card">
+
+                    <div class="plant-card-content">
+
+                        <div class="plant-card-top">
+
+                            <span class="plant-type">
+                                @(plant.PlantTypeDTO?.Name ?? "Unknown")
+                            </span>
+
+                            <span class="plant-id">
+                                #@plant.Id
+                            </span>
+
+                        </div>
+
+                        <h2>@plant.PolishName</h2>
+
+                        <p class="plant-name">
+                            @plant.Name
+                        </p>
+
+                        <p class="plant-latin">
+                            @plant.LatinName
+                        </p>
+
+                        @if (!string.IsNullOrWhiteSpace(plant.Subriquet))
+                        {
+                            <p class="plant-subriquet">
+                                „@plant.Subriquet”
+                            </p>
+                        }
+
+                        <a href="@($"/plants/{plant.Id}")"
+                           class="plant-card-link">
+
+                            Zobacz szczegóły
+                            <span>→</span>
+
+                        </a>
+
+                    </div>
+
+                </article>
+            }
+
+        </section>
+    }
+
+</div>
+
+
+@code {
+
+    [SupplyParameterFromQuery(Name = "name")]
+    private string? SearchName { get; set; }
+
+    private List<GetPlantDTO> plants = new();
+
+    private bool isLoading = true;
+
+    private string? errorMessage;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await SearchPlantsAsync();
+    }
+
+
+    private async Task SearchPlantsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        plants.Clear();
+
+        if (string.IsNullOrWhiteSpace(SearchName))
+        {
+            isLoading = false;
+            return;
+        }
+
+        try
+        {
+            plants = await PlantApiService.GetPlantsByNameAsync(SearchName);
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage =
+                "Wystąpił problem podczas komunikacji z API.";
+        }
+        catch (Exception)
+        {
+            errorMessage =
+                "Wystąpił nieoczekiwany problem podczas wyszukiwania.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

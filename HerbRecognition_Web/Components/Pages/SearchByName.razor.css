@@ -1,0 +1,339 @@
+﻿/* ================================
+   SEARCH PAGE
+   ================================ */
+
+.plants-page {
+    min-height: 100vh;
+    padding: 80px 35px 70px;
+    background: #f8f9f5;
+    color: #17251d;
+}
+
+
+/* ================================
+   HEADER
+   ================================ */
+
+.plants-header {
+    max-width: 1100px;
+    margin: 0 auto 55px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.section-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #174d3a;
+}
+
+.plants-header h1 {
+    margin: 0;
+    font-size: clamp(42px, 6vw, 76px);
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    color: #18261e;
+}
+
+.plants-header > div > p {
+    margin: 25px 0 0;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #48675a;
+}
+
+    .plants-header > div > p strong {
+        color: #18261e;
+        font-weight: 600;
+    }
+
+
+/* ================================
+   GRID
+   ================================ */
+
+.plants-grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+
+/* ================================
+   PLANT CARD
+   ================================ */
+
+.plant-card {
+    min-height: 310px;
+    background: #ffffff;
+    border: 1px solid #dfe5df;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .plant-card:hover {
+        transform: translateY(-3px);
+        border-color: #c8d5cb;
+        box-shadow: 0 10px 30px rgba(23, 52, 38, 0.07);
+    }
+
+.plant-card-content {
+    height: 100%;
+    min-height: 310px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ================================
+   CARD TOP
+   ================================ */
+
+.plant-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.plant-type {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: #eaf1eb;
+    color: #27634b;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.plant-id {
+    color: #8b9991;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+
+/* ================================
+   CARD TYPOGRAPHY
+   ================================ */
+
+.plant-card h2 {
+    margin: 0 0 6px;
+    color: #101d16;
+    font-size: 27px;
+    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+}
+
+.plant-name {
+    margin: 0 0 18px;
+    color: #567165;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.plant-latin {
+    margin: 0;
+    color: #718279;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 16px;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+.plant-subriquet {
+    margin: 12px 0 0;
+    color: #6f7e76;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+
+/* ================================
+   CARD LINK
+   ================================ */
+
+.plant-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    margin-top: auto;
+    padding-top: 28px;
+    color: #145c43;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease, gap 0.2s ease;
+}
+
+    .plant-card-link span {
+        font-size: 20px;
+        line-height: 1;
+        transition: transform 0.2s ease;
+    }
+
+    .plant-card-link:hover {
+        color: #0d402e;
+    }
+
+        .plant-card-link:hover span {
+            transform: translateX(4px);
+        }
+
+
+/* ================================
+   STATUS / LOADING
+   ================================ */
+
+.plants-status {
+    max-width: 1100px;
+    min-height: 260px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #52685d;
+}
+
+    .plants-status h2 {
+        margin: 0 0 10px;
+        color: #18261e;
+        font-size: 28px;
+        font-weight: 500;
+    }
+
+    .plants-status p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+    .plants-status strong {
+        color: #18261e;
+    }
+
+
+/* ================================
+   LOADING SPINNER
+   ================================ */
+
+.loading-spinner {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 18px;
+    border: 3px solid #dce6df;
+    border-top-color: #27634b;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ================================
+   ERROR
+   ================================ */
+
+.plants-error {
+    max-width: 650px;
+    margin: 50px auto;
+    padding: 35px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #ead8d5;
+    border-radius: 16px;
+}
+
+    .plants-error h2 {
+        margin: 0 0 10px;
+        color: #713d37;
+        font-size: 25px;
+        font-weight: 500;
+    }
+
+    .plants-error p {
+        margin: 0;
+        color: #765e59;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+
+/* ================================
+   RESPONSIVE
+   ================================ */
+
+@media (max-width: 900px) {
+
+    .plants-page {
+        padding: 60px 25px;
+    }
+
+    .plants-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .plants-header h1 {
+        font-size: 58px;
+    }
+}
+
+
+@media (max-width: 620px) {
+
+    .plants-page {
+        padding: 45px 18px 50px;
+    }
+
+    .plants-header {
+        margin-bottom: 40px;
+    }
+
+        .plants-header h1 {
+            font-size: 44px;
+        }
+
+        .plants-header > div > p {
+            font-size: 16px;
+        }
+
+    .plants-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .plant-card,
+    .plant-card-content {
+        min-height: 280px;
+    }
+
+    .plant-card-content {
+        padding: 24px;
+    }
+
+    .plant-card h2 {
+        font-size: 25px;
+    }
+}

@@ -36,6 +36,66 @@ main {
         text-overflow: ellipsis;
     }
 
+/* ============    search bar    ============*/
+.search-bar {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    max-width: 560px;
+    height: 58px;
+    margin-top: 28px;
+    background: #ffffff;
+    border: 1px solid #d7ddd6;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(31, 52, 40, 0.06);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .search-bar:focus-within {
+        border-color: #376b4b;
+        box-shadow: 0 8px 24px rgba(55, 107, 75, 0.12);
+    }
+
+    .search-bar input {
+        flex: 1;
+        min-width: 0;
+        padding: 0 20px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #1c2a22;
+        font-family: inherit;
+        font-size: 16px;
+    }
+
+        .search-bar input::placeholder {
+            color: #89948d;
+        }
+
+    .search-bar button {
+        width: 58px;
+        border: none;
+        background: #2f6244;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+        .search-bar button:hover {
+            background: #254f37;
+        }
+
+        .search-bar button:active {
+            transform: scale(0.97);
+        }
+
+    .hero-search {
+        margin-bottom: 22px;
+    }
+/* ========================*/
+
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
@@ -76,6 +136,22 @@ main {
     }
 }
 
+@media (max-width: 600px) {
+    .search-bar {
+        height: 54px;
+        border-radius: 12px;
+    }
+
+        .search-bar input {
+            padding: 0 16px;
+            font-size: 15px;
+        }
+
+        .search-bar button {
+            width: 54px;
+        }
+}
+
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;
@@ -96,3 +172,4 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+

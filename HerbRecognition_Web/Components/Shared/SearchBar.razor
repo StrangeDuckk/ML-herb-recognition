@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<div class="search-bar">
+
+    <input @bind="searchText"
+           @bind:event="oninput"
+           @onkeydown="HandleKeyDown"
+           type="text"
+           placeholder="Wyszukaj roślinę..."
+           aria-label="Wyszukaj roślinę" />
+
+    <button type="button"
+            @onclick="Search">
+        🔍
+    </button>
+
+</div>
+
+@code {
+
+    private string searchText = string.Empty;
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Search();
+        }
+    }
+
+    private void Search()
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+            return;
+
+        NavigationManager.NavigateTo(
+            $"/search?name={Uri.EscapeDataString(searchText.Trim())}");
+    }
+}
