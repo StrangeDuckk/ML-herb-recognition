@@ -1,5 +1,12 @@
 - zrobic formularz dla uzytkownika do dodawania, ma byc przechowywane w jsonie do momentu dodania do bazy
 
+- dodac do slownikow: 
+	- korzen, czy pusty w srodku
+	- ksztalt: parasolowaty/baldachimowaty
+	- kwiat: zapach smak zapachu
+	- krztalt + kulisty
+	- ksztalt + featherlike
+
 - zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika + logowanie administratora
 
 - zrobic wyszukiwanie po formularzu dodawania

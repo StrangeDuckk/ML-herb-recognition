@@ -144,6 +144,38 @@ a {
     font-size: 0.85rem;
 }
 
+/* ============ przycisk do formularza ============ */
+.plant-form-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 12px 20px;
+    background: #365b40;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+    .plant-form-button:hover {
+        background: #284631;
+        transform: translateY(-2px);
+    }
+
+    .plant-form-button span {
+        font-size: 1.2rem;
+        transition: transform 0.2s ease;
+    }
+
+    .plant-form-button:hover span {
+        transform: translateX(3px);
+    }
+
 @media (max-width: 500px) {
 
     .main-nav {

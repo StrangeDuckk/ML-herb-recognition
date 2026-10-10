@@ -9,29 +9,52 @@ namespace HerbRecognition_APIs.Controllers
     [Route("api/dictionaries")]
     public class DisctionariesController(IDbService dbService) : ControllerBase
     {
+        [HttpGet("occurance")]
+        public async Task<ActionResult<GetOccuranceDTO>> GetAllDictOccurancesAsync()
+        {
+            return Ok(await dbService.GetAllDictOccurancesAsync());
+        }
+
         [HttpGet("plantType")]
         public async Task<ActionResult<GetPlantTypeDTO>> GetAllPlantType ()
         {
-            return Ok(await dbService.GetAllPlantTypesAsync());
+            return Ok(await dbService.GetAllDictPlantTypesAsync());
         }
 
-        //TODO -> wszystkie slowniki na get, NIE set
-        //[HttpGet("color")]
-        //public async Task<ActionResult<GetColorDTO>> GetAllColorDto()
-        //{
-        //    return Ok(await dbService.GetAllColorAsync());
-        //}
-        //[HttpGet("color/{id:int}")]
-        //public async Task<ActionResult<GetColorDTO>> GetAllColorDto(int id)
-        //{
-        //    return Ok(await dbService.GetAllColorAsync());
-        //}
+        [HttpGet("shape")]
+        public async Task<ActionResult<GetShapeDTO>> GetAllDictShapeAsync()
+        {
+            return Ok(await dbService.GetAllDictShapesAsync());
+        }
 
-        //[HttpGet("surface")]
-        //[HttpGet("thickness")]
-        //[HttpGet("shape")]
-        //[HttpGet("flavour")]
-        //[HttpGet("poisonability")]
+        [HttpGet("flavour")]
+        public async Task<ActionResult<GetFlavourDTO>> GetAllDictFlavourAsync()
+        {
+            return Ok(await dbService.GetAllDictFlavoursAsync());
+        }
+
+        [HttpGet("poisonability")]
+        public async Task<ActionResult<GetPoisonabilityDTO>> GetAllDictPoisonabilitiesAsync()
+        {
+            return Ok(await dbService.GetAllDictPoisonabilitiesAsync());
+        }
+
+        [HttpGet("surface")]
+        public async Task<ActionResult<GetSurfaceDTO>> GetAllDictSurfacesAsync()
+        {
+            return Ok(await dbService.GetAllDictSurfacesAsync());
+        }
+
+        [HttpGet("thickness")]
+        public async Task<ActionResult<GetThicknessDTO>> GetAllDictThicknessesAsync()
+        {
+            return Ok(await dbService.GetAllDictThicknessesAsync());
+        }
+
+        [HttpGet("color")]
+        public async Task<ActionResult<GetColorDTO>> GetAllColorDtoAsync()
+        {
+            return Ok(await dbService.GetAllColorAsync());
+        }
     }
-
 }

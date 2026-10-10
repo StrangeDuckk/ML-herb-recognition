@@ -63,7 +63,7 @@ public partial class HerbRecognitionDbContext : DbContext
 
     public virtual DbSet<Thickness> Thicknesses { get; set; }
 
-    public virtual DbSet<Userinput> Userinputs { get; set; }
+    public virtual DbSet<UserInput> UserInputs { get; set; }
 
 //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -898,7 +898,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .IsRequired();
         });
 
-        modelBuilder.Entity<Userinput>(entity =>
+        modelBuilder.Entity<UserInput>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("userinput_pkey");
 

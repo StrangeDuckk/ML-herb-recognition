@@ -3,6 +3,7 @@ using HerbRecognition_APIs.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
 using System.Drawing;
+using System.Text.Json;
 using System.Xml;
 
 namespace HerbRecognition_APIs.Services
@@ -11,10 +12,19 @@ namespace HerbRecognition_APIs.Services
     {
         Task<Plant> CreatePlantAsync(CreatePlantDTO dto);
         Task<IEnumerable<GetPlantDTO>> GetAllPlantsAsync();
-        Task<List<GetPlantTypeDTO>> GetAllPlantTypesAsync();
         Task<GetPlantDTO?> GetPlantByIdAsync(int id);
         Task<IEnumerable<GetPlantDTO?>> GetPlantByNameAsync(string name);
         Task<IEnumerable<GetPlantDTO>> GetPlantsAsync();
+        Task<CreatePlantDTO> GetUserInputPlantAsync(int id);
+        Task<int> PostUserInputPlantAsync(CreatePlantDTO dto);
+        Task<List<GetPlantTypeDTO>> GetAllDictPlantTypesAsync();
+        Task<List<GetOccuranceDTO>> GetAllDictOccurancesAsync();
+        Task<List<GetShapeDTO>> GetAllDictShapesAsync();
+        Task<List<GetFlavourDTO>> GetAllDictFlavoursAsync();
+        Task<List<GetPoisonabilityDTO>> GetAllDictPoisonabilitiesAsync();
+        Task<List<GetSurfaceDTO>> GetAllDictSurfacesAsync();
+        Task<List<GetThicknessDTO>> GetAllDictThicknessesAsync();
+        Task<List<GetColorDTO>> GetAllColorAsync();
     }
 
     public class DbService(HerbRecognitionDbContext data) : IDbService
@@ -491,7 +501,7 @@ namespace HerbRecognition_APIs.Services
             return literowkaDistance <= 2;//maksymalnie dwie różnice
         }
 
-        private static int LevenshteinDistance(string a, string b)//o ile liter roznia sie od siebie dwa wyrazy
+        private static int LevenshteinDistance(string a, string b)//todo poprawic //o ile liter roznia sie od siebie dwa wyrazy
         {//zalozenie ze poczatek jest w miare poprawny
             var matrix = new int[a.Length + 1, b.Length + 1];
 
@@ -616,15 +626,115 @@ namespace HerbRecognition_APIs.Services
         }
 
         // ----------- dictionaries Controller api/dictionaries/ ------
-        public async Task<List<GetPlantTypeDTO>> GetAllPlantTypesAsync() // planttype
+        public async Task<List<GetPlantTypeDTO>> GetAllDictPlantTypesAsync() // planttype
         {
             var planttypes = await data.Planttypes
                 .Select(p => new GetPlantTypeDTO
                 {
+                    PlantTypeId = p.Id,
                     Name = p.Name
                 }).ToListAsync();
 
             return planttypes;
+        }
+        public async Task<List<GetOccuranceDTO>> GetAllDictOccurancesAsync()// occurance
+        {
+            return await data.Occurances
+                .Select(p => new GetOccuranceDTO
+                {
+                    OccuranceId = p.Id,
+                    Occurance = p.OccuranceName
+                }).ToListAsync();
+        }
+        public async Task<List<GetShapeDTO>> GetAllDictShapesAsync() //shape
+        {
+            return await data.Shapes
+                .Select(p => new GetShapeDTO
+                {
+                    ShapeId = p.Id,
+                    ShapeName = p.ShapeName
+                }).ToListAsync() ;  
+        }
+        public async Task<List<GetFlavourDTO>> GetAllDictFlavoursAsync() //flavour
+        {
+            return await data.Flavours
+                .Select(p => new GetFlavourDTO
+                {
+                    FlavourId = p.Id,
+                    FlavourName = p.FlavourName
+                }).ToListAsync() ;
+        }
+        public async Task<List<GetPoisonabilityDTO>> GetAllDictPoisonabilitiesAsync()//poisonability
+        {
+            return await data.Poisonabilities
+                .Select(p => new GetPoisonabilityDTO
+                {
+                    PoisonabilityId = p.Id,
+                    PoisonabilityDescription = p.Description
+                }).ToListAsync () ;
+        }
+        public async Task<List<GetSurfaceDTO>> GetAllDictSurfacesAsync()//surface
+        {
+            return await data.Surfaces
+                .Select(p=> new GetSurfaceDTO
+                {
+                    SurfaceId = p.Id,
+                    SurfaceName = p.SurfaceName
+                }).ToListAsync ();
+        }
+        public async Task<List<GetThicknessDTO>> GetAllDictThicknessesAsync()//thickness
+        {
+            return await data.Thicknesses
+                .Select(p => new GetThicknessDTO
+                {
+                    ThicknessId = p.Id,
+                    ThicknessName = p.ThicknessName
+                }).ToListAsync();
+        }
+        public async Task<List<GetColorDTO>> GetAllColorAsync()//color
+        {
+            return await data.Colors
+                .Select(p => new GetColorDTO
+                {
+                    ColorId = p.Id,
+                    ColorName = p.ColorName,
+                    ColorR = p.R,
+                    ColorB = p.B,
+                    ColorG = p.G
+                }).ToListAsync();
+        }
+
+        // ----------- UserInput Controller api/userInput/ ------
+
+        public async Task<int> PostUserInputPlantAsync(CreatePlantDTO dto)
+        {
+            var json = JsonSerializer.Serialize(dto);
+
+            var submission = new UserInput
+            {
+                Inputdata = json
+            };
+
+            data.UserInputs.Add(submission);
+            await data.SaveChangesAsync();
+
+            return submission.Id;
+        }
+
+        public async Task<CreatePlantDTO?> GetUserInputPlantAsync(int id)
+        {
+            var subbmission = await data.UserInputs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (subbmission is null)
+            {
+                return null;
+            }
+
+            var dto = JsonSerializer.Deserialize<CreatePlantDTO>(subbmission.Inputdata);
+
+            return dto;
         }
     }
 }

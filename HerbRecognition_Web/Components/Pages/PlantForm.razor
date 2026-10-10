@@ -1,0 +1,764 @@
+﻿@page "/plant-form"
+
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.ComponentModel.DataAnnotations
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject UserInputApiService UserInputApiService
+
+<PageTitle>Formularz zgłoszenia rośliny</PageTitle>
+
+<div class="plants-page submission-page">
+
+    <section class="plants-header">
+        <div>
+            <span class="section-label">HERB RECOGNITION</span>
+            <h1>Zgłoś nową roślinę</h1>
+            <p>
+                Uzupełnij informacje o roślinie.
+                Zgłoszenie zostanie zweryfikowane przed dodaniem do bazy.
+            </p>
+        </div>
+    </section>
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie słowników...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(loadError))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się załadować formularza</h2>
+            <p>@loadError</p>
+            <button type="button"
+                    class="submission-button"
+                    @onclick="LoadDictionariesAsync">
+                Spróbuj ponownie
+            </button>
+        </div>
+    }
+    else if (submitted)
+    {
+        <div class="submission-success">
+            <h2>Zgłoszenie zapisane!</h2>
+            <p>
+                Dziękujemy. Zgłoszenie oczekuje na weryfikację.
+            </p>
+            <p>Numer zgłoszenia: <strong>@submissionId</strong></p>
+            <a href="/search" class="submission-button">
+                Wróć do wyszukiwania
+            </a>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="form" OnValidSubmit="SubmitAsync" FormName="PlantSubmitAsync" @key=form> 
+            <DataAnnotationsValidator />
+            <ObjectGraphDataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="submission-form">
+
+                <section class="submission-section">
+                    <h2>1. Informacje podstawowe</h2>
+
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Nazwa zwyczajowa *</label>
+                            <InputText @bind-Value="form.Name"
+                                       maxlength="50" />
+                            <ValidationMessage For="@(() => form.Name)" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Nazwa polska *</label>
+                            <InputText @bind-Value="form.PolishName"
+                                       maxlength="50" />
+                            <ValidationMessage For="@(() => form.PolishName)" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Nazwa łacińska</label>
+                            <InputText @bind-Value="form.LatinName"
+                                       maxlength="50" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Inna nazwa</label>
+                            <InputText @bind-Value="form.Subriquet"
+                                       maxlength="50" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Typ rośliny *</label>
+                            <InputSelect @bind-Value="form.PlantTypeID">
+                                <option value="0">Wybierz typ</option>
+                                @foreach (var item in plantTypes)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => form.PlantTypeID)" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Występowanie *</label>
+                            <InputSelect @bind-Value="form.OccuranceId">
+                                <option value="0">Wybierz występowanie</option>
+                                @foreach (var item in occurances)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => form.OccuranceId)" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Trujące właściwości</label>
+                            <InputSelect @bind-Value="form.PoisonabilityId">
+                                <option value="">Nie wiem</option>
+                                @foreach (var item in poisonabilities)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="submission-section">
+                    <h2>2. Łodyga</h2>
+                    <p class="section-description">Wszystkie pola są wymagane.</p>
+
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateStalkDTO.StalkShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kolor *</label>
+                            <InputSelect @bind-Value="form.CreateStalkDTO.StalkColorId">
+                                <option value="0">Wybierz kolor</option>
+                                @foreach (var x in colors)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateStalkDTO.StalkSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Czy łodyga jest pusta w środku? *</label>
+                            <InputSelect @bind-Value="stalkHollow">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="submission-section">
+                    <h2>3. Sok</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kolor soku *</label>
+                            <InputSelect @bind-Value="form.CreateSapDTO!.SapColorId">
+                                <option value="0">Wybierz kolor</option>
+                                @foreach (var x in colors)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Czy sok pozostawia plamy? *</label>
+                            <InputSelect @bind-Value="sapLeavesStain">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Czy sok jest lepki? *</label>
+                            <InputSelect @bind-Value="sapSticky">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="submission-section">
+                    <h2>4. Korzeń</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kolor *</label>
+                            <InputSelect @bind-Value="form.CreateRootDTO!.RootColorId">
+                                <option value="0">Wybierz kolor</option>
+                                @foreach (var x in colors)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateRootDTO!.RootSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateRootDTO!.RootThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="submission-section">
+                    <h2>5. Kapelusz</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kolor *</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatColorId">
+                                <option value="0">Wybierz kolor</option>
+                                @foreach (var x in colors)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Plamy na kapeluszu? *</label>
+                            <InputSelect @bind-Value="hatHasSpots">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Czy ma blaszki? *</label>
+                            <InputSelect @bind-Value="hatHasGills">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Czy ma pierścień? *</label>
+                            <InputSelect @bind-Value="hatHasRing">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="submission-section">
+                    <h2>6. Liście</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Kolor *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafColorId">
+                                <option value="0">Wybierz kolor</option>
+                                @foreach (var x in colors)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Smak *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafFlavourId">
+                                <option value="">Wybierz smak</option>
+                                @foreach (var x in flavours)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Długość liścia (cm) *</label>
+                            <InputNumber @bind-Value="form.CreateLeafDTO!.LeafLength" min="0.1" />
+                        </div>
+                        <div class="submission-field">
+                            <label>Czy ma paski? *</label>
+                            <InputSelect @bind-Value="leafStripes">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Czy ma plamy? *</label>
+                            <InputSelect @bind-Value="leafSpots">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Czy ma otwory? *</label>
+                            <InputSelect @bind-Value="leafHoles">
+                                <option value="">Wybierz odpowiedź</option>
+                                <option value="true">Tak</option>
+                                <option value="false">Nie</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="submission-section">
+                    <h2>7. Kwiaty</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Rozmiar kwiatu (cm) *</label>
+                            <InputNumber @bind-Value="form.CreateFlowerDTO!.FlowerSizeInCm" min="0.1" />
+                        </div>
+                        <div class="submission-field">
+                            <label>Kolor *</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId">
+                                <option value="0">Wybierz kolor</option>
+                                @foreach (var x in colors)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Smak *</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerFlavourId">
+                                <option value="">Wybierz smak</option>
+                                @foreach (var x in flavours)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Siła zapachu (0–5) *</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerScentPower">
+                                @for (var i = 0; i <= 5; i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="submission-section">
+                    <h2>8. Owoce</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Smak *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitFlavourId">
+                                <option value="">Wybierz smak</option>
+                                @foreach (var x in flavours)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Kolor *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitColorId">
+                                <option value="0">Wybierz kolor</option>
+                                @foreach (var x in colors)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                </section>
+
+                @if (!string.IsNullOrWhiteSpace(submitError))
+                {
+                    <div class="plants-error">
+                        @submitError
+                    </div>
+                }
+
+                <div class="submission-actions">
+                    <button type="submit"
+                            class="submission-button"
+                            disabled="@isSubmitting">
+                        @(isSubmitting ? "Zapisywanie..." : "Wyślij zgłoszenie")
+                    </button>
+                </div>
+
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private CreatePlantDTO form = new();
+
+    private List<DictionaryOption> plantTypes = new();
+    private List<DictionaryOption> occurances = new();
+    private List<DictionaryOption> shapes = new();
+    private List<DictionaryOption> flavours = new();
+    private List<DictionaryOption> poisonabilities = new();
+    private List<DictionaryOption> surfaces = new();
+    private List<DictionaryOption> thicknesses = new();
+    private List<DictionaryOption> colors = new();
+
+    private bool? stalkHollow;
+    private bool? sapLeavesStain;
+    private bool? sapSticky;
+    private bool? hatHasSpots;
+    private bool? hatHasGills;
+    private bool? hatHasRing;
+    private bool? leafStripes;
+    private bool? leafSpots;
+    private bool? leafHoles;
+
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private bool submitted;
+    private string? loadError;
+    private string? submitError;
+    private int submissionId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitializeForm();
+        await LoadDictionariesAsync();
+    }
+
+    private void InitializeForm()
+    {
+        form.CreateStalkDTO = new();
+        form.CreateSapDTO = new();
+        form.CreateRootDTO = new();
+        form.CreateHatDTO = new();
+        form.CreateLeafDTO = new();
+        form.CreateFlowerDTO = new();
+        form.CreateFruitDTO = new();
+    }
+
+    private async Task LoadDictionariesAsync()
+    {
+        isLoading = true;
+        loadError = null;
+
+        try
+        {
+            plantTypes = await LoadOptionsAsync("plantType", "plantTypeId", "name");
+            occurances = await LoadOptionsAsync("occurance", "occuranceId", "occurance");
+            shapes = await LoadOptionsAsync("shape", "shapeId", "shapeName");
+            flavours = await LoadOptionsAsync("flavour", "flavourId" , "flavourName");
+            poisonabilities = await LoadOptionsAsync("poisonability", "poisonabilityId", "poisonabilityDescription");
+            surfaces = await LoadOptionsAsync("surface", "surfaceId", "surfaceName");
+            thicknesses = await LoadOptionsAsync("thickness", "thicknessId", "thicknessName");
+            colors = await LoadOptionsAsync("color", "colorId", "colorName");
+        }
+        // catch (Exception)
+        // {
+        //     loadError =
+        //         "Nie udało się pobrać danych słownikowych z API. " +
+        //         "Sprawdź połączenie i spróbuj ponownie.";
+        // }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd ładowania słowników: {ex}");
+
+            loadError = ex switch
+            {
+                HttpRequestException httpEx =>
+                    $"Błąd HTTP lub połączenia z API: {httpEx.Message}",
+
+                JsonException jsonEx =>
+                    $"Nieprawidłowy format JSON: {jsonEx.Message}",
+
+                InvalidOperationException invalidEx =>
+                    $"Nieprawidłowe dane słownika: {invalidEx.Message}",
+
+                _ => $"Nieoczekiwany błąd: {ex.Message}"
+            };
+
+        }
+
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task<List<DictionaryOption>> LoadOptionsAsync(
+        string endpoint, string idPropertyName, string nameProperty)
+    {
+        Console.WriteLine( $"HttpClient BaseAddress: {Http.BaseAddress}");
+
+        using var response = await Http.GetAsync(
+            $"api/dictionaries/{endpoint}");
+
+        response.EnsureSuccessStatusCode();
+
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var document = await JsonDocument.ParseAsync(stream);
+
+        if (document.RootElement.ValueKind != JsonValueKind.Array) 
+        { 
+            throw new InvalidOperationException($"Słownik {endpoint} nie zwraca tablicy JSON."); 
+        }
+
+        var result = new List<DictionaryOption>();
+
+        foreach (var element in document.RootElement.EnumerateArray())
+        {
+            if (!element.TryGetProperty(idPropertyName, out var idProperty))
+                throw new InvalidOperationException(
+                    $"Brak pola klucza {idPropertyName} w słowniku {endpoint}.");
+
+            if (!element.TryGetProperty(nameProperty, out var namePropertyValue))
+                throw new InvalidOperationException(
+                    $"Brak pola {nameProperty} w słowniku {endpoint}.");
+
+            result.Add(new DictionaryOption
+            {
+                Id = idProperty.GetInt32(),
+                Name = namePropertyValue.GetString() ?? ""
+            });
+        }
+
+        return result;
+    }
+
+    private async Task SubmitAsync()
+    {
+        Console.WriteLine($"Name: '{form.Name}'");
+        Console.WriteLine($"PolishName: '{form.PolishName}'");
+        submitError = null;
+
+        if (stalkHollow is null ||
+            sapLeavesStain is null ||
+            sapSticky is null ||
+            hatHasSpots is null ||
+            hatHasGills is null ||
+            hatHasRing is null ||
+            leafStripes is null ||
+            leafSpots is null ||
+            leafHoles is null)
+        {
+            submitError = "Uzupełnij wszystkie pola typu Tak/Nie.";
+            return;
+        }
+
+        if (form.PlantTypeID <= 0 || form.OccuranceId <= 0 ||
+            form.CreateStalkDTO.StalkShapeId <= 0 ||
+            form.CreateStalkDTO.StalkColorId <= 0 ||
+            form.CreateStalkDTO.StalkSurfaceId <= 0 ||
+            form.CreateSapDTO!.SapColorId <= 0 ||
+            form.CreateRootDTO!.RootColorId <= 0 ||
+            form.CreateRootDTO.RootSurfaceId <= 0 ||
+            form.CreateRootDTO.RootThicknessId <= 0 ||
+            form.CreateHatDTO!.HatColorId <= 0 ||
+            form.CreateHatDTO.HatShapeId <= 0 ||
+            form.CreateHatDTO.HatThicknessId <= 0 ||
+            form.CreateHatDTO.HatSurfaceId <= 0 ||
+            form.CreateLeafDTO!.LeafShapeId <= 0 ||
+            form.CreateLeafDTO.LeafColorId <= 0 ||
+            form.CreateLeafDTO.LeafSurfaceId <= 0 ||
+            form.CreateLeafDTO.LeafThicknessId <= 0 ||
+            !form.CreateLeafDTO.LeafFlavourId.HasValue ||
+            form.CreateFlowerDTO!.FlowerColorId <= 0 ||
+            form.CreateFlowerDTO.FlowerShapeId <= 0 ||
+            !form.CreateFlowerDTO.FlowerFlavourId.HasValue ||
+            !form.CreateFruitDTO!.FruitFlavourId.HasValue ||
+            form.CreateFruitDTO.FruitShapeId <= 0 ||
+            form.CreateFruitDTO.FruitColorId <= 0 ||
+            form.CreateFruitDTO.FruitSurfaceId <= 0 ||
+            form.CreateFruitDTO.FruitThicknessId <= 0)
+        {
+            submitError = "Wybierz wartość we wszystkich wymaganych listach.";
+            return;
+        }
+
+        form.CreateStalkDTO.StalkIsHollow = stalkHollow.Value;
+        form.CreateSapDTO.SapLeavesStain = sapLeavesStain.Value;
+        form.CreateSapDTO.SapSticky = sapSticky.Value;
+        form.CreateHatDTO.HatHasSpots = hatHasSpots.Value;
+        form.CreateHatDTO.HatHasGills = hatHasGills.Value;
+        form.CreateHatDTO.HatHasRing = hatHasRing.Value;
+        form.CreateLeafDTO.LeafStripes = leafStripes.Value;
+        form.CreateLeafDTO.LeafSpots = leafSpots.Value;
+        form.CreateLeafDTO.LeafHoles = leafHoles.Value;
+
+        if (!form.PoisonabilityId.HasValue)
+        {
+            submitError = "Wybierz właściwości trujące rośliny.";
+            return;
+        }
+
+        isSubmitting = true;
+
+        try
+        {
+            submissionId = await UserInputApiService.PostUserInputPlantAsync(form);
+            submitted = true;
+        }
+        catch (Exception)
+        {
+            submitError =
+                "Nie udało się zapisać zgłoszenia. " +
+                "Sprawdź połączenie z API i spróbuj ponownie.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+
+        // var id = await UserInputApiService.PostUserInputPlantAsync(form);
+
+        // await JS.InvokeVoidAsync("plantFormStorage.clear");
+
+        // submitted = true;
+    }
+
+    private sealed class DictionaryOption
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+}

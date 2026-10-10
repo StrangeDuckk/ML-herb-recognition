@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HerbRecognition_APIs.Models;
 
-public partial class Userinput
+public partial class UserInput
 {
     public int Id { get; set; }
 

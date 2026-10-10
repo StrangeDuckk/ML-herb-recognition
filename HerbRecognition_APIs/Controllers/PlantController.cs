@@ -1,7 +1,9 @@
 ﻿using HerbRecognition_APIs.DTOs;
+using HerbRecognition_APIs.Models;
 using HerbRecognition_APIs.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace HerbRecognition_APIs.Controllers
@@ -27,7 +29,7 @@ namespace HerbRecognition_APIs.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetPlantsById(int id)
+        public async Task<IActionResult> GetPlantsByIdAsync(int id)
         {
             var plant = await dbService.GetPlantByIdAsync(id);
 
@@ -38,7 +40,7 @@ namespace HerbRecognition_APIs.Controllers
         }
 
         [HttpGet("{name}")]
-        public async Task<IActionResult> GetPlantsByName(string name)
+        public async Task<IActionResult> GetPlantsByNameAsync(string name)
         {
             var plants = await dbService.GetPlantByNameAsync(name);
 
@@ -48,14 +50,14 @@ namespace HerbRecognition_APIs.Controllers
             return Ok(plants);
         }
 
-        //[HttpPost]//todo w przyszlosci tez patch albo put
-        //public async Task<IActionResult> CreatePlant([FromBody] CreatePlantDTO dto)
+        //[HttpPost]
+        //public async Task<IActionResult> CreatePlantAsync([FromBody] CreatePlantDTO dto)
         //{
         //    var plant = await dbService.CreatePlantAsync(dto);
 
         //    return CreatedAtAction(
         //        nameof(GetPlantsById),
-        //        new {id =  plant.Id},
+        //        new { id = plant.Id },
         //        plant
         //    );
         //}

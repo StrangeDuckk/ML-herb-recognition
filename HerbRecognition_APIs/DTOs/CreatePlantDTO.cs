@@ -34,6 +34,7 @@ namespace HerbRecognition_APIs.DTOs
         public CreateStalkDTO CreateStalkDTO { get; set; } = null!;
 
         // ----- occurance -----
+        [Required]
         public int OccuranceId { get; set; }
 
         // ----- hat -----
