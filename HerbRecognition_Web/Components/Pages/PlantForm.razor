@@ -132,195 +132,204 @@
                     </div>
                 </section>
 
-                <section class="submission-section">
-                    <h2>2. Łodyga</h2>
-                    <p class="section-description">Wszystkie pola są wymagane.</p>
+                @if (ShowStalkSection){
+                    <section class="submission-section">
+                        <h2>2. @StalkSectionName</h2>
+                        <p class="section-description">Wszystkie pola są wymagane.</p>
 
-                    <div class="submission-grid">
-                        <div class="submission-field">
-                            <label>Kształt *</label>
-                            <InputSelect @bind-Value="form.CreateStalkDTO.StalkShapeId">
-                                <option value="0">Wybierz kształt</option>
-                                @foreach (var x in shapes)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
+                        <div class="submission-grid">
+                            <div class="submission-field">
+                                <label>Kształt *</label>
+                                <InputSelect @bind-Value="form.CreateStalkDTO.StalkShapeId">
+                                    <option value="0">Wybierz kształt</option>
+                                    @foreach (var x in shapes)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
 
-                        <div class="submission-field">
-                            <label>Kolor *</label>
-                            <InputSelect @bind-Value="form.CreateStalkDTO.StalkColorId">
-                                <option value="0">Wybierz kolor</option>
-                                @foreach (var x in colors)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
+                            <div class="submission-field">
+                                <label>Kolor *</label>
+                                <InputSelect @bind-Value="form.CreateStalkDTO.StalkColorId">
+                                    <option value="0">Wybierz kolor</option>
+                                    @foreach (var x in colors)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
 
-                        <div class="submission-field">
-                            <label>Powierzchnia *</label>
-                            <InputSelect @bind-Value="form.CreateStalkDTO.StalkSurfaceId">
-                                <option value="0">Wybierz powierzchnię</option>
-                                @foreach (var x in surfaces)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
+                            <div class="submission-field">
+                                <label>Powierzchnia *</label>
+                                <InputSelect @bind-Value="form.CreateStalkDTO.StalkSurfaceId">
+                                    <option value="0">Wybierz powierzchnię</option>
+                                    @foreach (var x in surfaces)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
 
-                        <div class="submission-field">
-                            <label>Czy łodyga jest pusta w środku? *</label>
-                            <InputSelect @bind-Value="stalkHollow">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
+                            <div class="submission-field">
+                                <label>Czy łodyga jest pusta w środku? *</label>
+                                <InputSelect @bind-Value="stalkHollow">
+                                    <option value="">Wybierz odpowiedź</option>
+                                    <option value="true">Tak</option>
+                                    <option value="false">Nie</option>
+                                </InputSelect>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                }
 
-                <section class="submission-section">
-                    <h2>3. Sok</h2>
-                    <div class="submission-grid">
-                        <div class="submission-field">
-                            <label>Kolor soku *</label>
-                            <InputSelect @bind-Value="form.CreateSapDTO!.SapColorId">
-                                <option value="0">Wybierz kolor</option>
-                                @foreach (var x in colors)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
+                @if (ShowSapSection){
+                    <section class="submission-section">
+                        <h2>3. Sok</h2>
+                        <div class="submission-grid">
+                            <div class="submission-field">
+                                <label>Kolor soku *</label>
+                                <InputSelect @bind-Value="form.CreateSapDTO!.SapColorId">
+                                    <option value="0">Wybierz kolor</option>
+                                    @foreach (var x in colors)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
 
-                        <div class="submission-field">
-                            <label>Czy sok pozostawia plamy? *</label>
-                            <InputSelect @bind-Value="sapLeavesStain">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
-                        </div>
+                            <div class="submission-field">
+                                <label>Czy sok pozostawia plamy? *</label>
+                                <InputSelect @bind-Value="sapLeavesStain">
+                                    <option value="">Wybierz odpowiedź</option>
+                                    <option value="true">Tak</option>
+                                    <option value="false">Nie</option>
+                                </InputSelect>
+                            </div>
 
-                        <div class="submission-field">
-                            <label>Czy sok jest lepki? *</label>
-                            <InputSelect @bind-Value="sapSticky">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
+                            <div class="submission-field">
+                                <label>Czy sok jest lepki? *</label>
+                                <InputSelect @bind-Value="sapSticky">
+                                    <option value="">Wybierz odpowiedź</option>
+                                    <option value="true">Tak</option>
+                                    <option value="false">Nie</option>
+                                </InputSelect>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                }
 
-                <section class="submission-section">
-                    <h2>4. Korzeń</h2>
-                    <div class="submission-grid">
-                        <div class="submission-field">
-                            <label>Kolor *</label>
-                            <InputSelect @bind-Value="form.CreateRootDTO!.RootColorId">
-                                <option value="0">Wybierz kolor</option>
-                                @foreach (var x in colors)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
+                @if (ShowRootSection){
+                    <section class="submission-section">
+                        <h2>4. Korzeń</h2>
+                        <div class="submission-grid">
+                            <div class="submission-field">
+                                <label>Kolor *</label>
+                                <InputSelect @bind-Value="form.CreateRootDTO!.RootColorId">
+                                    <option value="0">Wybierz kolor</option>
+                                    @foreach (var x in colors)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Powierzchnia *</label>
+                                <InputSelect @bind-Value="form.CreateRootDTO!.RootSurfaceId">
+                                    <option value="0">Wybierz powierzchnię</option>
+                                    @foreach (var x in surfaces)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Grubość *</label>
+                                <InputSelect @bind-Value="form.CreateRootDTO!.RootThicknessId">
+                                    <option value="0">Wybierz grubość</option>
+                                    @foreach (var x in thicknesses)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
                         </div>
-                        <div class="submission-field">
-                            <label>Powierzchnia *</label>
-                            <InputSelect @bind-Value="form.CreateRootDTO!.RootSurfaceId">
-                                <option value="0">Wybierz powierzchnię</option>
-                                @foreach (var x in surfaces)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
-                        <div class="submission-field">
-                            <label>Grubość *</label>
-                            <InputSelect @bind-Value="form.CreateRootDTO!.RootThicknessId">
-                                <option value="0">Wybierz grubość</option>
-                                @foreach (var x in thicknesses)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                }
 
-                <section class="submission-section">
-                    <h2>5. Kapelusz</h2>
-                    <div class="submission-grid">
-                        <div class="submission-field">
-                            <label>Kolor *</label>
-                            <InputSelect @bind-Value="form.CreateHatDTO!.HatColorId">
-                                <option value="0">Wybierz kolor</option>
-                                @foreach (var x in colors)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
+                @if (ShowHatSection){
+                    <section class="submission-section">
+                        <h2>5. Kapelusz</h2>
+                        <div class="submission-grid">
+                            <div class="submission-field">
+                                <label>Kolor *</label>
+                                <InputSelect @bind-Value="form.CreateHatDTO!.HatColorId">
+                                    <option value="0">Wybierz kolor</option>
+                                    @foreach (var x in colors)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Kształt *</label>
+                                <InputSelect @bind-Value="form.CreateHatDTO!.HatShapeId">
+                                    <option value="0">Wybierz kształt</option>
+                                    @foreach (var x in shapes)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Grubość *</label>
+                                <InputSelect @bind-Value="form.CreateHatDTO!.HatThicknessId">
+                                    <option value="0">Wybierz grubość</option>
+                                    @foreach (var x in thicknesses)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Powierzchnia *</label>
+                                <InputSelect @bind-Value="form.CreateHatDTO!.HatSurfaceId">
+                                    <option value="0">Wybierz powierzchnię</option>
+                                    @foreach (var x in surfaces)
+                                    {
+                                        <option value="@x.Id">@x.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Plamy na kapeluszu? *</label>
+                                <InputSelect @bind-Value="hatHasSpots">
+                                    <option value="">Wybierz odpowiedź</option>
+                                    <option value="true">Tak</option>
+                                    <option value="false">Nie</option>
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Czy ma blaszki? *</label>
+                                <InputSelect @bind-Value="hatHasGills">
+                                    <option value="">Wybierz odpowiedź</option>
+                                    <option value="true">Tak</option>
+                                    <option value="false">Nie</option>
+                                </InputSelect>
+                            </div>
+                            <div class="submission-field">
+                                <label>Czy ma pierścień? *</label>
+                                <InputSelect @bind-Value="hatHasRing">
+                                    <option value="">Wybierz odpowiedź</option>
+                                    <option value="true">Tak</option>
+                                    <option value="false">Nie</option>
+                                </InputSelect>
+                            </div>
                         </div>
-                        <div class="submission-field">
-                            <label>Kształt *</label>
-                            <InputSelect @bind-Value="form.CreateHatDTO!.HatShapeId">
-                                <option value="0">Wybierz kształt</option>
-                                @foreach (var x in shapes)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
-                        <div class="submission-field">
-                            <label>Grubość *</label>
-                            <InputSelect @bind-Value="form.CreateHatDTO!.HatThicknessId">
-                                <option value="0">Wybierz grubość</option>
-                                @foreach (var x in thicknesses)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
-                        <div class="submission-field">
-                            <label>Powierzchnia *</label>
-                            <InputSelect @bind-Value="form.CreateHatDTO!.HatSurfaceId">
-                                <option value="0">Wybierz powierzchnię</option>
-                                @foreach (var x in surfaces)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect>
-                        </div>
-                        <div class="submission-field">
-                            <label>Plamy na kapeluszu? *</label>
-                            <InputSelect @bind-Value="hatHasSpots">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
-                        </div>
-                        <div class="submission-field">
-                            <label>Czy ma blaszki? *</label>
-                            <InputSelect @bind-Value="hatHasGills">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
-                        </div>
-                        <div class="submission-field">
-                            <label>Czy ma pierścień? *</label>
-                            <InputSelect @bind-Value="hatHasRing">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                }
 
+                @if (ShowLeafSection){
                 <section class="submission-section">
                     <h2>6. Liście</h2>
                     <div class="submission-grid">
@@ -404,7 +413,9 @@
                         </div>
                     </div>
                 </section>
+                }
 
+                @if(ShowFlowerSection){
                 <section class="submission-section">
                     <h2>7. Kwiaty</h2>
                     <div class="submission-grid">
@@ -453,7 +464,9 @@
                         </div>
                     </div>
                 </section>
+                }
 
+                @if(ShowFruitSection){
                 <section class="submission-section">
                     <h2>8. Owoce</h2>
                     <div class="submission-grid">
@@ -509,6 +522,7 @@
                         </div>
                     </div>
                 </section>
+                }
 
                 @if (!string.IsNullOrWhiteSpace(submitError))
                 {
@@ -532,6 +546,23 @@
 
 @code {
     private CreatePlantDTO form = new();
+
+    private bool IsTree => form.PlantTypeID == 1;
+    private bool IsHerb => form.PlantTypeID == 2;
+    private bool IsFungus => form.PlantTypeID == 3;
+
+    //show hide sekcje na podstawie planttype
+    private bool ShowStalkSection => IsTree || IsHerb || IsFungus;
+    private bool ShowSapSection => IsTree || IsHerb || IsFungus;
+    private bool ShowRootSection => IsTree || IsHerb;
+    private bool ShowHatSection => IsFungus;
+    private bool ShowLeafSection => IsTree || IsHerb;
+    private bool ShowFlowerSection => IsTree || IsHerb;
+    private bool ShowFruitSection => IsTree || IsHerb;
+    private string StalkSectionName => IsTree ? "Pień" : IsFungus ? "Trzon" : "Łodyga";
+
+    private bool NeedsLeafAndFlowerParts => IsTree || IsHerb; //dla walidacji pomocnicze
+    private bool NeedsHatParts => IsFungus; //dla walidacji pomocnicze
 
     private List<DictionaryOption> plantTypes = new();
     private List<DictionaryOption> occurances = new();
@@ -672,17 +703,19 @@
         Console.WriteLine($"PolishName: '{form.PolishName}'");
         submitError = null;
 
-        if (stalkHollow is null ||
+        if (stalkHollow is null ||      //default
             sapLeavesStain is null ||
             sapSticky is null ||
-            hatHasSpots is null ||
-            hatHasGills is null ||
-            hatHasRing is null ||
-            leafStripes is null ||
-            leafSpots is null ||
-            leafHoles is null)
+            (NeedsHatParts &&           //grzyby
+                (hatHasSpots is null ||
+                 hatHasGills is null ||
+                 hatHasRing is null)) ||
+            (NeedsLeafAndFlowerParts && //ziola i drzewa
+                (leafStripes is null ||
+                 leafSpots is null ||
+                 leafHoles is null)))
         {
-            submitError = "Uzupełnij wszystkie pola typu Tak/Nie.";
+            submitError = "Uzupełnij wszystkie widoczne pola typu Tak/Nie.";
             return;
         }
 
