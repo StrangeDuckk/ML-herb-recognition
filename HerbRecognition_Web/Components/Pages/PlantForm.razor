@@ -7,7 +7,6 @@
 @using HerbRecognition_Web.Communication.Services
 
 @inject HttpClient Http
-@inject IJSRuntime JS
 @inject UserInputApiService UserInputApiService
 
 <PageTitle>Formularz zgłoszenia rośliny</PageTitle>
@@ -750,12 +749,6 @@
         {
             isSubmitting = false;
         }
-
-        // var id = await UserInputApiService.PostUserInputPlantAsync(form);
-
-        // await JS.InvokeVoidAsync("plantFormStorage.clear");
-
-        // submitted = true;
     }
 
     private sealed class DictionaryOption

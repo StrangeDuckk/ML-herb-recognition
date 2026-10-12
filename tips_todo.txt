@@ -1,11 +1,13 @@
 - usprawnic formularz:
-	- zapisywanie stanu pol po nie udanym submit, ale czyszczenie po poprawnym submit
 	-dodac do slownikow: 
 		- korzen, czy pusty w srodku
 		- ksztalt: parasolowaty/baldachimowaty
 		- kwiat: zapach smak zapachu
 		- krztalt + kulisty
 		- ksztalt + featherlike
+	- pola show/hide w zaleznosci od typu
+	- ladny formularz, kolory przy rgb
+	- ładny formularz, switche a nie wybor
 
 - zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika + logowanie administratora
 
