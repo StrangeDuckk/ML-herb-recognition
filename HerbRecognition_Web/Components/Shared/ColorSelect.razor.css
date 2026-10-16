@@ -1,0 +1,108 @@
+﻿.color-select {
+    position: relative;
+    width: 100%;
+}
+
+.color-select-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dfe5e1;
+    border-radius: 8px;
+    background: #fff;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+    .color-select-trigger:hover,
+    .color-select.open .color-select-trigger {
+        border-color: #39815c;
+    }
+
+    .color-select-trigger:focus-visible {
+        outline: 2px solid #39815c;
+        outline-offset: 2px;
+    }
+
+.color-select-placeholder {
+    color: #7a857f;
+}
+
+.color-select-arrow {
+    margin-left: auto;
+    color: #7a857f;
+    transition: transform 0.2s ease;
+}
+
+.color-select.open .color-select-arrow {
+    transform: rotate(180deg);
+}
+
+/* niewidoczna warstwa – kliknięcie poza listą ją zamyka */
+.color-select-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+}
+
+.color-select-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 11;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid #dfe5e1;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.color-select-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .color-select-option:hover,
+    .color-select-option:focus-visible {
+        background: #f0f6f2;
+        outline: none;
+    }
+
+    .color-select-option.selected {
+        background: #e3f0e8;
+        font-weight: 600;
+    }
+
+.color-swatch {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.2); /* widoczne też dla White/Cream */
+}
+
+    /* szachownica dla "Transparent" */
+    .color-swatch.transparent {
+        background-color: #fff;
+        background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+        background-size: 8px 8px;
+        background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+    }

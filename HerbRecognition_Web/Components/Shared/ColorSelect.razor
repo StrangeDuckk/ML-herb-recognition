@@ -1,0 +1,65 @@
+﻿@using HerbRecognition_Web.Communication.DTOs
+
+<div class="color-select @(isOpen ? "open" : "")" @onkeydown="OnKeyDown">
+    <button type="button" class="color-select-trigger" @onclick="Toggle"
+            aria-haspopup="listbox" aria-expanded="@isOpen">
+        @if (Selected is not null)
+        {
+            <span class="color-swatch @(Selected.IsTransparent ? "transparent" : "")"
+                  style="@SwatchStyle(Selected)"></span>
+            <span>@Selected.Name</span>
+        }
+        else
+        {
+            <span class="color-select-placeholder">@Placeholder</span>
+        }
+        <span class="color-select-arrow">▾</span>
+    </button>
+
+    @if (isOpen)
+    {
+        <div class="color-select-backdrop" @onclick="Close"></div>
+
+        <div class="color-select-list" role="listbox">
+            @foreach (var c in Colors)
+            {
+                <button type="button" role="option" aria-selected="@(c.Id == Value)"
+                        class="color-select-option @(c.Id == Value ? "selected" : "")"
+                        @onclick="() => SelectAsync(c.Id)">
+                    <span class="color-swatch @(c.IsTransparent ? "transparent" : "")"
+                          style="@SwatchStyle(c)"></span>
+                    <span>@c.Name</span>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Value { get; set; }
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter, EditorRequired] public List<ColorOption> Colors { get; set; } = new();
+    [Parameter] public string Placeholder { get; set; } = "Wybierz kolor";
+
+    private bool isOpen;
+
+    private ColorOption? Selected => Colors.FirstOrDefault(c => c.Id == Value);
+
+    private static string SwatchStyle(ColorOption c) =>
+        c.IsTransparent ? "" : $"background-color: {c.CssColor};";
+
+    private void Toggle() => isOpen = !isOpen;
+    private void Close() => isOpen = false;
+
+    private async Task SelectAsync(int id)
+    {
+        isOpen = false;
+        Value = id;
+        await ValueChanged.InvokeAsync(id);
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") isOpen = false;
+    }
+}

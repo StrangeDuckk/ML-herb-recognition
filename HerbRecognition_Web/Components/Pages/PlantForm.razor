@@ -5,6 +5,7 @@
 @using System.ComponentModel.DataAnnotations
 @using HerbRecognition_Web.Communication.DTOs
 @using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
 
 @inject HttpClient Http
 @inject UserInputApiService UserInputApiService
@@ -165,13 +166,14 @@
 
                             <div class="submission-field">
                                 <label>Kolor *</label>
-                                <InputSelect @bind-Value="form.CreateStalkDTO.StalkColorId">
-                                    <option value="0">Wybierz kolor</option>
+                                @* <InputSelect @bind-Value="form.CreateStalkDTO.StalkColorId"> *@
+                                    <ColorSelect @bind-Value="form.CreateStalkDTO.StalkColorId" Colors="colors"/>
+                                    @* <option value="0">Wybierz kolor</option>
                                     @foreach (var x in colors)
                                     {
                                         <option value="@x.Id">@x.Name</option>
-                                    }
-                                </InputSelect>
+                                    } *@
+                                @* </InputSelect> *@
                             </div>
 
                             <div class="submission-field">
@@ -715,7 +717,7 @@
     private List<DictionaryOption> poisonabilities = new();
     private List<DictionaryOption> surfaces = new();
     private List<DictionaryOption> thicknesses = new();
-    private List<DictionaryOption> colors = new();
+    private List<ColorOption> colors = new();
 
     private bool stalkHollow;
     private bool sapLeavesStain;
@@ -817,7 +819,7 @@
             poisonabilities = await LoadOptionsAsync("poisonability", "poisonabilityId", "poisonabilityDescription");
             surfaces = await LoadOptionsAsync("surface", "surfaceId", "surfaceName");
             thicknesses = await LoadOptionsAsync("thickness", "thicknessId", "thicknessName");
-            colors = await LoadOptionsAsync("color", "colorId", "colorName");
+            colors = await LoadColorsAsync();
         }
         // catch (Exception)
         // {
@@ -889,6 +891,26 @@
         }
 
         return result;
+    }
+
+    private async Task<List<ColorOption>> LoadColorsAsync()
+    {
+        using var response = await Http.GetAsync("api/dictionaries/color");
+        response.EnsureSuccessStatusCode();
+
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var document = await JsonDocument.ParseAsync(stream);
+
+        return document.RootElement.EnumerateArray()
+            .Select(e => new ColorOption
+            {
+                Id = e.GetProperty("colorId").GetInt32(),
+                Name = e.GetProperty("colorName").GetString() ?? "",
+                R = e.GetProperty("colorR").GetInt32(),
+                G = e.GetProperty("colorG").GetInt32(),
+                B = e.GetProperty("colorB").GetInt32()
+            })
+            .ToList();
     }
 
     private async Task SubmitAsync()

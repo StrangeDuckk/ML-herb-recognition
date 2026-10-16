@@ -6,8 +6,7 @@
 		- kwiat: zapach smak zapachu
 		- krztalt + kulisty
 		- ksztalt + featherlike
-	- usunac z predefiniowanych tak/nie i zrobic null <-
-	- usunac z trujacych nie wiem, zrobic z tego brak
+		- dodanie do kazdego regionu pola "dodatkowe informacje" (mandatory + dla kazdego np flower, sap, root, stalk)
 	- ladny formularz, kolory przy rgb
 	- ładny formularz, switche a nie wybor
 
