@@ -186,12 +186,16 @@
                             </div>
 
                             <div class="submission-field">
-                                <label>Czy łodyga jest pusta w środku? *</label>
-                                <InputSelect @bind-Value="stalkHollow">
-                                    <option value="">Wybierz odpowiedź</option>
-                                    <option value="true">Tak</option>
-                                    <option value="false">Nie</option>
-                                </InputSelect>
+                                <label class="switch-label">
+                                    <span>Czy łodyga jest pusta w środku?</span>
+                                    <InputCheckbox @bind-Value="stalkHollow" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                    @* <label>Czy łodyga jest pusta w środku? *</label> 
+                                    <InputSelect @bind-Value="stalkHollow">
+                                        <option value="false">Nie</option>
+                                        <option value="true">Tak</option>
+                                    </InputSelect> *@
+                                </label>
                             </div>
                         </div>
                     </section>
@@ -226,21 +230,29 @@
                             </div>
 
                             <div class="submission-field">
-                                <label>Czy sok pozostawia plamy? *</label>
-                                <InputSelect @bind-Value="sapLeavesStain">
-                                    <option value="">Wybierz odpowiedź</option>
-                                    <option value="true">Tak</option>
-                                    <option value="false">Nie</option>
-                                </InputSelect>
+                                <label class="switch-label">
+                                    <span>Czy sok pozostawia plamy?</span>
+                                    <InputCheckbox @bind-Value="sapLeavesStain" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                    @* <label>Czy sok pozostawia plamy? *</label>
+                                    <InputSelect @bind-Value="sapLeavesStain">
+                                        <option value="false">Nie</option>
+                                        <option value="true">Tak</option>
+                                    </InputSelect> *@
+                                </label>
                             </div>
 
                             <div class="submission-field">
-                                <label>Czy sok jest lepki? *</label>
-                                <InputSelect @bind-Value="sapSticky">
-                                    <option value="">Wybierz odpowiedź</option>
-                                    <option value="true">Tak</option>
-                                    <option value="false">Nie</option>
-                                </InputSelect>
+                                <label class="switch-label">
+                                    <span>Czy sok jest lepki?</span>
+                                    <InputCheckbox @bind-Value="sapSticky" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                    @* <label>Czy sok jest lepki? *</label>
+                                    <InputSelect @bind-Value="sapSticky">
+                                        <option value="false">Nie</option>
+                                        <option value="true">Tak</option>
+                                    </InputSelect> *@
+                                </label>
                             </div>
                         </div>
                     </section>
@@ -355,28 +367,40 @@
                                 </InputSelect>
                             </div>
                             <div class="submission-field">
-                                <label>Plamy na kapeluszu? *</label>
-                                <InputSelect @bind-Value="hatHasSpots">
-                                    <option value="">Wybierz odpowiedź</option>
-                                    <option value="true">Tak</option>
-                                    <option value="false">Nie</option>
-                                </InputSelect>
+                                <label class="switch-label">
+                                    <span>Czy ma plamy na kapeluszu?</span>
+                                    <InputCheckbox @bind-Value="hatHasSpots" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                    @* <label>Plamy na kapeluszu? *</label>
+                                    <InputSelect @bind-Value="hatHasSpots">
+                                        <option value="false">Nie</option>
+                                        <option value="true">Tak</option>
+                                    </InputSelect> *@
+                                </label>
                             </div>
                             <div class="submission-field">
-                                <label>Czy ma blaszki? *</label>
-                                <InputSelect @bind-Value="hatHasGills">
-                                    <option value="">Wybierz odpowiedź</option>
-                                    <option value="true">Tak</option>
-                                    <option value="false">Nie</option>
-                                </InputSelect>
+                                <label class="switch-label">
+                                    <span>Czy ma blaszki?</span>
+                                    <InputCheckbox @bind-Value="hatHasGills" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                    @* <label>Czy ma blaszki? *</label>
+                                    <InputSelect @bind-Value="hatHasGills">
+                                        <option value="false">Nie</option>
+                                        <option value="true">Tak</option>
+                                    </InputSelect> *@
+                                </label>
                             </div>
                             <div class="submission-field">
-                                <label>Czy ma pierścień? *</label>
-                                <InputSelect @bind-Value="hatHasRing">
-                                    <option value="">Wybierz odpowiedź</option>
-                                    <option value="true">Tak</option>
-                                    <option value="false">Nie</option>
-                                </InputSelect>
+                                <label class="switch-label">
+                                    <span>Czy ma pierścień?</span>
+                                    <InputCheckbox @bind-Value="hatHasRing" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                    @* <label>Czy ma pierścień? *</label>
+                                    <InputSelect @bind-Value="hatHasRing">
+                                        <option value="false">Nie</option>
+                                        <option value="true">Tak</option>
+                                    </InputSelect> *@
+                                </label>
                             </div>
                         </div>
                     </section>
@@ -454,28 +478,40 @@
                             <InputNumber @bind-Value="form.CreateLeafDTO!.LeafLength" min="0.1" />
                         </div>
                         <div class="submission-field">
-                            <label>Czy ma paski? *</label>
-                            <InputSelect @bind-Value="leafStripes">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
+                            <label class="switch-label">
+                                    <span>Czy ma paski?</span>
+                                    <InputCheckbox @bind-Value="leafStripes" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                @* <label>Czy ma paski? *</label>
+                                    <InputSelect @bind-Value="leafStripes">
+                                    <option value="false">Nie</option>
+                                    <option value="true">Tak</option>
+                                </InputSelect> *@
+                            </label>
                         </div>
                         <div class="submission-field">
-                            <label>Czy ma plamy? *</label>
-                            <InputSelect @bind-Value="leafSpots">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
+                            <label class="switch-label">
+                                    <span>Czy ma plamy?</span>
+                                    <InputCheckbox @bind-Value="leafSpots" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                @* <label>Czy ma plamy? *</label>
+                                    <InputSelect @bind-Value="leafSpots">
+                                    <option value="false">Nie</option>
+                                    <option value="true">Tak</option>
+                                </InputSelect> *@
+                            </label>
                         </div>
                         <div class="submission-field">
-                            <label>Czy ma otwory? *</label>
-                            <InputSelect @bind-Value="leafHoles">
-                                <option value="">Wybierz odpowiedź</option>
-                                <option value="true">Tak</option>
-                                <option value="false">Nie</option>
-                            </InputSelect>
+                            <label class="switch-label">
+                                    <span>Czy ma otwory?</span>
+                                    <InputCheckbox @bind-Value="leafHoles" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                @* <label>Czy ma otwory? *</label>
+                                    <InputSelect @bind-Value="leafHoles">
+                                    <option value="false">Nie</option>
+                                    <option value="true">Tak</option>
+                                </InputSelect> *@
+                            </label>
                         </div>
                     </div>
                 </section>
@@ -681,15 +717,15 @@
     private List<DictionaryOption> thicknesses = new();
     private List<DictionaryOption> colors = new();
 
-    private bool? stalkHollow;
-    private bool? sapLeavesStain;
-    private bool? sapSticky;
-    private bool? hatHasSpots;
-    private bool? hatHasGills;
-    private bool? hatHasRing;
-    private bool? leafStripes;
-    private bool? leafSpots;
-    private bool? leafHoles;
+    private bool stalkHollow;
+    private bool sapLeavesStain;
+    private bool sapSticky;
+    private bool hatHasSpots;
+    private bool hatHasGills;
+    private bool hatHasRing;
+    private bool leafStripes;
+    private bool leafSpots;
+    private bool leafHoles;
 
     private bool isLoading = true;
     private bool isSubmitting;
@@ -867,16 +903,16 @@
 
 
         if (ShowStalkSection)
-        {    
+        {
             plantPartsInvalid |= form.CreateStalkDTO!.StalkShapeId <= 0
                     || form.CreateStalkDTO.StalkColorId <= 0
-                    || form.CreateStalkDTO.StalkSurfaceId <= 0
-                    || stalkHollow is null;
+                    || form.CreateStalkDTO.StalkSurfaceId <= 0;
+            // || stalkHollow is null;
         }
         if (ShowSapSection)
-        {    
-            plantPartsInvalid |= form.CreateSapDTO!.SapColorId <= 0
-                    || sapLeavesStain is null || sapSticky is null;
+        {
+            plantPartsInvalid |= form.CreateSapDTO!.SapColorId <= 0;
+            // || sapLeavesStain is null || sapSticky is null;
         }
         if (ShowHatSection)
         {
@@ -976,14 +1012,14 @@
             StalkShapeId = form.CreateStalkDTO!.StalkShapeId,
             StalkColorId = form.CreateStalkDTO.StalkColorId,
             StalkSurfaceId = form.CreateStalkDTO.StalkSurfaceId,
-            StalkIsHollow = stalkHollow ?? false
+            StalkIsHollow = stalkHollow
         } : null,
 
         CreateSapDTO = ShowSapSection ? new DTOs.CreateSapDTO
         {
             SapColorId = form.CreateSapDTO!.SapColorId,
-            SapLeavesStain = sapLeavesStain ?? false,   
-            SapSticky = sapSticky ?? false
+            SapLeavesStain = sapLeavesStain , 
+            SapSticky = sapSticky 
         } : null,
 
         CreateRootDTO = ShowRootSection ? new DTOs.CreateRootDTO
@@ -999,16 +1035,16 @@
             HatShapeId = form.CreateHatDTO.HatShapeId,
             HatThicknessId = form.CreateHatDTO.HatThicknessId,
             HatSurfaceId = form.CreateHatDTO.HatSurfaceId,
-            HatHasSpots = hatHasSpots ?? false,
-            HatHasGills = hatHasGills ?? false,
-            HatHasRing = hatHasRing ?? false
+            HatHasSpots = hatHasSpots ,
+            HatHasGills = hatHasGills ,
+            HatHasRing = hatHasRing 
         } : null,
 
         CreateLeafDTO = ShowLeafSection ? new DTOs.CreateLeafDTO
         {
-            LeafStripes = leafStripes ?? false,
-            LeafSpots = leafSpots ?? false,
-            LeafHoles = leafHoles ?? false,
+            LeafStripes = leafStripes ,
+            LeafSpots = leafSpots ,
+            LeafHoles = leafHoles ,
             LeafShapeId = form.CreateLeafDTO!.LeafShapeId,
             LeafColorId = form.CreateLeafDTO.LeafColorId,
             LeafSurfaceId = form.CreateLeafDTO.LeafSurfaceId,
