@@ -222,13 +222,14 @@
                         <div class="submission-grid">
                             <div class="submission-field">
                                 <label>Kolor soku *</label>
-                                <InputSelect @bind-Value="form.CreateSapDTO!.SapColorId">
+                                <ColorSelect @bind-Value="form.CreateSapDTO!.SapColorId" Colors="colors" />
+                                @* <InputSelect @bind-Value="form.CreateSapDTO!.SapColorId">
                                     <option value="0">Wybierz kolor</option>
                                     @foreach (var x in colors)
                                     {
                                         <option value="@x.Id">@x.Name</option>
                                     }
-                                </InputSelect>
+                                </InputSelect> *@
                             </div>
 
                             <div class="submission-field">
@@ -278,14 +279,15 @@
                         <h2>4. Korzeń</h2>
                         <div class="submission-grid">
                             <div class="submission-field">
-                                <label>Kolor *</label>
+                                <ColorSelect @bind-Value="form.CreateRootDTO!.RootColorId" Colors="colors" />
+                                @* <label>Kolor *</label>
                                 <InputSelect @bind-Value="form.CreateRootDTO!.RootColorId">
                                     <option value="0">Wybierz kolor</option>
                                     @foreach (var x in colors)
                                     {
                                         <option value="@x.Id">@x.Name</option>
                                     }
-                                </InputSelect>
+                                </InputSelect> *@
                             </div>
                             <div class="submission-field">
                                 <label>Powierzchnia *</label>
@@ -329,14 +331,15 @@
                         <h2>5. Kapelusz</h2>
                         <div class="submission-grid">
                             <div class="submission-field">
-                                <label>Kolor *</label>
+                                <ColorSelect @bind-Value="form.CreateHatDTO!.HatColorId" Colors="colors" />
+                                @* <label>Kolor *</label>
                                 <InputSelect @bind-Value="form.CreateHatDTO!.HatColorId">
                                     <option value="0">Wybierz kolor</option>
                                     @foreach (var x in colors)
                                     {
                                         <option value="@x.Id">@x.Name</option>
                                     }
-                                </InputSelect>
+                                </InputSelect> *@
                             </div>
                             <div class="submission-field">
                                 <label>Kształt *</label>
@@ -436,14 +439,15 @@
                             </InputSelect>
                         </div>
                         <div class="submission-field">
-                            <label>Kolor *</label>
+                                <ColorSelect @bind-Value="form.CreateLeafDTO!.LeafColorId" Colors="colors" />
+                                @* <label>Kolor *</label>
                             <InputSelect @bind-Value="form.CreateLeafDTO!.LeafColorId">
                                 <option value="0">Wybierz kolor</option>
                                 @foreach (var x in colors)
                                 {
                                     <option value="@x.Id">@x.Name</option>
                                 }
-                            </InputSelect>
+                            </InputSelect> *@
                         </div>
                         <div class="submission-field">
                             <label>Powierzchnia *</label>
@@ -541,14 +545,15 @@
                             <InputNumber @bind-Value="form.CreateFlowerDTO!.FlowerSizeInCm" min="0.1" />
                         </div>
                         <div class="submission-field">
-                            <label>Kolor *</label>
+                                <ColorSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId" Colors="colors" />
+                            @* <label>Kolor *</label>
                             <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId">
                                 <option value="0">Wybierz kolor</option>
                                 @foreach (var x in colors)
                                 {
                                     <option value="@x.Id">@x.Name</option>
                                 }
-                            </InputSelect>
+                            </InputSelect> *@
                         </div>
                         <div class="submission-field">
                             <label>Kształt *</label>
@@ -621,14 +626,15 @@
                             </InputSelect>
                         </div>
                         <div class="submission-field">
-                            <label>Kolor *</label>
+                                <ColorSelect @bind-Value="form.CreateFruitDTO!.FruitColorId" Colors="colors" />
+                            @* <label>Kolor *</label>
                             <InputSelect @bind-Value="form.CreateFruitDTO!.FruitColorId">
                                 <option value="0">Wybierz kolor</option>
                                 @foreach (var x in colors)
                                 {
                                     <option value="@x.Id">@x.Name</option>
                                 }
-                            </InputSelect>
+                            </InputSelect> *@
                         </div>
                         <div class="submission-field">
                             <label>Powierzchnia *</label>
