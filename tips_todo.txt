@@ -1,11 +1,15 @@
 - usprawnic formularz:
+	- walidacja pol tylko widocznych (teraz niewidoczny blad)
 	-dodac do slownikow: 
+		- wystepowanie -> na innych drzewach
 		- korzen, czy pusty w srodku
 		- ksztalt: parasolowaty/baldachimowaty
 		- kwiat: zapach smak zapachu
 		- krztalt + kulisty
 		- ksztalt + featherlike
+	- usunac z predefiniowanych tak/nie i zrobic null
 	- pola show/hide w zaleznosci od typu
+	- usunac z trujacych nie wiem, zrobic z tego brak
 	- ladny formularz, kolory przy rgb
 	- ładny formularz, switche a nie wybor
 

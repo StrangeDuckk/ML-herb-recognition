@@ -21,6 +21,7 @@ namespace HerbRecognition_APIs.DTOs
 
         // ----- type -----
         [Required]
+        [Range(1, 3)]
         public int PlantTypeID{ get; set; }
 
         // ----- sap -----
@@ -30,8 +31,8 @@ namespace HerbRecognition_APIs.DTOs
         public CreateRootDTO? CreateRootDTO { get; set; }
 
         // ----- stalk -----
-        [Required]
-        public CreateStalkDTO CreateStalkDTO { get; set; } = null!;
+        //[Required]
+        public CreateStalkDTO? CreateStalkDTO { get; set; }
 
         // ----- occurance -----
         [Required]

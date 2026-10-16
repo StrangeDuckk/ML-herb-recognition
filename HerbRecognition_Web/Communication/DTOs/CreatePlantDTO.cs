@@ -32,7 +32,7 @@ namespace HerbRecognition_Web.Communication.DTOs
 
         // ----- stalk -----
         //[Required]
-        public CreateStalkDTO CreateStalkDTO { get; set; } = null!;
+        public CreateStalkDTO? CreateStalkDTO { get; set; }
 
         // ----- occurance -----
         [Required]

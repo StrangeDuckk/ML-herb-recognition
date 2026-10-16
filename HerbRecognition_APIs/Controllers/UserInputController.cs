@@ -13,11 +13,11 @@ namespace HerbRecognition_APIs.Controllers
         {
             var sumbissionId = await dbService.PostUserInputPlantAsync(dto);
 
-            return Created("Utworzono nowe zgloszenie",new
+            return CreatedAtAction(nameof(GetUserInput), new { id = sumbissionId }, new
             {
                 Id = sumbissionId,
                 Message = "Zgloszenie zostalo zapisane.",
-                Url = $"/api/userinput/{sumbissionId}"
+                Url = $"/api/userInput/{sumbissionId}"
             });
         }
 
