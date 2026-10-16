@@ -176,6 +176,114 @@ a {
         transform: translateX(3px);
     }
 
+/* ---------- uk³ad pól ---------- */
+.submission-form .submission-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+    .submission-form .submission-field > label:not(.switch-label) {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #3d4a43;
+    }
+
+    /* ---------- pola tekstowe, liczbowe i listy ---------- */
+    .submission-form .submission-field input:not([type="checkbox"]),
+    .submission-form .submission-field select,
+    .submission-form .submission-field textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #dfe5e1;
+        border-radius: 8px;
+        background-color: #fff;
+        font: inherit;
+        color: inherit;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .submission-form .submission-field input:not([type="checkbox"]):hover,
+        .submission-form .submission-field select:hover,
+        .submission-form .submission-field textarea:hover {
+            border-color: #39815c;
+        }
+
+        .submission-form .submission-field input:not([type="checkbox"]):focus,
+        .submission-form .submission-field select:focus,
+        .submission-form .submission-field textarea:focus {
+            outline: none;
+            border-color: #39815c;
+            box-shadow: 0 0 0 3px rgba(57, 129, 92, 0.15);
+        }
+
+        .submission-form .submission-field input::placeholder,
+        .submission-form .submission-field textarea::placeholder {
+            color: #7a857f;
+        }
+
+    /* ---------- lista rozwijana: w³asna strza³ka ---------- */
+    .submission-form .submission-field select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 36px;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%237a857f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+    }
+
+        /* "Wybierz ..." (value 0 lub pusta) wyszarzone jak placeholder */
+        .submission-form .submission-field select:has(option:checked[value="0"]),
+        .submission-form .submission-field select:has(option:checked[value=""]) {
+            color: #7a857f;
+        }
+
+        .submission-form .submission-field select option {
+            color: #1f2a24;
+        }
+
+    /* ---------- walidacja Blazora ---------- */
+    .submission-form .submission-field .invalid {
+        border-color: #c0392b;
+    }
+
+        .submission-form .submission-field .invalid:focus {
+            box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
+        }
+
+.submission-form .validation-message {
+    font-size: 0.8rem;
+    color: #c0392b;
+}
+
+.submission-form .validation-errors {
+    margin: 0 0 16px;
+    padding: 12px 16px 12px 32px;
+    border: 1px solid #f1c4bf;
+    border-radius: 8px;
+    background: #fdf2f1;
+    color: #c0392b;
+}
+
+/* ---------- zablokowane ---------- */
+.submission-form .submission-field input:disabled,
+.submission-form .submission-field select:disabled {
+    background-color: #f3f5f4;
+    color: #9aa39e;
+    cursor: not-allowed;
+}
+
+.submission-form .submission-grid { /*2/3 kolumny w zaleznosci od szerokosci ekranu*/
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px 20px;
+    align-items: start;
+}
+
 @media (max-width: 500px) {
 
     .main-nav {

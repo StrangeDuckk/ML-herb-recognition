@@ -7,8 +7,7 @@
 		- krztalt + kulisty
 		- ksztalt + featherlike
 		- dodanie do kazdego regionu pola "dodatkowe informacje" (mandatory + dla kazdego np flower, sap, root, stalk)
-	- ladny formularz, kolory przy rgb
-	- ładny formularz, switche a nie wybor
+	- zmienic wartosc w slownikach na polskie
 
 - zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika + logowanie administratora
 

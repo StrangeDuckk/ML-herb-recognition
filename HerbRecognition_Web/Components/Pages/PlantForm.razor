@@ -61,7 +61,6 @@
     {
         <EditForm Model="form" OnValidSubmit="SubmitAsync" FormName="PlantSubmitAsync"> 
             <DataAnnotationsValidator />
-            @* <ObjectGraphDataAnnotationsValidator /> *@
             <ValidationSummary />
 
             <div class="submission-form">
@@ -166,14 +165,7 @@
 
                             <div class="submission-field">
                                 <label>Kolor *</label>
-                                @* <InputSelect @bind-Value="form.CreateStalkDTO.StalkColorId"> *@
                                     <ColorSelect @bind-Value="form.CreateStalkDTO.StalkColorId" Colors="colors"/>
-                                    @* <option value="0">Wybierz kolor</option>
-                                    @foreach (var x in colors)
-                                    {
-                                        <option value="@x.Id">@x.Name</option>
-                                    } *@
-                                @* </InputSelect> *@
                             </div>
 
                             <div class="submission-field">
@@ -192,11 +184,6 @@
                                     <span>Czy łodyga jest pusta w środku?</span>
                                     <InputCheckbox @bind-Value="stalkHollow" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                    @* <label>Czy łodyga jest pusta w środku? *</label> 
-                                    <InputSelect @bind-Value="stalkHollow">
-                                        <option value="false">Nie</option>
-                                        <option value="true">Tak</option>
-                                    </InputSelect> *@
                                 </label>
                             </div>
                         </div>
@@ -223,13 +210,6 @@
                             <div class="submission-field">
                                 <label>Kolor soku *</label>
                                 <ColorSelect @bind-Value="form.CreateSapDTO!.SapColorId" Colors="colors" />
-                                @* <InputSelect @bind-Value="form.CreateSapDTO!.SapColorId">
-                                    <option value="0">Wybierz kolor</option>
-                                    @foreach (var x in colors)
-                                    {
-                                        <option value="@x.Id">@x.Name</option>
-                                    }
-                                </InputSelect> *@
                             </div>
 
                             <div class="submission-field">
@@ -237,11 +217,6 @@
                                     <span>Czy sok pozostawia plamy?</span>
                                     <InputCheckbox @bind-Value="sapLeavesStain" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                    @* <label>Czy sok pozostawia plamy? *</label>
-                                    <InputSelect @bind-Value="sapLeavesStain">
-                                        <option value="false">Nie</option>
-                                        <option value="true">Tak</option>
-                                    </InputSelect> *@
                                 </label>
                             </div>
 
@@ -250,11 +225,6 @@
                                     <span>Czy sok jest lepki?</span>
                                     <InputCheckbox @bind-Value="sapSticky" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                    @* <label>Czy sok jest lepki? *</label>
-                                    <InputSelect @bind-Value="sapSticky">
-                                        <option value="false">Nie</option>
-                                        <option value="true">Tak</option>
-                                    </InputSelect> *@
                                 </label>
                             </div>
                         </div>
@@ -279,15 +249,8 @@
                         <h2>4. Korzeń</h2>
                         <div class="submission-grid">
                             <div class="submission-field">
+                                <label>Kolor korzenia *</label>
                                 <ColorSelect @bind-Value="form.CreateRootDTO!.RootColorId" Colors="colors" />
-                                @* <label>Kolor *</label>
-                                <InputSelect @bind-Value="form.CreateRootDTO!.RootColorId">
-                                    <option value="0">Wybierz kolor</option>
-                                    @foreach (var x in colors)
-                                    {
-                                        <option value="@x.Id">@x.Name</option>
-                                    }
-                                </InputSelect> *@
                             </div>
                             <div class="submission-field">
                                 <label>Powierzchnia *</label>
@@ -331,15 +294,8 @@
                         <h2>5. Kapelusz</h2>
                         <div class="submission-grid">
                             <div class="submission-field">
+                                <label>Kolor kapelusza *</label>
                                 <ColorSelect @bind-Value="form.CreateHatDTO!.HatColorId" Colors="colors" />
-                                @* <label>Kolor *</label>
-                                <InputSelect @bind-Value="form.CreateHatDTO!.HatColorId">
-                                    <option value="0">Wybierz kolor</option>
-                                    @foreach (var x in colors)
-                                    {
-                                        <option value="@x.Id">@x.Name</option>
-                                    }
-                                </InputSelect> *@
                             </div>
                             <div class="submission-field">
                                 <label>Kształt *</label>
@@ -376,11 +332,6 @@
                                     <span>Czy ma plamy na kapeluszu?</span>
                                     <InputCheckbox @bind-Value="hatHasSpots" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                    @* <label>Plamy na kapeluszu? *</label>
-                                    <InputSelect @bind-Value="hatHasSpots">
-                                        <option value="false">Nie</option>
-                                        <option value="true">Tak</option>
-                                    </InputSelect> *@
                                 </label>
                             </div>
                             <div class="submission-field">
@@ -388,11 +339,6 @@
                                     <span>Czy ma blaszki?</span>
                                     <InputCheckbox @bind-Value="hatHasGills" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                    @* <label>Czy ma blaszki? *</label>
-                                    <InputSelect @bind-Value="hatHasGills">
-                                        <option value="false">Nie</option>
-                                        <option value="true">Tak</option>
-                                    </InputSelect> *@
                                 </label>
                             </div>
                             <div class="submission-field">
@@ -400,11 +346,6 @@
                                     <span>Czy ma pierścień?</span>
                                     <InputCheckbox @bind-Value="hatHasRing" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                    @* <label>Czy ma pierścień? *</label>
-                                    <InputSelect @bind-Value="hatHasRing">
-                                        <option value="false">Nie</option>
-                                        <option value="true">Tak</option>
-                                    </InputSelect> *@
                                 </label>
                             </div>
                         </div>
@@ -439,15 +380,8 @@
                             </InputSelect>
                         </div>
                         <div class="submission-field">
+                                <label>Kolor liścia *</label>
                                 <ColorSelect @bind-Value="form.CreateLeafDTO!.LeafColorId" Colors="colors" />
-                                @* <label>Kolor *</label>
-                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafColorId">
-                                <option value="0">Wybierz kolor</option>
-                                @foreach (var x in colors)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect> *@
                         </div>
                         <div class="submission-field">
                             <label>Powierzchnia *</label>
@@ -488,11 +422,6 @@
                                     <span>Czy ma paski?</span>
                                     <InputCheckbox @bind-Value="leafStripes" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                @* <label>Czy ma paski? *</label>
-                                    <InputSelect @bind-Value="leafStripes">
-                                    <option value="false">Nie</option>
-                                    <option value="true">Tak</option>
-                                </InputSelect> *@
                             </label>
                         </div>
                         <div class="submission-field">
@@ -500,11 +429,6 @@
                                     <span>Czy ma plamy?</span>
                                     <InputCheckbox @bind-Value="leafSpots" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                @* <label>Czy ma plamy? *</label>
-                                    <InputSelect @bind-Value="leafSpots">
-                                    <option value="false">Nie</option>
-                                    <option value="true">Tak</option>
-                                </InputSelect> *@
                             </label>
                         </div>
                         <div class="submission-field">
@@ -512,11 +436,6 @@
                                     <span>Czy ma otwory?</span>
                                     <InputCheckbox @bind-Value="leafHoles" class="switch-input" />
                                     <span class="switch-slider"></span>
-                                @* <label>Czy ma otwory? *</label>
-                                    <InputSelect @bind-Value="leafHoles">
-                                    <option value="false">Nie</option>
-                                    <option value="true">Tak</option>
-                                </InputSelect> *@
                             </label>
                         </div>
                     </div>
@@ -545,15 +464,8 @@
                             <InputNumber @bind-Value="form.CreateFlowerDTO!.FlowerSizeInCm" min="0.1" />
                         </div>
                         <div class="submission-field">
+                                <label>Kolor główny kwiatu*</label>
                                 <ColorSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId" Colors="colors" />
-                            @* <label>Kolor *</label>
-                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId">
-                                <option value="0">Wybierz kolor</option>
-                                @foreach (var x in colors)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect> *@
                         </div>
                         <div class="submission-field">
                             <label>Kształt *</label>
@@ -626,15 +538,8 @@
                             </InputSelect>
                         </div>
                         <div class="submission-field">
+                                <label>Kolor główny owocu*</label>
                                 <ColorSelect @bind-Value="form.CreateFruitDTO!.FruitColorId" Colors="colors" />
-                            @* <label>Kolor *</label>
-                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitColorId">
-                                <option value="0">Wybierz kolor</option>
-                                @foreach (var x in colors)
-                                {
-                                    <option value="@x.Id">@x.Name</option>
-                                }
-                            </InputSelect> *@
                         </div>
                         <div class="submission-field">
                             <label>Powierzchnia *</label>
@@ -742,7 +647,7 @@
     private string? submitError;
     private int submissionId;
 
-    private void OnNameInput(ChangeEventArgs e) { form.Name = e.Value?.ToString() ?? string.Empty; Console.WriteLine($"Wpisana nazwa: [{form.Name}]"); }
+    //private void OnNameInput(ChangeEventArgs e) { form.Name = e.Value?.ToString() ?? string.Empty; Console.WriteLine($"Wpisana nazwa: [{form.Name}]"); }
 
     protected override async Task OnInitializedAsync()
     {
@@ -923,24 +828,18 @@
     {
         submitError = null;
 
-        // bool mandatoryFieldsInvalid =
-        //     form.PlantTypeID <= 0 ||
-        //     form.OccuranceId <= 0;
-
         bool plantPartsInvalid = form.PlantTypeID <= 0 || form.OccuranceId <= 0;
 
-
+        //walidacja po regionach
         if (ShowStalkSection)
         {
             plantPartsInvalid |= form.CreateStalkDTO!.StalkShapeId <= 0
                     || form.CreateStalkDTO.StalkColorId <= 0
                     || form.CreateStalkDTO.StalkSurfaceId <= 0;
-            // || stalkHollow is null;
         }
         if (ShowSapSection)
         {
             plantPartsInvalid |= form.CreateSapDTO!.SapColorId <= 0;
-            // || sapLeavesStain is null || sapSticky is null;
         }
         if (ShowHatSection)
         {
@@ -950,7 +849,6 @@
                 form.CreateHatDTO.HatThicknessId <= 0 ||
                 form.CreateHatDTO.HatSurfaceId <= 0;
         }
-
         if (ShowRootSection)
         {
             plantPartsInvalid |=
@@ -958,7 +856,6 @@
                 form.CreateRootDTO.RootSurfaceId <= 0 ||
                 form.CreateRootDTO.RootThicknessId <= 0;
         }
-
         if (ShowLeafSection)
         {
             plantPartsInvalid |=
@@ -968,7 +865,6 @@
                 form.CreateLeafDTO.LeafThicknessId <= 0 ||
                 !form.CreateLeafDTO.LeafFlavourId.HasValue;
         }
-
         if (ShowFlowerSection)
         {
             plantPartsInvalid |=
@@ -976,7 +872,6 @@
                 form.CreateFlowerDTO.FlowerShapeId <= 0 ||
                 !form.CreateFlowerDTO.FlowerFlavourId.HasValue;
         }
-
         if (ShowFruitSection)
         {
             plantPartsInvalid |=
@@ -986,7 +881,6 @@
                 form.CreateFruitDTO.FruitSurfaceId <= 0 ||
                 form.CreateFruitDTO.FruitThicknessId <= 0;
         }
-
         if (plantPartsInvalid)
         {
             submitError = "Uzupełnij wszystkie wymagane pola widocznych sekcji.";
