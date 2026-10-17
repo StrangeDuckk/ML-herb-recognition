@@ -1,0 +1,399 @@
+﻿@page "/admin"
+@using System.Text.Json
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@inject AdminAuthService Auth
+@inject AdminApiService AdminApi
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Panel administratora</PageTitle>
+
+<div class="plants-page admin-page">
+
+    <section class="plants-header admin-header">
+        <div>
+            <span class="section-label">PANEL ADMINISTRATORA</span>
+            <h1>Zarządzanie słownikami</h1>
+        </div>
+        <button type="button" class="admin-btn secondary" @onclick="Logout">Wyloguj</button>
+    </section>
+
+    <div class="admin-layout">
+
+        <nav class="admin-tabs">
+            @foreach (var d in Dictionaries)
+            {
+                <button type="button"
+                        class="admin-tab @(d == current ? "active" : "")"
+                        @onclick="() => SelectAsync(d)">
+                    @d.Title
+                </button>
+            }
+        </nav>
+
+        <section class="admin-content">
+            <h2>@current.Title</h2>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="admin-message @(isError ? "error" : "success")">@message</div>
+            }
+
+            <div class="admin-add">
+                <input class="admin-input" placeholder="Nowa wartość..." maxlength="100"
+                       @bind="newItem.Name" @bind:event="oninput" />
+
+                @if (current.IsColor)
+                {
+                    <input class="admin-input rgb" type="number" min="0" max="255" placeholder="R"
+                           @bind="newItem.R" @bind:event="oninput" />
+                    <input class="admin-input rgb" type="number" min="0" max="255" placeholder="G"
+                           @bind="newItem.G" @bind:event="oninput" />
+                    <input class="admin-input rgb" type="number" min="0" max="255" placeholder="B"
+                           @bind="newItem.B" @bind:event="oninput" />
+                    <span class="admin-swatch" style="@SwatchStyle(newItem)"></span>
+                }
+
+                <button type="button" class="admin-btn"
+                        disabled="@(isBusy || string.IsNullOrWhiteSpace(newItem.Name))"
+                        @onclick="AddAsync">
+                    Dodaj
+                </button>
+            </div>
+
+            @if (isLoading)
+            {
+                <p class="admin-empty">Ładowanie...</p>
+            }
+            else if (items.Count == 0)
+            {
+                <p class="admin-empty">Ten słownik jest pusty.</p>
+            }
+            else
+            {
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                @if (current.IsColor)
+                                {
+                                    <th></th>
+                                }
+                                <th>Nazwa</th>
+                                @if (current.IsColor)
+                                {
+                                    <th>R</th>
+                                    <th>G</th>
+                                    <th>B</th>
+                                }
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in items)
+                            {
+                                var isEditing = editing?.Id == item.Id;
+                                var shown = isEditing ? editing! : item;
+
+                                <tr>
+                                    <td class="admin-id">@item.Id</td>
+
+                                    @if (current.IsColor)
+                                    {
+                                        <td><span class="admin-swatch" style="@SwatchStyle(shown)"></span></td>
+                                    }
+
+                                    @if (isEditing)
+                                    {
+                                        <td>
+                                            <input class="admin-input" maxlength="100"
+                                                   @bind="editing!.Name" @bind:event="oninput" />
+                                        </td>
+
+                                        @if (current.IsColor)
+                                        {
+                                            <td>
+                                                <input class="admin-input rgb" type="number" min="0" max="255"
+                                                       @bind="editing!.R" @bind:event="oninput" />
+                                            </td>
+                                            <td>
+                                                <input class="admin-input rgb" type="number" min="0" max="255"
+                                                       @bind="editing!.G" @bind:event="oninput" />
+                                            </td>
+                                            <td>
+                                                <input class="admin-input rgb" type="number" min="0" max="255"
+                                                       @bind="editing!.B" @bind:event="oninput" />
+                                            </td>
+                                        }
+
+                                        <td>
+                                            <div class="admin-actions">
+                                                <button type="button" class="admin-btn small"
+                                                        disabled="@isBusy" @onclick="SaveAsync">
+                                                    Zapisz
+                                                </button>
+                                                <button type="button" class="admin-btn small secondary"
+                                                        @onclick="CancelEdit">
+                                                    Anuluj
+                                                </button>
+                                            </div>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@item.Name</td>
+
+                                        @if (current.IsColor)
+                                        {
+                                            <td>@item.R</td>
+                                            <td>@item.G</td>
+                                            <td>@item.B</td>
+                                        }
+
+                                        <td>
+                                            <div class="admin-actions">
+                                                @if (confirmDeleteId == item.Id)
+                                                {
+                                                    <button type="button" class="admin-btn small danger solid"
+                                                            disabled="@isBusy"
+                                                            @onclick="() => DeleteAsync(item.Id)">
+                                                        Na pewno usuń
+                                                    </button>
+                                                    <button type="button" class="admin-btn small secondary"
+                                                            @onclick="CancelDelete">
+                                                        Anuluj
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="admin-btn small secondary"
+                                                            @onclick="() => StartEdit(item)">
+                                                        Edytuj
+                                                    </button>
+                                                    <button type="button" class="admin-btn small danger"
+                                                            @onclick="() => AskDelete(item.Id)">
+                                                        Usuń
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@code {
+    private sealed record DictionaryDef(
+        string Endpoint, string Title, string IdProperty, string NameProperty, bool IsColor = false);
+
+    // plantType celowo pominięty – formularz zależy od Id 1/2/3
+    private static readonly DictionaryDef[] Dictionaries =
+    {
+        new("occurance",     "Występowanie",        "occuranceId",     "occurance"),
+        new("shape",         "Kształty",            "shapeId",         "shapeName"),
+        new("flavour",       "Smaki",               "flavourId",       "flavourName"),
+        new("poisonability", "Trujące właściwości", "poisonabilityId", "poisonabilityDescription"),
+        new("surface",       "Powierzchnie",        "surfaceId",       "surfaceName"),
+        new("thickness",     "Grubości",            "thicknessId",     "thicknessName"),
+        new("color",         "Kolory",              "colorId",         "colorName", IsColor: true),
+    };
+
+    private DictionaryDef current = Dictionaries[0];
+    private List<DictionaryItemDTO> items = new();
+    private DictionaryItemDTO newItem = new();
+    private DictionaryItemDTO? editing;
+    private int? confirmDeleteId;
+
+    private bool isLoading;
+    private bool isBusy;
+    private bool isError;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            Nav.NavigateTo("/admin/login");
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task SelectAsync(DictionaryDef dictionary)
+    {
+        current = dictionary;
+        newItem = new();
+        editing = null;
+        confirmDeleteId = null;
+        message = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            using var response = await Http.GetAsync($"api/dictionaries/{current.Endpoint}");
+            response.EnsureSuccessStatusCode();
+
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var document = await JsonDocument.ParseAsync(stream);
+
+            items = document.RootElement.EnumerateArray()
+                .Select(e => new DictionaryItemDTO
+                {
+                    Id = Prop(e, current.IdProperty)?.GetInt32() ?? 0,
+                    Name = Prop(e, current.NameProperty)?.GetString() ?? "",
+                    R = current.IsColor ? Prop(e, "r")?.GetInt32() : null,
+                    G = current.IsColor ? Prop(e, "g")?.GetInt32() : null,
+                    B = current.IsColor ? Prop(e, "b")?.GetInt32() : null
+                })
+                .OrderBy(i => i.Id)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            items = new();
+            ShowMessage($"Nie udało się wczytać słownika: {ex.Message}", error: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Task AddAsync()
+    {
+        if (!IsValid(newItem)) return Task.CompletedTask;
+
+        return RunAsync(async () =>
+        {
+            await AdminApi.CreateAsync(current.Endpoint, newItem);
+            newItem = new();
+            await LoadAsync();
+        }, "Dodano nową wartość.");
+    }
+
+    private void StartEdit(DictionaryItemDTO item)
+    {
+        confirmDeleteId = null;
+        editing = new DictionaryItemDTO
+        {
+            Id = item.Id,
+            Name = item.Name,
+            R = item.R,
+            G = item.G,
+            B = item.B
+        };
+    }
+
+    private void CancelEdit() => editing = null;
+
+    private Task SaveAsync()
+    {
+        if (editing is null || !IsValid(editing)) return Task.CompletedTask;
+
+        return RunAsync(async () =>
+        {
+            await AdminApi.UpdateAsync(current.Endpoint, editing);
+            editing = null;
+            await LoadAsync();
+        }, "Zapisano zmiany.");
+    }
+
+    private void AskDelete(int id)
+    {
+        editing = null;
+        confirmDeleteId = id;
+    }
+
+    private void CancelDelete() => confirmDeleteId = null;
+
+    private Task DeleteAsync(int id) =>
+        RunAsync(async () =>
+        {
+            await AdminApi.DeleteAsync(current.Endpoint, id);
+            confirmDeleteId = null;
+            await LoadAsync();
+        }, "Usunięto wartość.");
+
+    private async Task RunAsync(Func<Task> action, string successMessage)
+    {
+        isBusy = true;
+        message = null;
+
+        try
+        {
+            await action();
+            ShowMessage(successMessage, error: false);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Auth.Logout();
+            Nav.NavigateTo("/admin/login");
+        }
+        catch (Exception ex)
+        {
+            ShowMessage(ex.Message, error: true);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private bool IsValid(DictionaryItemDTO item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Name))
+        {
+            ShowMessage("Nazwa nie może być pusta.", error: true);
+            return false;
+        }
+
+        if (current.IsColor && new[] { item.R, item.G, item.B }
+                .Any(v => v is null or < 0 or > 255))
+        {
+            ShowMessage("Wartości R, G i B muszą być liczbami od 0 do 255.", error: true);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ShowMessage(string text, bool error)
+    {
+        message = text;
+        isError = error;
+    }
+
+    private void Logout()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+
+    private static string SwatchStyle(DictionaryItemDTO item) =>
+        $"background-color: rgb({Clamp(item.R)}, {Clamp(item.G)}, {Clamp(item.B)});";
+
+    private static int Clamp(int? v) => Math.Clamp(v ?? 0, 0, 255);
+
+    // wyszukiwanie pola JSON bez rozróżniania wielkości liter
+    private static JsonElement? Prop(JsonElement element, string name)
+    {
+        foreach (var p in element.EnumerateObject())
+            if (string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))
+                return p.Value;
+        return null;
+    }
+}

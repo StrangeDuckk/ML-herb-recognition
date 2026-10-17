@@ -1,6 +1,8 @@
 ﻿using HerbRecognition_APIs.DTOs;
 using HerbRecognition_APIs.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
 using System.Drawing;
 using System.Text.Json;
@@ -25,9 +27,12 @@ namespace HerbRecognition_APIs.Services
         Task<List<GetSurfaceDTO>> GetAllDictSurfacesAsync();
         Task<List<GetThicknessDTO>> GetAllDictThicknessesAsync();
         Task<List<GetColorDTO>> GetAllColorAsync();
+        Task<int> CreateDictionaryItemAsync(string dictionary, DictionaryItemDTO dto);
+        Task<bool> UpdateDictionaryItemAsync(string dictionary, int id, DictionaryItemDTO dto);
+        Task<bool> DeleteDictionaryItemAsync(string dictionary, int id);
     }
 
-    public class DbService(HerbRecognitionDbContext data) : IDbService
+    public class DbService(HerbRecognitionDbContext data) : IDbService 
     {
         public async Task<bool> ValidateColorAsync(int colorId, string table)
         {
@@ -59,7 +64,6 @@ namespace HerbRecognition_APIs.Services
                 throw new KeyNotFoundException($"Flavour with Id {FlavourId} does not exist, for {table}!");
             return true;
         }
-
         public async Task<IEnumerable<GetPlantDTO>> GetAllPlantsAsync()
         {
             var plants = await data.Plants
@@ -153,7 +157,6 @@ namespace HerbRecognition_APIs.Services
 
             return plants;
         }
-
         public async Task<IEnumerable<GetPlantDTO>> GetPlantsAsync() // tylko do wyswietlenia preview w bibliotece
         {
             var plants_preview = await data.Plants
@@ -481,7 +484,6 @@ namespace HerbRecognition_APIs.Services
 
             return plant;
         }
-
         public static bool IsSimilar(string? text, string search)
         {
             if(string.IsNullOrWhiteSpace(text)) return false;
@@ -500,7 +502,6 @@ namespace HerbRecognition_APIs.Services
 
             return literowkaDistance <= 2;//maksymalnie dwie różnice
         }
-
         private static int LevenshteinDistance(string a, string b)//todo poprawic //o ile liter roznia sie od siebie dwa wyrazy
         {//zalozenie ze poczatek jest w miare poprawny
             var matrix = new int[a.Length + 1, b.Length + 1];
@@ -533,7 +534,6 @@ namespace HerbRecognition_APIs.Services
 
             return matrix[a.Length, b.Length];
         }
-
         public async Task<IEnumerable<GetPlantDTO?>> GetPlantByNameAsync(string name)
         {
             if(string.IsNullOrWhiteSpace(name))
@@ -705,7 +705,6 @@ namespace HerbRecognition_APIs.Services
         }
 
         // ----------- UserInput Controller api/userInput/ ------
-
         public async Task<int> PostUserInputPlantAsync(CreatePlantDTO dto)
         {
             var json = JsonSerializer.Serialize(dto);
@@ -720,7 +719,6 @@ namespace HerbRecognition_APIs.Services
 
             return submission.Id;
         }
-
         public async Task<CreatePlantDTO?> GetUserInputPlantAsync(int id)
         {
             var subbmission = await data.UserInputs
@@ -735,6 +733,81 @@ namespace HerbRecognition_APIs.Services
             var dto = JsonSerializer.Deserialize<CreatePlantDTO>(subbmission.Inputdata);
 
             return dto;
+        }
+
+        // ----------- Admin Controller api/admin --------------
+        private static readonly Dictionary<string, (Type Type, string NameProperty)> DictionaryMap =new(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["occurance"] = (typeof(Occurance), nameof(Occurance.OccuranceName)),
+                    ["shape"] = (typeof(Shape), nameof(Shape.ShapeName)),
+                    ["flavour"] = (typeof(Flavour), nameof(Flavour.FlavourName)),
+                    ["poisonability"] = (typeof(Poisonability), nameof(Poisonability.Description)),
+                    ["surface"] = (typeof(Surface), nameof(Surface.SurfaceName)),
+                    ["thickness"] = (typeof(Thickness), nameof(Thickness.ThicknessName)),
+                    ["color"] = (typeof(Models.Color), nameof(Models.Color.ColorName))
+                };
+        private static (Type Type, string NameProperty) GetDictionary(string dictionary) =>
+            DictionaryMap.TryGetValue(dictionary, out var d)
+              ? d
+              : throw new ArgumentException($"Nieznany słownik: {dictionary}");
+        public async Task<int> CreateDictionaryItemAsync(string dictionary, DictionaryItemDTO dto)
+        {
+            var (type, nameProp) = GetDictionary(dictionary);
+
+            var entity = Activator.CreateInstance(type)!;
+            data.Add(entity);
+            var entry = data.Entry(entity);
+            ApplyValues(entry, nameProp, dto);
+
+            await data.SaveChangesAsync();
+
+            var keyName = entry.Metadata.FindPrimaryKey()!.Properties[0].Name;
+            return Convert.ToInt32(entry.Property(keyName).CurrentValue);
+
+        }
+
+        public async Task<bool> UpdateDictionaryItemAsync(string dictionary, int id, DictionaryItemDTO dto)
+        {
+            var (type, nameProp) = GetDictionary(dictionary);
+
+            var entity = await data.FindAsync(type, id);
+            if (entity is null) return false;
+
+            ApplyValues(data.Entry(entity), nameProp, dto);
+            await data.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteDictionaryItemAsync(string dictionary, int id)
+        {
+            var (type, _) = GetDictionary(dictionary);
+
+            var entity = await data.FindAsync(type, id);
+            if (entity is null) return false;
+
+            data.Remove(entity);
+            await data.SaveChangesAsync(); // DbUpdateException, jeśli wpis jest używany, todo w przyszlosci flaga czy aktywny
+            return true;
+        }
+        private static void ApplyValues(EntityEntry entry, string nameProp, DictionaryItemDTO dto)
+        {
+            entry.Property(nameProp).CurrentValue = dto.Name.Trim();
+
+            if (entry.Metadata.ClrType == typeof(Models.Color))
+            {
+                // nazwy kolumn RGB dopasuj do swojej encji Color
+                SetNumber(entry, "R", dto.R);
+                SetNumber(entry, "G", dto.G);
+                SetNumber(entry, "B", dto.B);
+            }
+
+        }
+        private static void SetNumber(EntityEntry entry, string propertyName, int? value)
+        {
+            var property = entry.Property(propertyName);
+            var targetType = Nullable.GetUnderlyingType(property.Metadata.ClrType)
+                             ?? property.Metadata.ClrType;
+            property.CurrentValue = Convert.ChangeType(value ?? 0, targetType);
         }
     }
 }

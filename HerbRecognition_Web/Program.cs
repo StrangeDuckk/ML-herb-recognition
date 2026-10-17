@@ -23,6 +23,10 @@ sp.GetRequiredService<IHttpClientFactory>()
 builder.Services.AddScoped<PlantApiService>();
 builder.Services.AddScoped<UserInputApiService>();
 
+// autoryzacja
+builder.Services.AddScoped<AdminAuthService>();
+builder.Services.AddScoped<AdminApiService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,0 +1,89 @@
+﻿@page "/admin/login"
+@using System.ComponentModel.DataAnnotations
+@using HerbRecognition_Web.Communication.Services
+@inject AdminAuthService Auth
+@inject NavigationManager Nav
+
+<PageTitle>Logowanie administratora</PageTitle>
+
+<div class="admin-login-page">
+    <div class="admin-login-card">
+        <span class="section-label">PANEL ADMINISTRATORA</span>
+        <h1>Logowanie</h1>
+
+        <EditForm Model="model" OnValidSubmit="LoginAsync" FormName="AdminLogin">
+            <DataAnnotationsValidator />
+
+            <div class="submission-form">
+                <div class="submission-field">
+                    <label>Login</label>
+                    <InputText @bind-Value="model.Username" autocomplete="username" />
+                    <ValidationMessage For="@(() => model.Username)" />
+                </div>
+
+                <div class="submission-field">
+                    <label>Hasło</label>
+                    <InputText type="password" @bind-Value="model.Password"
+                               autocomplete="current-password" />
+                    <ValidationMessage For="@(() => model.Password)" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="admin-message error">@error</div>
+                }
+
+                <button type="submit" class="submission-button" disabled="@isBusy">
+                    @(isBusy ? "Logowanie..." : "Zaloguj")
+                </button>
+            </div>
+        </EditForm>
+
+        <a href="/" class="admin-back">← Wróć do strony głównej</a>
+    </div>
+</div>
+
+@code {
+    private LoginModel model = new();
+    private bool isBusy;
+    private string? error;
+
+    protected override void OnInitialized()
+    {
+        if (Auth.IsLoggedIn)
+            Nav.NavigateTo("/admin");
+    }
+
+    private async Task LoginAsync()
+    {
+        isBusy = true;
+        error = null;
+
+        try
+        {
+            if (await Auth.LoginAsync(model.Username.Trim(), model.Password))
+                Nav.NavigateTo("/admin");
+            else
+                error = "Nieprawidłowy login lub hasło.";
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd logowania: {ex}");
+            error = "Brak połączenia z API.";
+        }
+        finally
+        {
+            model.Password = "";
+            isBusy = false;
+        }
+    }
+
+    private sealed class LoginModel
+    {
+        [Required(ErrorMessage = "Podaj login.")]
+        public string Username { get; set; } = "";
+
+        [Required(ErrorMessage = "Podaj hasło.")]
+        public string Password { get; set; } = "";
+    }
+}
