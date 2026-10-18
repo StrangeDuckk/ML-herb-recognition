@@ -74,6 +74,7 @@ namespace HerbRecognition_APIs.Services
                     PolishName = p.Polishname,
                     LatinName = p.Latinname,
                     Subriquet = p.Subriquet,
+                    MoreInfo = p.moreInfo,
 
                     PlantTypeDTO = new GetPlantTypeDTO
                     {
@@ -210,6 +211,7 @@ namespace HerbRecognition_APIs.Services
                     Polishname = dto.PolishName,
                     Latinname = dto.LatinName,
                     Subriquet = dto.Subriquet,
+                    moreInfo = dto.MoreInfo,
 
                     Planttypeid = dto.PlantTypeID,
                     Occuranceid = dto.OccuranceId,
@@ -406,6 +408,7 @@ namespace HerbRecognition_APIs.Services
                     PolishName = p.Polishname,
                     LatinName = p.Latinname,
                     Subriquet = p.Subriquet,
+                    MoreInfo = p.moreInfo,
 
                     PlantTypeDTO = new GetPlantTypeDTO
                     {

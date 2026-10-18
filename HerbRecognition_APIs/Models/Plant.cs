@@ -36,6 +36,7 @@ public partial class Plant
     public PlantSimilarPlant? Similarplants { get; set; }
 
     public int? Poisonabilityid { get; set; }
+    public string? moreInfo { get; set; }
 
     public virtual Flower? Flower { get; set; }
 

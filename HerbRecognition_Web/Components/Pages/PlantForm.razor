@@ -94,6 +94,11 @@
                             <InputText @bind-Value="form.Subriquet"
                                        maxlength="50" />
                         </div>
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.MoreInfo"
+                                       maxlength="200" />
+                        </div>
 
                         <div class="submission-field">
                             <label>Typ rośliny *</label>
@@ -938,6 +943,7 @@
         PolishName = form.PolishName.Trim(),
         LatinName = NullIfEmpty(form.LatinName),
         Subriquet = NullIfEmpty(form.Subriquet),
+        MoreInfo = NullIfEmpty(form.MoreInfo),
         PlantTypeID = form.PlantTypeID,
         OccuranceId = form.OccuranceId,
         PoisonabilityId = form.PoisonabilityId,

@@ -18,6 +18,9 @@ namespace HerbRecognition_APIs.DTOs
 
         [StringLength(50, MinimumLength = 2)]
         public string? Subriquet {  get; set; }
+        [Required]
+        [StringLength(200, MinimumLength = 2)]
+        public string? MoreInfo { get; set; }
 
         // ----- type -----
         [Required]

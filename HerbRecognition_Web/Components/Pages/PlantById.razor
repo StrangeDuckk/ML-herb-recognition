@@ -120,6 +120,13 @@
                         </span>
                     </div>
 
+                    <div class="info-item">
+                        <span class="info-label">Dodatkowe informacje</span>
+                        <span class="info-value">
+                            @(plant.MoreInfo?? "Brak informacji")
+                        </span>
+                    </div>
+
                 </div>
 
             </section>
@@ -385,7 +392,7 @@
                         <div class="info-item">
                             <span class="info-label">Smak</span>
                             <span class="info-value">
-                                @plant.GetFlowerDTO.FlowerFlavourName
+                                @(plant.GetFlowerDTO.FlowerFlavourName??"Brak informacji")
                             </span>
                         </div>
 
@@ -395,9 +402,12 @@
                                 @plant.GetFlowerDTO.FlowerScentPower
                             </span>
                         </div>
+
                         <div class="info-item">
                             <span class="info-label">Dodatkowe informacje</span>
-                            <span class="info-value">@plant.GetFlowerDTO.FlowerMoreInfo</span>
+                            <span class="info-value">
+                                @(plant.GetFlowerDTO.FlowerMoreInfo ?? "Brak informacji")
+                            </span>
                         </div>
 
                     </div>
@@ -420,7 +430,7 @@
                         <div class="info-item">
                             <span class="info-label">Smak</span>
                             <span class="info-value">
-                                @plant.GetFruitDTO.FruitFlavourName
+                                @(plant.GetFruitDTO.FruitFlavourName ?? "Brak informacji")
                             </span>
                         </div>
 

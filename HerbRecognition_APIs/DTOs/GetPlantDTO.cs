@@ -8,6 +8,7 @@
         public string PolishName { get; set; } = null!;
         public string? LatinName { get; set; }
         public string? Subriquet { get; set; }
+        public string? MoreInfo { get; set; }
 
         // ----- type -----
         public GetPlantTypeDTO PlantTypeDTO { get; set; } = null!;

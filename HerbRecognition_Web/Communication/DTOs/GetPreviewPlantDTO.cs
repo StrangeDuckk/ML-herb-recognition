@@ -7,6 +7,7 @@
         public string PolishName { get; set; } = string.Empty;
         public string LatinName { get; set; } = string.Empty;
         public string? Subriquet { get; set; }
+        public string? MoreInfo { get; set; }
 
         public GetPlantTypeDTO? PlantTypeDTO { get; set; }
 
