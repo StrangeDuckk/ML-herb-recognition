@@ -12,7 +12,7 @@ public partial class Stalk
     public int Colorid { get; set; }
 
     public int Surfaceid { get; set; }
-    public bool IsHollow {  get; set; }
+    public bool isHollow {  get; set; }
 
     public virtual Color Color { get; set; } = null!;
 

@@ -272,6 +272,13 @@
                                     }
                                 </InputSelect>
                             </div>
+                            <div class="submission-field">
+                                <label class="switch-label">
+                                    <span>Czy jest pusty w środku?</span>
+                                    <InputCheckbox @bind-Value="rootIsHollow" class="switch-input" />
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
                         </div>
                     </section>
                 }
@@ -639,6 +646,7 @@
     private bool leafStripes;
     private bool leafSpots;
     private bool leafHoles;
+    private bool rootIsHollow;
 
     private bool isLoading = true;
     private bool isSubmitting;
@@ -948,7 +956,8 @@
         {
             RootColorId = form.CreateRootDTO!.RootColorId,
             RootSurfaceId = form.CreateRootDTO.RootSurfaceId,
-            RootThicknessId = form.CreateRootDTO.RootThicknessId
+            RootThicknessId = form.CreateRootDTO.RootThicknessId,
+            RootIsHollow = rootIsHollow
         } : null,
 
         CreateHatDTO = ShowHatSection ? new DTOs.CreateHatDTO

@@ -10,5 +10,7 @@ namespace HerbRecognition_Web.DTOs
         public int RootSurfaceId { get; set; }
         [Required]
         public int RootThicknessId { get; set; }
+        [Required]
+        public bool RootIsHollow {  get; set; }
     }
 }

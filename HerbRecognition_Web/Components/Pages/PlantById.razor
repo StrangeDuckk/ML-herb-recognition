@@ -212,6 +212,13 @@
                             </span>
                         </div>
 
+                        <div class="info-item">
+                            <span class="info-label">Pusty w środku</span>
+                            <span class="info-value">
+                                @(plant.GetRootDTO.RootIsHollow ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
                     </div>
 
                 </section>
@@ -247,6 +254,13 @@
                             <span class="info-label">Powierzchnia</span>
                             <span class="info-value">
                                 @plant.GetStalkDTO.StalkSurfaceName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Pusty w środku</span>
+                            <span class="info-value">
+                                @(plant.GetStalkDTO.StalkIsHollow ? "Tak" : "Nie")
                             </span>
                         </div>
 

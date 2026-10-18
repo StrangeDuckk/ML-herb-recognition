@@ -90,13 +90,15 @@ namespace HerbRecognition_APIs.Services
                     {
                         RootColorName = p.Root.Color.ColorName,
                         RootSurfaceName = p.Root.Surface.SurfaceName,
-                        RootThicknessName = p.Root.Thickness.ThicknessName
+                        RootThicknessName = p.Root.Thickness.ThicknessName,
+                        RootIsHollow = p.Root.isHollow
                     },
                     GetStalkDTO = new GetStalkDTO
                     {
                         StalkColorName = p.Stalk.Color.ColorName,
                         StalkShapeName = p.Stalk.Shape.ShapeName,
-                        StalkSurfaceName = p.Stalk.Surface.SurfaceName
+                        StalkSurfaceName = p.Stalk.Surface.SurfaceName,
+                        StalkIsHollow = p.Stalk.isHollow,
                     },
 
                     Occurance = new GetOccuranceDTO
@@ -278,7 +280,8 @@ namespace HerbRecognition_APIs.Services
                     {
                         Colorid = dto.CreateRootDTO.RootColorId,
                         Surfaceid = dto.CreateRootDTO.RootSurfaceId,
-                        Thicknessid = dto.CreateRootDTO.RootThicknessId
+                        Thicknessid = dto.CreateRootDTO.RootThicknessId,
+                        isHollow = dto.CreateRootDTO.RootIsHollow
                     };
                 }
 
@@ -292,7 +295,7 @@ namespace HerbRecognition_APIs.Services
                     Shapeid = dto.CreateStalkDTO.StalkShapeId,
                     Colorid = dto.CreateStalkDTO.StalkColorId,
                     Surfaceid = dto.CreateStalkDTO.StalkSurfaceId,
-                    IsHollow = dto.CreateStalkDTO.StalkIsHollow
+                    isHollow = dto.CreateStalkDTO.StalkIsHollow
                 };
                 
 
@@ -417,13 +420,15 @@ namespace HerbRecognition_APIs.Services
                     {
                         RootColorName = p.Root.Color.ColorName,
                         RootSurfaceName = p.Root.Surface.SurfaceName,
-                        RootThicknessName = p.Root.Thickness.ThicknessName
+                        RootThicknessName = p.Root.Thickness.ThicknessName,
+                        RootIsHollow = p.Root.isHollow
                     },
                     GetStalkDTO = new GetStalkDTO
                     {
                         StalkColorName = p.Stalk.Color.ColorName,
                         StalkShapeName = p.Stalk.Shape.ShapeName,
-                        StalkSurfaceName = p.Stalk.Surface.SurfaceName
+                        StalkSurfaceName = p.Stalk.Surface.SurfaceName,
+                        StalkIsHollow = p.Stalk.isHollow
                     },
 
                     Occurance = new GetOccuranceDTO
@@ -765,7 +770,6 @@ namespace HerbRecognition_APIs.Services
             return Convert.ToInt32(entry.Property(keyName).CurrentValue);
 
         }
-
         public async Task<bool> UpdateDictionaryItemAsync(string dictionary, int id, DictionaryItemDTO dto)
         {
             var (type, nameProp) = GetDictionary(dictionary);
@@ -777,7 +781,6 @@ namespace HerbRecognition_APIs.Services
             await data.SaveChangesAsync();
             return true;
         }
-
         public async Task<bool> DeleteDictionaryItemAsync(string dictionary, int id)
         {
             var (type, _) = GetDictionary(dictionary);
