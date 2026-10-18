@@ -16,6 +16,7 @@ public partial class Fruit
     public int Surfaceid { get; set; }
 
     public int Thicknessid { get; set; }
+    public string? moreInfo { get; set; }
 
     public virtual Color Color { get; set; } = null!;
 

@@ -432,7 +432,7 @@
                             <span class="info-value">
                                 @(plant.GetFruitDTO.FruitFlavourName ?? "Brak informacji")
                             </span>
-                        </div>
+                        </div>         
 
                         <div class="info-item">
                             <span class="info-label">Kształt</span>
@@ -459,6 +459,13 @@
                             <span class="info-label">Grubość</span>
                             <span class="info-value">
                                 @plant.GetFruitDTO.FruitThicnkessName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Dodatkowe informacje</span>
+                            <span class="info-value">
+                                @(plant.GetFruitDTO.FruitMoreInfo ?? "Brak informacji")
                             </span>
                         </div>
 

@@ -1,13 +1,6 @@
 - usprawnic formularz:
 	-dodac do slownikow: 
-		- wystepowanie -> na innych drzewach
-		- korzen, czy pusty w srodku
-		- ksztalt: parasolowaty/baldachimowaty
-		- kwiat: zapach smak zapachu
-		- krztalt + kulisty
-		- ksztalt + featherlike
-		- dodanie do kazdego regionu pola "dodatkowe informacje" (mandatory + dla kazdego np flower, sap, root, stalk)
-	- zmienic wartosc w slownikach na polskie
+		- dodanie do kazdego regionu pola "dodatkowe informacje" dla kazdego np sap, root, stalk, leaf, fruit)
 
 - zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika + logowanie administratora
 

@@ -144,7 +144,8 @@ namespace HerbRecognition_APIs.Services
                         FruitShapeName = p.Fruit.Shape.ShapeName,
                         FruitColorName = p.Fruit.Color.ColorName,
                         FruitSurfaceName = p.Fruit.Surface.SurfaceName,
-                        FruitThicnkessName = p.Fruit.Thickness.ThicknessName
+                        FruitThicnkessName = p.Fruit.Thickness.ThicknessName,
+                        FruitMoreInfo = p.Fruit.moreInfo
                     },
 
                     SimiliarPlantDTO = p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
@@ -382,7 +383,8 @@ namespace HerbRecognition_APIs.Services
                         Shapeid = dto.CreateFruitDTO.FruitShapeId,
                         Colorid = dto.CreateFruitDTO.FruitColorId,
                         Surfaceid = dto.CreateFruitDTO.FruitSurfaceId,
-                        Thicknessid = dto.CreateFruitDTO.FruitThicknessId
+                        Thicknessid = dto.CreateFruitDTO.FruitThicknessId,
+                        moreInfo = dto.CreateFruitDTO.FruitMoreInfo
                     };
                 }
 
@@ -478,7 +480,8 @@ namespace HerbRecognition_APIs.Services
                         FruitShapeName = p.Fruit.Shape.ShapeName,
                         FruitColorName = p.Fruit.Color.ColorName,
                         FruitSurfaceName = p.Fruit.Surface.SurfaceName,
-                        FruitThicnkessName = p.Fruit.Thickness.ThicknessName
+                        FruitThicnkessName = p.Fruit.Thickness.ThicknessName,
+                        FruitMoreInfo = p.Fruit.moreInfo
                     },
 
                     SimiliarPlantDTO = p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
