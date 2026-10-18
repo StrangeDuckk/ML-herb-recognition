@@ -7,5 +7,6 @@
         public string FlowerShapeName { get; set; } = null!;
         public string? FlowerFlavourName { get; set; }
         public int? FlowerScentPower { get; set; }
+        public string? FlowerMoreInfo { get; set; }
     }
 }

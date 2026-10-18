@@ -16,6 +16,7 @@ public partial class Flower
     public int? Flavourid { get; set; }
 
     public int Scentpower { get; set; }
+    public string? moreInfo { get; set; }
 
     public virtual Color Color { get; set; } = null!;
 

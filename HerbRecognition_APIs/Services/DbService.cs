@@ -134,7 +134,8 @@ namespace HerbRecognition_APIs.Services
                         FlowerColorName = p.Flower.Color.ColorName,
                         FlowerShapeName = p.Flower.Shape.ShapeName,
                         FlowerFlavourName = p.Flower.Flavour.FlavourName,
-                        FlowerScentPower = p.Flower.Scentpower
+                        FlowerScentPower = p.Flower.Scentpower,
+                        FlowerMoreInfo = p.Flower.moreInfo
                     },
                     GetFruitDTO = p.Fruit == null ? null : new GetFruitDTO
                     {
@@ -356,7 +357,8 @@ namespace HerbRecognition_APIs.Services
                         Colorid = dto.CreateFlowerDTO.FlowerColorId,
                         Shapeid = dto.CreateFlowerDTO.FlowerShapeId,
                         Flavourid = dto.CreateFlowerDTO.FlowerFlavourId,
-                        Scentpower = dto.CreateFlowerDTO.FlowerScentPower
+                        Scentpower = dto.CreateFlowerDTO.FlowerScentPower,
+                        moreInfo = dto.CreateFlowerDTO.FlowerMoreInfo
                     };
 
                 }
@@ -464,7 +466,8 @@ namespace HerbRecognition_APIs.Services
                         FlowerColorName = p.Flower.Color.ColorName,
                         FlowerShapeName = p.Flower.Shape.ShapeName,
                         FlowerFlavourName = p.Flower.Flavour.FlavourName,
-                        FlowerScentPower = p.Flower.Scentpower
+                        FlowerScentPower = p.Flower.Scentpower,
+                        FlowerMoreInfo = p.Flower.moreInfo
                     },
                     GetFruitDTO = p.Fruit == null ? null : new GetFruitDTO
                     {

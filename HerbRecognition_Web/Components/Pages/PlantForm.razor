@@ -503,6 +503,12 @@
                                 }
                             </InputSelect>
                         </div>
+                            <div class="submission-field">
+                                <label>Dodatkowe informacje</label>
+                                <InputText @bind-Value="form.CreateFlowerDTO.FlowerMoreInfo"
+                                           maxlength="200" />
+                                <ValidationMessage For="@(() => form.CreateFlowerDTO.FlowerMoreInfo)" />
+                            </div>
                     </div>
                 </section>
                 }
@@ -990,7 +996,8 @@
             FlowerColorId = form.CreateFlowerDTO.FlowerColorId,
             FlowerShapeId = form.CreateFlowerDTO.FlowerShapeId,
             FlowerFlavourId = form.CreateFlowerDTO.FlowerFlavourId,
-            FlowerScentPower = form.CreateFlowerDTO.FlowerScentPower
+            FlowerScentPower = form.CreateFlowerDTO.FlowerScentPower,
+            FlowerMoreInfo = form.CreateFlowerDTO.FlowerMoreInfo
         } : null,
         CreateFruitDTO = ShowFruitSection ? new DTOs.CreateFruitDTO
         {
