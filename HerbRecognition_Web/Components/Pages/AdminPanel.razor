@@ -39,21 +39,28 @@
             {
                 <div class="admin-message @(isError ? "error" : "success")">@message</div>
             }
+            @if (current.EditOnly)
+            {
+                <p class="admin-hint">
+                    Ten słownik ma stałą liczbę wpisów – możesz tylko zmieniać ich nazwy.
+                </p>
+            }
+            else
+            {
+                <div class="admin-add">
+                    <input class="admin-input" placeholder="Nowa wartość..." maxlength="100"
+                    @bind="newItem.Name" @bind:event="oninput" />
 
-            <div class="admin-add">
-                <input class="admin-input" placeholder="Nowa wartość..." maxlength="100"
-                       @bind="newItem.Name" @bind:event="oninput" />
-
-                @if (current.IsColor)
-                {
-                    <input class="admin-input rgb" type="number" min="0" max="255" placeholder="R"
-                           @bind="newItem.R" @bind:event="oninput" />
-                    <input class="admin-input rgb" type="number" min="0" max="255" placeholder="G"
-                           @bind="newItem.G" @bind:event="oninput" />
-                    <input class="admin-input rgb" type="number" min="0" max="255" placeholder="B"
-                           @bind="newItem.B" @bind:event="oninput" />
-                    <span class="admin-swatch" style="@SwatchStyle(newItem)"></span>
-                }
+                    @if (current.IsColor)
+                    {
+                        <input class="admin-input rgb" type="number" min="0" max="255" placeholder="R"
+                        @bind="newItem.R" @bind:event="oninput" />
+                        <input class="admin-input rgb" type="number" min="0" max="255" placeholder="G"
+                        @bind="newItem.G" @bind:event="oninput" />
+                        <input class="admin-input rgb" type="number" min="0" max="255" placeholder="B"
+                        @bind="newItem.B" @bind:event="oninput" />
+                        <span class="admin-swatch" style="@SwatchStyle(newItem)"></span>
+                    }
 
                 <button type="button" class="admin-btn"
                         disabled="@(isBusy || string.IsNullOrWhiteSpace(newItem.Name))"
@@ -61,7 +68,7 @@
                     Dodaj
                 </button>
             </div>
-
+            }
             @if (isLoading)
             {
                 <p class="admin-empty">Ładowanie...</p>
@@ -172,10 +179,13 @@
                                                             @onclick="() => StartEdit(item)">
                                                         Edytuj
                                                     </button>
-                                                    <button type="button" class="admin-btn small danger"
-                                                            @onclick="() => AskDelete(item.Id)">
-                                                        Usuń
-                                                    </button>
+                                                    @if (!current.EditOnly)
+                                                    {
+                                                        <button type="button" class="admin-btn small danger"
+                                                        @onclick="() => AskDelete(item.Id)">
+                                                            Usuń
+                                                        </button>
+                                                    }
                                                 }
                                             </div>
                                         </td>
@@ -192,18 +202,19 @@
 
 @code {
     private sealed record DictionaryDef(
-        string Endpoint, string Title, string IdProperty, string NameProperty, bool IsColor = false);
+        string Endpoint, string Title, string IdProperty, string NameProperty, bool IsColor = false, bool EditOnly = false);
 
     // plantType celowo pominięty – formularz zależy od Id 1/2/3
     private static readonly DictionaryDef[] Dictionaries =
     {
-        new("occurance",     "Występowanie",        "occuranceId",     "occurance"),
-        new("shape",         "Kształty",            "shapeId",         "shapeName"),
-        new("flavour",       "Smaki",               "flavourId",       "flavourName"),
-        new("poisonability", "Trujące właściwości", "poisonabilityId", "poisonabilityDescription"),
-        new("surface",       "Powierzchnie",        "surfaceId",       "surfaceName"),
-        new("thickness",     "Grubości",            "thicknessId",     "thicknessName"),
-        new("color",         "Kolory",              "colorId",         "colorName", IsColor: true),
+        new("occurance",        "Występowanie",             "occuranceId",          "occurance"),
+        new("shape",            "Kształty",                 "shapeId",              "shapeName"),
+        new("flavour",          "Smaki",                    "flavourId",            "flavourName"),
+        new("poisonability",    "Trujące właściwości",      "poisonabilityId",      "poisonabilityDescription"),
+        new("surface",          "Powierzchnie",             "surfaceId",            "surfaceName"),
+        new("thickness",        "Grubości",                 "thicknessId",          "thicknessName"),
+        new("color",            "Kolory",                   "colorId",              "colorName",    IsColor: true),
+        new("monthOfHarvest",   "Miesiąc zbioru",           "monthOfHarvestId",     "monthName",    EditOnly: true),
     };
 
     private DictionaryDef current = Dictionaries[0];

@@ -1,6 +1,5 @@
 - usprawnic formularz:
                    - dodanie do formularza similar plants
-	- dodanie do edycji slownikow monthOfHarvest
 
 - zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika + logowanie administratora
 

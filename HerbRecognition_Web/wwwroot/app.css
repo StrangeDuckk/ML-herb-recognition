@@ -583,6 +583,16 @@ a {
     color: #7a857f;
 }
 
+.admin-hint {
+    margin: 0 0 20px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #f6faf8;
+    border: 1px solid #dfe5e1;
+    color: #5f6b65;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 500px) {
 
     .main-nav {

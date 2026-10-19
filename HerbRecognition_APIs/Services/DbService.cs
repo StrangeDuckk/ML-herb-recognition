@@ -728,7 +728,12 @@ namespace HerbRecognition_APIs.Services
                     ["poisonability"] = (typeof(Poisonability), nameof(Poisonability.Description)),
                     ["surface"] = (typeof(Surface), nameof(Surface.SurfaceName)),
                     ["thickness"] = (typeof(Thickness), nameof(Thickness.ThicknessName)),
-                    ["color"] = (typeof(Models.Color), nameof(Models.Color.ColorName))
+                    ["color"] = (typeof(Models.Color), nameof(Models.Color.ColorName)),
+                    ["monthOfHarvest"] = (typeof(MonthOfHarvest), nameof(MonthOfHarvest.MonthName))
+                };
+        private static readonly HashSet<string> EditOnlyDictionaries = new(StringComparer.OrdinalIgnoreCase)//stała liczba, edycja istniejacych
+                {
+                    "monthOfHarvest"
                 };
         private static (Type Type, string NameProperty) GetDictionary(string dictionary) =>
             DictionaryMap.TryGetValue(dictionary, out var d)
@@ -736,6 +741,8 @@ namespace HerbRecognition_APIs.Services
               : throw new ArgumentException($"Nieznany słownik: {dictionary}");
         public async Task<int> CreateDictionaryItemAsync(string dictionary, DictionaryItemDTO dto)
         {
+            if (EditOnlyDictionaries.Contains(dictionary))
+                throw new ArgumentException($"Do tego słownika {dictionary} nie można dodawać wpisów - można tylko edytować obecne");
             var (type, nameProp) = GetDictionary(dictionary);
 
             var entity = Activator.CreateInstance(type)!;
@@ -762,6 +769,9 @@ namespace HerbRecognition_APIs.Services
         }
         public async Task<bool> DeleteDictionaryItemAsync(string dictionary, int id)
         {
+            if (EditOnlyDictionaries.Contains(dictionary))
+                throw new ArgumentException($"Do tego słownika {dictionary} nie można dodawać wpisów - można tylko edytować obecne");
+
             var (type, _) = GetDictionary(dictionary);
 
             var entity = await data.FindAsync(type, id);
