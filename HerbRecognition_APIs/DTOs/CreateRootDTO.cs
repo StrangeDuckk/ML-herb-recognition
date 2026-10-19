@@ -12,5 +12,8 @@ namespace HerbRecognition_APIs.DTOs
         public int RootThicknessId { get; set; }
         [Required]
         public bool RootIsHollow { get; set; }
+        [Required]
+        [StringLength(200, MinimumLength = 2)]
+        public string? RootMoreInfo { get; set; }
     }
 }

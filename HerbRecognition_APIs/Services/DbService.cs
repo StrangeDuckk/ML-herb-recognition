@@ -92,7 +92,8 @@ namespace HerbRecognition_APIs.Services
                         RootColorName = p.Root.Color.ColorName,
                         RootSurfaceName = p.Root.Surface.SurfaceName,
                         RootThicknessName = p.Root.Thickness.ThicknessName,
-                        RootIsHollow = p.Root.isHollow
+                        RootIsHollow = p.Root.isHollow,
+                        RootMoreInfo = p.Root.moreInfo,
                     },
                     GetStalkDTO = new GetStalkDTO
                     {
@@ -287,7 +288,8 @@ namespace HerbRecognition_APIs.Services
                         Colorid = dto.CreateRootDTO.RootColorId,
                         Surfaceid = dto.CreateRootDTO.RootSurfaceId,
                         Thicknessid = dto.CreateRootDTO.RootThicknessId,
-                        isHollow = dto.CreateRootDTO.RootIsHollow
+                        isHollow = dto.CreateRootDTO.RootIsHollow,
+                        moreInfo = dto.CreateRootDTO.RootMoreInfo
                     };
                 }
 
@@ -432,7 +434,8 @@ namespace HerbRecognition_APIs.Services
                         RootColorName = p.Root.Color.ColorName,
                         RootSurfaceName = p.Root.Surface.SurfaceName,
                         RootThicknessName = p.Root.Thickness.ThicknessName,
-                        RootIsHollow = p.Root.isHollow
+                        RootIsHollow = p.Root.isHollow,
+                        RootMoreInfo = p.Root.moreInfo,
                     },
                     GetStalkDTO = new GetStalkDTO
                     {

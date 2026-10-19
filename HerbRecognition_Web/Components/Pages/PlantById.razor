@@ -224,6 +224,13 @@
                             <span class="info-value">
                                 @(plant.GetRootDTO.RootIsHollow ? "Tak" : "Nie")
                             </span>
+
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Dodatkowe informacje</span>
+                            <span class="info-value">
+                                @(plant.GetRootDTO.RootMoreInfo ?? "Brak informacji")
+                            </span>
                         </div>
 
                     </div>

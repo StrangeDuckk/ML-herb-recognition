@@ -6,5 +6,6 @@
         public string RootSurfaceName { get; set; } = null!;
         public string RootThicknessName { get; set; } = null!;
         public bool RootIsHollow {  get; set; }
+        public string? RootMoreInfo { get; set; }
     }
 }

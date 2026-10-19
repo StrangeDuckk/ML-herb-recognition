@@ -284,6 +284,11 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+                            <div class="submission-field">
+                                <label>Dodatkowe informacje</label>
+                                <InputText @bind-Value="form.CreateRootDTO.RootMoreInfo"
+                                           maxlength="200" />
+                            </div>
                         </div>
                     </section>
                 }
@@ -984,7 +989,8 @@
             RootColorId = form.CreateRootDTO!.RootColorId,
             RootSurfaceId = form.CreateRootDTO.RootSurfaceId,
             RootThicknessId = form.CreateRootDTO.RootThicknessId,
-            RootIsHollow = rootIsHollow
+            RootIsHollow = rootIsHollow,
+            RootMoreInfo = form.CreateRootDTO.RootMoreInfo
         } : null,
 
         CreateHatDTO = ShowHatSection ? new DTOs.CreateHatDTO

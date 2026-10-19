@@ -13,6 +13,7 @@ public partial class Root
 
     public int Thicknessid { get; set; }
     public bool isHollow { get; set; }
+    public string? moreInfo { get; set; }
 
     public virtual Color Color { get; set; } = null!;
 
