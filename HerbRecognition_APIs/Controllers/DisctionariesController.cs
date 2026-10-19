@@ -56,5 +56,11 @@ namespace HerbRecognition_APIs.Controllers
         {
             return Ok(await dbService.GetAllColorAsync());
         }
+
+        [HttpGet("monthOfHarvest")]
+        public async Task<ActionResult<GetOccuranceDTO>> GetAllDictMonthOfHarvestAsync()
+        {
+            return Ok(await dbService.GetAllDictMonthOfHarvestAsync());
+        }
     }
 }

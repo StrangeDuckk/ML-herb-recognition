@@ -42,5 +42,8 @@
 
         // ----- poisonability -----
         public string? PoisonabilityDescription { get; set; }
+
+        // ----- MonthOfHarvest -----
+        public string? MonthOfHarvestName { get; set; }
     }
 }

@@ -32,6 +32,8 @@ public partial class Plant
     public int? Flowerid { get; set; }
 
     public int? Fruitid { get; set; }
+    public int? MonthOfHarvestId { get; set; }
+
 
     public PlantSimilarPlant? Similarplants { get; set; }
 
@@ -62,8 +64,8 @@ public partial class Plant
 
     public virtual Sap? Sap { get; set; }
 
-    //public virtual List<Plant>? Similarplants { get; set; }//todo sprawdzic czy nie bedzie powodowac bledow, rekord -> list
     public virtual ICollection<PlantSimilarPlant> SimilarPlants { get; set; } = new List<PlantSimilarPlant>();
     public virtual ICollection<PlantSimilarPlant> SimilarTo { get; set; } = new List<PlantSimilarPlant>();
     public virtual Stalk Stalk { get; set; } = null!;
+    public virtual MonthOfHarvest? MonthOfHarvest { get; set; }
 }

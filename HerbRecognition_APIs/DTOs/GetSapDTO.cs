@@ -6,5 +6,6 @@
         public bool SapLeavesStains { get; set; }
         public bool SapSticky { get; set; }
         public string? SapMoreInfo { get; set; }
+        public string? SapMonthOfHarvestName { get; set; }
     }
 }

@@ -324,4 +324,11 @@ INSERT INTO plant_product (PlantsId, ProductsId) VALUES
 (8, 4),
 (9, 5);
 
+-- =================================================
+INSERT INTO monthofharvest (id, monthname) VALUES
+(1, 'Styczeń'), (2, 'Luty'), (3, 'Marzec'), (4, 'Kwiecień'),
+(5, 'Maj'), (6, 'Czerwiec'), (7, 'Lipiec'), (8, 'Sierpień'),
+(9, 'Wrzesień'), (10, 'Październik'), (11, 'Listopad'), (12, 'Grudzień');
+
+
 -- koniec pliku

@@ -15,7 +15,10 @@ namespace HerbRecognition_APIs.DTOs
         [Required]
         [Range(0,5)]
         public int FlowerScentPower { get; set; }
-        [Required]
+
+        [Range(1, 12)]
+        public int? FlowerMonthOfHarvestId { get; set; }
+        
         [StringLength(200, MinimumLength = 2)]
         public string? FlowerMoreInfo { get; set; }
     }

@@ -12,5 +12,6 @@
         public GetPlantTypeDTO? PlantTypeDTO { get; set; }
 
         public string? PoisonabilityDescription { get; set; }
+        public string? MonthOfHarvestName { get; set; }
     }
 }

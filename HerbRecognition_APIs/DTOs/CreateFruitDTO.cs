@@ -14,7 +14,9 @@ namespace HerbRecognition_APIs.DTOs
         public int FruitSurfaceId { get; set; }
         [Required]
         public int FruitThicknessId { get; set; }
-        [Required]
+        [Range(1, 12)]
+        public int? FruitMonthOfHarvestId { get; set; }
+
         [StringLength(200, MinimumLength = 2)]
         public string? FruitMoreInfo { get; set; }
     }

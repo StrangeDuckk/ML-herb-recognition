@@ -1,6 +1,6 @@
 - usprawnic formularz:
-	-dodac do slownikow: 
-		- dodanie do kazdego regionu pola "dodatkowe informacje" dla kazdego np sap, root, stalk, leaf, fruit)
+                   - dodanie do formularza similar plants
+	- dodanie do edycji slownikow monthOfHarvest
 
 - zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika + logowanie administratora
 

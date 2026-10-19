@@ -25,6 +25,8 @@ public partial class Leaf
 
     public int? Flavourid { get; set; }
     public string? moreInfo { get; set; }
+    public int? MonthOfHarvestId { get; set; }
+
 
     public virtual Flavour? Flavour { get; set; }
 
@@ -37,4 +39,5 @@ public partial class Leaf
     public virtual Surface Surface { get; set; } = null!;
 
     public virtual Thickness Thickness { get; set; } = null!;
+    public virtual MonthOfHarvest? MonthOfHarvest { get; set; }
 }

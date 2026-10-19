@@ -10,5 +10,6 @@
         public bool HatHasGills { get; set; }
         public bool HatHasRing{ get; set; }
         public string? HatMoreInfo { get; set; }
+        public string? HatMonthOfHarvestName { get; set; }
     }
 }

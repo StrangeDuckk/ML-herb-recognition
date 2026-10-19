@@ -14,8 +14,11 @@ namespace HerbRecognition_Web.DTOs
         public int FruitSurfaceId { get; set; }
         [Required]
         public int FruitThicknessId { get; set; }
-        [Required]
+        
         [StringLength(200, MinimumLength = 2)]
         public string? FruitMoreInfo { get; set; }
+
+        [Range(1, 12)] 
+        public int? FruitMonthOfHarvestId { get; set; }
     }
 }

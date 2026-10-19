@@ -22,8 +22,11 @@ namespace HerbRecognition_Web.DTOs
         public int LeafThicknessId { get; set; }
         [Required]
         public int? LeafFlavourId { get; set; }
-        [Required]
+        
         [StringLength(200, MinimumLength = 2)]
-        public string? leafMoreInfo { get; set; }
+        public string? LeafMoreInfo { get; set; }
+
+        [Range(1, 12)] 
+        public int? LeafMonthOfHarvestId { get; set; }
     }
 }

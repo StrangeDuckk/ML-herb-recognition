@@ -559,5 +559,29 @@ CREATE TABLE userinput (
     InputData JSONB NOT NULL
 );
 
+-- =================== ======================
+-- miesiac zbioru
+CREATE TABLE monthofharvest (
+    id        INT PRIMARY KEY CHECK (id BETWEEN 1 AND 12),
+    monthname VARCHAR(30) NOT NULL UNIQUE
+);
+
+ALTER TABLE plant  ADD COLUMN plantmonthofharvestid INT NULL
+    CONSTRAINT plant_monthofharvestid_fkey  REFERENCES monthofharvest(id);
+ALTER TABLE stalk  ADD COLUMN stalkmonthofharvestid INT NULL
+    CONSTRAINT stalk_monthofharvestid_fkey  REFERENCES monthofharvest(id);
+ALTER TABLE sap    ADD COLUMN sapmonthofharvestid INT NULL
+    CONSTRAINT sap_monthofharvestid_fkey    REFERENCES monthofharvest(id);
+ALTER TABLE root    ADD COLUMN rootmonthofharvestid INT NULL
+    CONSTRAINT root_monthofharvestid_fkey    REFERENCES monthofharvest(id);
+ALTER TABLE hat    ADD COLUMN hatmonthofharvestid INT NULL
+    CONSTRAINT hat_monthofharvestid_fkey    REFERENCES monthofharvest(id);
+ALTER TABLE leaf   ADD COLUMN leafmonthofharvestid INT NULL
+    CONSTRAINT leaf_monthofharvestid_fkey   REFERENCES monthofharvest(id);
+ALTER TABLE flower ADD COLUMN flowermonthofharvestid INT NULL
+    CONSTRAINT flower_monthofharvestid_fkey REFERENCES monthofharvest(id);
+ALTER TABLE fruit  ADD COLUMN fruitmonthofharvestid INT NULL
+    CONSTRAINT fruit_monthofharvestid_fkey  REFERENCES monthofharvest(id);
+
 -- End of file.
 

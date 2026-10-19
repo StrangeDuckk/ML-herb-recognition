@@ -64,13 +64,42 @@
 
                         <div class="plant-card-top">
 
-                            <span class="plant-type">
+                            <div class="plant-pills">
+                                <div class="plant-type-badge">
+                                    @(plant.PlantTypeDTO?.Name ?? "Unknown")
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(plant.MonthOfHarvestName))
+                                {
+                                    <div class="plant-type-badge plant-month">
+                                        Zbiór: @plant.MonthOfHarvestName
+                                    </div>
+                                }
+                            </div>
+                            @* <div class="plant-pills">
+                                <span class="plant-type">
+                                    @(plant.PlantTypeDTO?.Name ?? "Unknown")
+                                </span>
+
+                                @if (!string.IsNullOrEmpty(plant.MonthOfHarvestName))
+                                {
+                                    <span class="plant-type plant-month">
+                                        Zbiór: @plant.MonthOfHarvestName
+                                    </span>
+                                }
+                            </div> *@
+
+                            <span class="plant-id">
+                                #@plant.Id
+                            </span>
+
+                            @* <span class="plant-type">
                                 @(plant.PlantTypeDTO?.Name ?? "Unknown")
                             </span>
 
                             <span class="plant-id">
                                 #@plant.Id
-                            </span>
+                            </span> *@
 
                         </div>
 

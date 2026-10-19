@@ -14,5 +14,6 @@ namespace HerbRecognition_APIs.DTOs
         public string LeafThicknessName { get; set; } = null!;
         public string LeafFlavourName { get; set; } = null!;
         public string? LeafMoreInfo { get; set; }
+        public string? LeafMonthOfHarvestName { get; set; }
     }
 }

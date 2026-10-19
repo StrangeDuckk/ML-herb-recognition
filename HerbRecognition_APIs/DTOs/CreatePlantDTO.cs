@@ -18,7 +18,7 @@ namespace HerbRecognition_APIs.DTOs
 
         [StringLength(50, MinimumLength = 2)]
         public string? Subriquet {  get; set; }
-        [Required]
+        
         [StringLength(200, MinimumLength = 2)]
         public string? MoreInfo { get; set; }
 
@@ -26,6 +26,10 @@ namespace HerbRecognition_APIs.DTOs
         [Required]
         [Range(1, 3)]
         public int PlantTypeID{ get; set; }
+
+        // ----- month of harvest -----
+        [Range(1, 12)]
+        public int? MonthOfHarvestId { get; set; }
 
         // ----- sap -----
         public CreateSapDTO? CreateSapDTO { get; set; }

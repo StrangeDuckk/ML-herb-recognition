@@ -17,6 +17,8 @@ public partial class Flower
 
     public int Scentpower { get; set; }
     public string? moreInfo { get; set; }
+    public int? MonthOfHarvestId { get; set; }
+
 
     public virtual Color Color { get; set; } = null!;
 
@@ -25,4 +27,5 @@ public partial class Flower
     public virtual ICollection<Plant> Plants { get; set; } = new List<Plant>();
 
     public virtual Shape Shape { get; set; } = null!;
+    public virtual MonthOfHarvest? MonthOfHarvest { get; set; }
 }

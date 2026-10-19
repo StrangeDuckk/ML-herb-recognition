@@ -14,6 +14,8 @@ public partial class Root
     public int Thicknessid { get; set; }
     public bool isHollow { get; set; }
     public string? moreInfo { get; set; }
+    public int? MonthOfHarvestId { get; set; }
+
 
     public virtual Color Color { get; set; } = null!;
 
@@ -22,4 +24,5 @@ public partial class Root
     public virtual Surface Surface { get; set; } = null!;
 
     public virtual Thickness Thickness { get; set; } = null!;
+    public virtual MonthOfHarvest? MonthOfHarvest { get; set; }
 }

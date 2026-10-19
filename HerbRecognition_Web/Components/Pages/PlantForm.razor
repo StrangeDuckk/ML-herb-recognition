@@ -94,6 +94,18 @@
                             <InputText @bind-Value="form.Subriquet"
                                        maxlength="50" />
                         </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.MonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
                         <div class="submission-field">
                             <label>Dodatkowe informacje</label>
                             <InputText @bind-Value="form.MoreInfo"
@@ -191,6 +203,18 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+
+                            <div class="submission-field">
+                                <label>Miesiąc zbioru</label>
+                                <InputSelect @bind-Value="form.CreateStalkDTO.StalkMonthOfHarvestId">
+                                    <option value="">Nie dotyczy / brak informacji</option>
+                                    @foreach (var m in months)
+                                    {
+                                        <option value="@m.Id">@m.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+
                             <div class="submission-field">
                                 <label>Dodatkowe informacje</label>
                                 <InputText @bind-Value="form.CreateStalkDTO.StalkMoreInfo"
@@ -237,6 +261,18 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+
+                            <div class="submission-field">
+                                <label>Miesiąc zbioru</label>
+                                <InputSelect @bind-Value="form.CreateSapDTO.SapMonthOfHarvestId">
+                                    <option value="">Nie dotyczy / brak informacji</option>
+                                    @foreach (var m in months)
+                                    {
+                                        <option value="@m.Id">@m.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+
                             <div class="submission-field">
                                 <label>Dodatkowe informacje</label>
                                 <InputText @bind-Value="form.CreateSapDTO.SapMoreInfo"
@@ -294,6 +330,18 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+
+                            <div class="submission-field">
+                                <label>Miesiąc zbioru</label>
+                                <InputSelect @bind-Value="form.CreateRootDTO.RootMonthOfHarvestId">
+                                    <option value="">Nie dotyczy / brak informacji</option>
+                                    @foreach (var m in months)
+                                    {
+                                        <option value="@m.Id">@m.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+
                             <div class="submission-field">
                                 <label>Dodatkowe informacje</label>
                                 <InputText @bind-Value="form.CreateRootDTO.RootMoreInfo"
@@ -375,6 +423,18 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+
+                            <div class="submission-field">
+                                <label>Miesiąc zbioru</label>
+                                <InputSelect @bind-Value="form.CreateHatDTO.HatMonthOfHarvestId">
+                                    <option value="">Nie dotyczy / brak informacji</option>
+                                    @foreach (var m in months)
+                                    {
+                                        <option value="@m.Id">@m.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+
                             <div class="submission-field">
                                 <label>Dodatkowe informacje</label>
                                 <InputText @bind-Value="form.CreateHatDTO.HatMoreInfo"
@@ -469,12 +529,24 @@
                                     <InputCheckbox @bind-Value="leafHoles" class="switch-input" />
                                     <span class="switch-slider"></span>
                             </label>
-                        </div>
-                            <div class="submission-field">
-                                <label>Dodatkowe informacje</label>
-                                <InputText @bind-Value="form.CreateLeafDTO.leafMoreInfo"
-                                           maxlength="200" />
                             </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO.LeafMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateLeafDTO.LeafMoreInfo"
+                                       maxlength="200" />
+                        </div>
                     </div>
                 </section>
                 }
@@ -533,12 +605,24 @@
                                 }
                             </InputSelect>
                         </div>
-                            <div class="submission-field">
-                                <label>Dodatkowe informacje</label>
-                                <InputText @bind-Value="form.CreateFlowerDTO.FlowerMoreInfo"
-                                           maxlength="200" />
-                                <ValidationMessage For="@(() => form.CreateFlowerDTO.FlowerMoreInfo)" />
-                            </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO.FlowerMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateFlowerDTO.FlowerMoreInfo"
+                                       maxlength="200" />
+                            <ValidationMessage For="@(() => form.CreateFlowerDTO.FlowerMoreInfo)" />
+                        </div>
                     </div>
                 </section>
                 }
@@ -604,11 +688,23 @@
                                 }
                             </InputSelect>
                         </div>
-                            <div class="submission-field">
-                                <label>Dodatkowe informacje</label>
-                                <InputText @bind-Value="form.CreateFruitDTO.FruitMoreInfo"
-                                           maxlength="200" />
-                            </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO.FruitMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateFruitDTO.FruitMoreInfo"
+                                       maxlength="200" />
+                        </div>
                     </div>
                 </section>
                 }
@@ -677,6 +773,7 @@
     private List<DictionaryOption> surfaces = new();
     private List<DictionaryOption> thicknesses = new();
     private List<ColorOption> colors = new();
+    private List<DictionaryOption> months = new();
 
     private bool stalkHollow;
     private bool sapLeavesStain;
@@ -780,6 +877,7 @@
             surfaces = await LoadOptionsAsync("surface", "surfaceId", "surfaceName");
             thicknesses = await LoadOptionsAsync("thickness", "thicknessId", "thicknessName");
             colors = await LoadColorsAsync();
+            months = await LoadOptionsAsync("monthOfHarvest", "monthOfHarvestId", "monthName");
         }
         // catch (Exception)
         // {
@@ -879,7 +977,7 @@
 
         bool plantPartsInvalid = form.PlantTypeID <= 0 || form.OccuranceId <= 0;
 
-        //walidacja po regionach
+        //walidacja po regionach tylko wymagane pola
         if (ShowStalkSection)
         {
             plantPartsInvalid |= form.CreateStalkDTO!.StalkShapeId <= 0
@@ -978,6 +1076,7 @@
         OccuranceId = form.OccuranceId,
         PoisonabilityId = form.PoisonabilityId,
         SimilarPlantIds = form.SimilarPlantIds,
+        MonthOfHarvestId = form.MonthOfHarvestId,
 
         CreateStalkDTO = ShowStalkSection ? new DTOs.CreateStalkDTO
         {
@@ -985,7 +1084,8 @@
             StalkColorId = form.CreateStalkDTO.StalkColorId,
             StalkSurfaceId = form.CreateStalkDTO.StalkSurfaceId,
             StalkIsHollow = stalkHollow,
-            StalkMoreInfo = form.CreateStalkDTO.StalkMoreInfo
+            StalkMoreInfo = NullIfEmpty(form.CreateStalkDTO.StalkMoreInfo),
+            StalkMonthOfHarvestId = form.CreateStalkDTO.StalkMonthOfHarvestId
         } : null,
 
         CreateSapDTO = ShowSapSection ? new DTOs.CreateSapDTO
@@ -993,7 +1093,8 @@
             SapColorId = form.CreateSapDTO!.SapColorId,
             SapLeavesStain = sapLeavesStain , 
             SapSticky = sapSticky,
-            SapMoreInfo = form.CreateSapDTO.SapMoreInfo
+            SapMoreInfo = NullIfEmpty(form.CreateSapDTO.SapMoreInfo),
+            SapMonthOfHarvestId = form.CreateSapDTO.SapMonthOfHarvestId
         } : null,
 
         CreateRootDTO = ShowRootSection ? new DTOs.CreateRootDTO
@@ -1002,7 +1103,8 @@
             RootSurfaceId = form.CreateRootDTO.RootSurfaceId,
             RootThicknessId = form.CreateRootDTO.RootThicknessId,
             RootIsHollow = rootIsHollow,
-            RootMoreInfo = form.CreateRootDTO.RootMoreInfo
+            RootMoreInfo = NullIfEmpty(form.CreateRootDTO.RootMoreInfo),
+            RootMonthOfHarvestId = form.CreateRootDTO.RootMonthOfHarvestId
         } : null,
 
         CreateHatDTO = ShowHatSection ? new DTOs.CreateHatDTO
@@ -1014,7 +1116,8 @@
             HatHasSpots = hatHasSpots ,
             HatHasGills = hatHasGills ,
             HatHasRing = hatHasRing ,
-            HatMoreInfo = form.CreateHatDTO.HatMoreInfo
+            HatMoreInfo = NullIfEmpty(form.CreateHatDTO.HatMoreInfo),
+            HatMonthOfHarvestId = form.CreateHatDTO.HatMonthOfHarvestId
         } : null,
 
         CreateLeafDTO = ShowLeafSection ? new DTOs.CreateLeafDTO
@@ -1028,7 +1131,8 @@
             LeafLength = form.CreateLeafDTO.LeafLength,
             LeafThicknessId = form.CreateLeafDTO.LeafThicknessId,
             LeafFlavourId = form.CreateLeafDTO.LeafFlavourId,
-            leafMoreInfo = form.CreateLeafDTO.leafMoreInfo
+            LeafMoreInfo = NullIfEmpty(form.CreateLeafDTO.LeafMoreInfo),
+            LeafMonthOfHarvestId = form.CreateLeafDTO.LeafMonthOfHarvestId
         } : null,
 
         CreateFlowerDTO = ShowFlowerSection ? new DTOs.CreateFlowerDTO
@@ -1038,7 +1142,8 @@
             FlowerShapeId = form.CreateFlowerDTO.FlowerShapeId,
             FlowerFlavourId = form.CreateFlowerDTO.FlowerFlavourId,
             FlowerScentPower = form.CreateFlowerDTO.FlowerScentPower,
-            FlowerMoreInfo = form.CreateFlowerDTO.FlowerMoreInfo
+            FlowerMoreInfo = NullIfEmpty(form.CreateFlowerDTO.FlowerMoreInfo),
+            FlowerMonthOfHarvestId = form.CreateFlowerDTO.FlowerMonthOfHarvestId
         } : null,
         CreateFruitDTO = ShowFruitSection ? new DTOs.CreateFruitDTO
         {
@@ -1047,7 +1152,8 @@
             FruitColorId = form.CreateFruitDTO.FruitColorId,
             FruitSurfaceId = form.CreateFruitDTO.FruitSurfaceId,
             FruitThicknessId = form.CreateFruitDTO.FruitThicknessId,
-            FruitMoreInfo = form.CreateFruitDTO.FruitMoreInfo
+            FruitMoreInfo = NullIfEmpty(form.CreateFruitDTO.FruitMoreInfo),
+            FruitMonthOfHarvestId = form.CreateFruitDTO.FruitMonthOfHarvestId
         } : null
     };
 

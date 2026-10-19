@@ -121,6 +121,13 @@
                     </div>
 
                     <div class="info-item">
+                        <span class="info-label">Miesiąc zbioru</span>
+                        <span class="info-value">
+                            @(plant.MonthOfHarvestName ?? "Brak informacji")
+                        </span>
+                    </div>
+
+                    <div class="info-item">
                         <span class="info-label">Dodatkowe informacje</span>
                         <span class="info-value">
                             @(plant.MoreInfo?? "Brak informacji")
@@ -180,6 +187,14 @@
                                 @(plant.GetSapDTO.SapSticky ? "Tak" : "Nie")
                             </span>
                         </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Miesiąc zbioru</span>
+                            <span class="info-value">
+                                @(plant.GetSapDTO.SapMonthOfHarvestName ?? "Brak informacji")
+                            </span>
+                        </div>
+
                         <div class="info-item">
                             <span class="info-label">Dodatkowe informacje</span>
                             <span class="info-value">
@@ -231,6 +246,14 @@
                             </span>
 
                         </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Miesiąc zbioru</span>
+                            <span class="info-value">
+                                @(plant.GetRootDTO.RootMonthOfHarvestName ?? "Brak informacji")
+                            </span>
+                        </div>
+
                         <div class="info-item">
                             <span class="info-label">Dodatkowe informacje</span>
                             <span class="info-value">
@@ -282,6 +305,14 @@
                                 @(plant.GetStalkDTO.StalkIsHollow ? "Tak" : "Nie")
                             </span>
                         </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Miesiąc zbioru</span>
+                            <span class="info-value">
+                                @(plant.GetStalkDTO.StalkMonthOfHarvestName ?? "Brak informacji")
+                            </span>
+                        </div>
+
                         <div class="info-item">
                             <span class="info-label">Dodatkowe informacje</span>
                             <span class="info-value">
@@ -368,6 +399,14 @@
                                 @(plant.GetLeafDTO.LeafHasHoles ? "Tak" : "Nie")
                             </span>
                         </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Miesiąc zbioru</span>
+                            <span class="info-value">
+                                @(plant.GetLeafDTO.LeafMonthOfHarvestName ?? "Brak informacji")
+                            </span>
+                        </div>
+
                         <div class="info-item">
                             <span class="info-label">Dodatkowe informacje</span>
                             <span class="info-value">
@@ -428,6 +467,13 @@
                         </div>
 
                         <div class="info-item">
+                            <span class="info-label">Miesiąc zbioru</span>
+                            <span class="info-value">
+                                @(plant.GetFlowerDTO.FlowerMonthOfHarvestName ?? "Brak informacji")
+                            </span>
+                        </div>
+
+                        <div class="info-item">
                             <span class="info-label">Dodatkowe informacje</span>
                             <span class="info-value">
                                 @(plant.GetFlowerDTO.FlowerMoreInfo ?? "Brak informacji")
@@ -483,6 +529,13 @@
                             <span class="info-label">Grubość</span>
                             <span class="info-value">
                                 @plant.GetFruitDTO.FruitThicnkessName
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Miesiąc zbioru</span>
+                            <span class="info-value">
+                                @(plant.GetFruitDTO.FruitMonthOfHarvestName ?? "Brak informacji")
                             </span>
                         </div>
 
@@ -556,6 +609,13 @@
                             <span class="info-label">Pierścień</span>
                             <span class="info-value">
                                 @(plant.GetHatDTO.HatHasRing ? "Tak" : "Nie")
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Miesiąc zbioru</span>
+                            <span class="info-value">
+                                @(plant.GetHatDTO.HatMonthOfHarvestName ?? "Brak informacji")
                             </span>
                         </div>
 

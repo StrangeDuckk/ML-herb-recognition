@@ -7,5 +7,6 @@
         public string RootThicknessName { get; set; } = null!;
         public bool RootIsHollow {  get; set; }
         public string? RootMoreInfo { get; set; }
+        public string? RootMonthOfHarvestName { get; set; }
     }
 }

@@ -12,7 +12,10 @@ namespace HerbRecognition_APIs.DTOs
         public int StalkSurfaceId { get; set; }
         [Required]
         public bool StalkIsHollow { get; set; }
-        [Required]
+
+        [Range(1, 12)]
+        public int? StalkMonthOfHarvestId { get; set; }
+
         [StringLength(200, MinimumLength = 2)]
         public string? StalkMoreInfo { get; set; }
     }

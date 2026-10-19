@@ -84,6 +84,19 @@
     letter-spacing: 0.08em;
 }
 
+.plant-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.plant-type.plant-month,
+.plant-type-badge.plant-month {
+    background: #fdf3e1;
+    color: #9a6a12;
+    border-color: #f1dcb0;
+}
+
 .plant-id {
     color: #a0aaa2;
     font-size: 0.8rem;

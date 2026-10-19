@@ -21,7 +21,9 @@ namespace HerbRecognition_APIs.DTOs
         [Required]
         public bool HatHasRing { get; set; }
 
-        [Required]
+        [Range(1, 12)]
+        public int? HatMonthOfHarvestId { get; set; }
+
         [StringLength(200, MinimumLength = 2)]
         public string? HatMoreInfo { get; set; }
     }

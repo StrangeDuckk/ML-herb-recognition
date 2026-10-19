@@ -17,6 +17,8 @@ public partial class Fruit
 
     public int Thicknessid { get; set; }
     public string? moreInfo { get; set; }
+    public int? MonthOfHarvestId { get; set; }
+
 
     public virtual Color Color { get; set; } = null!;
 
@@ -29,4 +31,5 @@ public partial class Fruit
     public virtual Surface Surface { get; set; } = null!;
 
     public virtual Thickness Thickness { get; set; } = null!;
+    public virtual MonthOfHarvest? MonthOfHarvest { get; set; }
 }

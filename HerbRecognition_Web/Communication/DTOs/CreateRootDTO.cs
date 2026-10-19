@@ -12,8 +12,11 @@ namespace HerbRecognition_Web.DTOs
         public int RootThicknessId { get; set; }
         [Required]
         public bool RootIsHollow {  get; set; }
-        [Required]
+        
         [StringLength(200, MinimumLength = 2)]
         public string? RootMoreInfo { get; set; }
+
+        [Range(1, 12)]
+        public int? RootMonthOfHarvestId { get; set; }
     }
 }

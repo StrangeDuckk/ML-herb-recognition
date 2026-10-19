@@ -177,5 +177,24 @@ DROP TABLE Thickness;
 
 drop table userinput;
 
+ALTER TABLE plant
+    DROP CONSTRAINT plant_monthofharvestid_fkey;
+ALTER TABLE stalk
+    DROP CONSTRAINT stalk_monthofharvestid_fkey;
+ALTER TABLE sap
+    DROP CONSTRAINT sap_monthofharvestid_fkey;
+ALTER TABLE root
+    DROP CONSTRAINT root_monthofharvestid_fkey;
+ALTER TABLE hat
+    DROP CONSTRAINT hat_monthofharvestid_fkey;
+ALTER TABLE leaf
+    DROP CONSTRAINT leaf_monthofharvestid_fkey;
+ALTER TABLE flower
+    DROP CONSTRAINT flower_monthofharvestid_fkey;
+ALTER TABLE fruit
+    DROP CONSTRAINT fruit_monthofharvestid_fkey;
+
+drop monthofharvest
+
 -- End of file.
 

@@ -8,5 +8,6 @@
         public string FruitSurfaceName { get; set; } = null!;
         public string FruitThicnkessName { get; set; } = null!;
         public string? FruitMoreInfo { get; set; }
+        public string? FruitMonthOfHarvestName { get; set; }
     }
 }

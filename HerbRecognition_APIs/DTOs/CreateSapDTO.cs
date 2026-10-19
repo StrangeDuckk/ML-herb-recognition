@@ -11,7 +11,10 @@ namespace HerbRecognition_APIs.DTOs
         public bool SapLeavesStain { get; set; }
         [Required]
         public bool SapSticky {  get; set; }
-        [Required]
+
+        [Range(1, 12)]
+        public int? SapMonthOfHarvestId { get; set; }
+
         [StringLength(200, MinimumLength = 2)]
         public string? SapMoreInfo { get; set; }
     }

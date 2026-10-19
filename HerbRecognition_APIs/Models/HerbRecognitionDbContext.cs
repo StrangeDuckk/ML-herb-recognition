@@ -65,10 +65,11 @@ public partial class HerbRecognitionDbContext : DbContext
 
     public virtual DbSet<UserInput> UserInputs { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseNpgsql("DefaultConnection");
+    public virtual DbSet<MonthOfHarvest> MonthOfHarvests { get; set; }
 
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+    //        => optionsBuilder.UseNpgsql("DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -917,6 +918,85 @@ public partial class HerbRecognitionDbContext : DbContext
 
         OnModelCreatingPartial(modelBuilder);
     }
-
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MonthOfHarvest>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("monthofharvest_pkey");
+            entity.ToTable("monthofharvest");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()          // Id = numer miesiąca, nie autoinkrementacja
+                .HasColumnName("id");
+            entity.Property(e => e.MonthName)
+                .HasMaxLength(30)
+                .HasColumnName("monthname");
+        });
+
+        modelBuilder.Entity<Plant>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Plants)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("plant_monthofharvestid_fkey");
+        });
+
+        modelBuilder.Entity<Stalk>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Stalks)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("stalk_monthofharvestid_fkey");
+        });
+
+        modelBuilder.Entity<Root>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Roots)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("root_monthofharvestid_fkey");
+        });
+
+        modelBuilder.Entity<Sap>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Saps)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("sap_monthofharvestid_fkey");
+        });
+
+        modelBuilder.Entity<Hat>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Hats)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("hat_monthofharvestid_fkey");
+        });
+
+        modelBuilder.Entity<Leaf>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Leaves)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("leaf_monthofharvestid_fkey");
+        });
+
+        modelBuilder.Entity<Flower>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Flowers)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("flower_monthofharvestid_fkey");
+        });
+
+        modelBuilder.Entity<Fruit>(entity =>
+        {
+            entity.Property(e => e.MonthOfHarvestId).HasColumnName("monthofharvestid");
+            entity.HasOne(d => d.MonthOfHarvest).WithMany(p => p.Fruits)
+                .HasForeignKey(d => d.MonthOfHarvestId)
+                .HasConstraintName("fruit_monthofharvestid_fkey");
+        });
+    }
 }

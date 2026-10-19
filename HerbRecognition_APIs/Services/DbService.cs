@@ -1,10 +1,12 @@
 ﻿using HerbRecognition_APIs.DTOs;
 using HerbRecognition_APIs.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.Mapping;
 using System.Drawing;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Xml;
 
@@ -30,6 +32,7 @@ namespace HerbRecognition_APIs.Services
         Task<int> CreateDictionaryItemAsync(string dictionary, DictionaryItemDTO dto);
         Task<bool> UpdateDictionaryItemAsync(string dictionary, int id, DictionaryItemDTO dto);
         Task<bool> DeleteDictionaryItemAsync(string dictionary, int id);
+        Task<List<GetMonthOfHarvestDTO>> GetAllDictMonthOfHarvestAsync();
     }
 
     public class DbService(HerbRecognitionDbContext data) : IDbService 
@@ -64,108 +67,124 @@ namespace HerbRecognition_APIs.Services
                 throw new KeyNotFoundException($"Flavour with Id {FlavourId} does not exist, for {table}!");
             return true;
         }
+        public async Task<bool> ValidateMonthOfHarvestAsync(int? MonthId, string table)
+        {
+            if (MonthId is null) return true; ;// miesiac jest opcjonalny
+
+            if (!await data.MonthOfHarvests.AnyAsync(x => x.Id == MonthId))
+                throw new KeyNotFoundException($"Month with Id {MonthId} does not exist, for {table}!");
+            return true;
+        }
+
+        // ----------- Plants Controller api/plants/ ------
+        public static readonly Expression<Func<Plant, GetPlantDTO>> plantsDetailsProjection = p => new GetPlantDTO
+        {
+            Id = p.Id,
+            Name = p.Name,
+            PolishName = p.Polishname,
+            LatinName = p.Latinname,
+            Subriquet = p.Subriquet,
+            MoreInfo = p.moreInfo,
+
+            PlantTypeDTO = new GetPlantTypeDTO
+            {
+                Name = p.Planttype.Name
+            },
+
+            GetSapDTO = p.Sap == null ? null : new GetSapDTO
+            {
+                SapColor = p.Sap.Color.ColorName,
+                SapLeavesStains = p.Sap.Leavesstains,
+                SapSticky = p.Sap.Sticky,
+                SapMoreInfo = p.Sap.moreInfo,
+                SapMonthOfHarvestName = p.Sap.MonthOfHarvest != null ? p.Sap.MonthOfHarvest.MonthName : null,
+            },
+            GetRootDTO = p.Root == null ? null : new GetRootDTO
+            {
+                RootColorName = p.Root.Color.ColorName,
+                RootSurfaceName = p.Root.Surface.SurfaceName,
+                RootThicknessName = p.Root.Thickness.ThicknessName,
+                RootIsHollow = p.Root.isHollow,
+                RootMoreInfo = p.Root.moreInfo,
+                RootMonthOfHarvestName = p.Root.MonthOfHarvest != null ? p.Root.MonthOfHarvest.MonthName : null,
+            },
+            GetStalkDTO = new GetStalkDTO
+            {
+                StalkColorName = p.Stalk.Color.ColorName,
+                StalkShapeName = p.Stalk.Shape.ShapeName,
+                StalkSurfaceName = p.Stalk.Surface.SurfaceName,
+                StalkIsHollow = p.Stalk.isHollow,
+                StalkMoreInfo = p.Stalk.moreInfo,
+                StalkMonthOfHarvestName = p.Stalk.MonthOfHarvest != null ? p.Stalk.MonthOfHarvest.MonthName : null,
+            },
+
+            Occurance = new GetOccuranceDTO
+            {
+                Occurance = p.Occurance.OccuranceName
+            },
+
+            GetHatDTO = p.Hat == null ? null : new GetHatDTO
+            {
+                HatColorName = p.Hat.Color.ColorName,
+                HatShapeName = p.Hat.Shape.ShapeName,
+                HatSurfaceName = p.Hat.Surface.SurfaceName,
+                HatThicknessName = p.Hat.Thickness.ThicknessName,
+                HatHasGills = p.Hat.Hasgills,
+                HatHasSpots = p.Hat.Hasspots,
+                HatHasRing = p.Hat.HasRing,
+                HatMoreInfo = p.Hat.moreInfo,
+                HatMonthOfHarvestName = p.Hat.MonthOfHarvest != null ? p.Hat.MonthOfHarvest.MonthName : null,
+            },
+            GetLeafDTO = p.Leaf == null ? null : new GetLeafDTO
+            {
+                LeafHasStripes = p.Leaf.Stripes,
+                LeafHasSpots = p.Leaf.Spots,
+                LeafHasHoles = p.Leaf.Holes,
+                LeafShapeName = p.Leaf.Leafshape.ShapeName,
+                LeafColorName = p.Leaf.Leafcolor.ColorName,
+                LeafSurfaceName = p.Leaf.Surface.SurfaceName,
+                LeafLength = p.Leaf.Leaflength,
+                LeafThicknessName = p.Leaf.Thickness.ThicknessName,
+                LeafFlavourName = p.Leaf.Flavour.FlavourName,
+                LeafMoreInfo = p.Leaf.moreInfo,
+                LeafMonthOfHarvestName = p.Leaf.MonthOfHarvest != null ? p.Leaf.MonthOfHarvest.MonthName : null,
+            },
+            GetFlowerDTO = p.Flower == null ? null : new GetFlowerDTO
+            {
+                FlowerSizeInCm = p.Flower.Sizeincm,
+                FlowerColorName = p.Flower.Color.ColorName,
+                FlowerShapeName = p.Flower.Shape.ShapeName,
+                FlowerFlavourName = p.Flower.Flavour.FlavourName,
+                FlowerScentPower = p.Flower.Scentpower,
+                FlowerMoreInfo = p.Flower.moreInfo,
+                FlowerMonthOfHarvestName = p.Flower.MonthOfHarvest != null ? p.Flower.MonthOfHarvest.MonthName : null,
+            },
+            GetFruitDTO = p.Fruit == null ? null : new GetFruitDTO
+            {
+                FruitFlavourName = p.Fruit.Flavour.FlavourName,
+                FruitShapeName = p.Fruit.Shape.ShapeName,
+                FruitColorName = p.Fruit.Color.ColorName,
+                FruitSurfaceName = p.Fruit.Surface.SurfaceName,
+                FruitThicnkessName = p.Fruit.Thickness.ThicknessName,
+                FruitMoreInfo = p.Fruit.moreInfo,
+                FruitMonthOfHarvestName= p.Fruit.MonthOfHarvest != null ? p.Fruit.MonthOfHarvest.MonthName : null,
+            },
+
+            SimiliarPlantDTO = p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
+            {
+                Id = sp.SimilarPlant.Id,
+                Name = sp.SimilarPlant.Name,
+                PolishName = sp.SimilarPlant.Polishname
+            }).ToList(),
+
+            PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description,
+            MonthOfHarvestName = p.MonthOfHarvest != null ? p.MonthOfHarvest.MonthName : null
+        };
         public async Task<IEnumerable<GetPlantDTO>> GetAllPlantsAsync()
         {
-            var plants = await data.Plants
-                .Select(p => new GetPlantDTO
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PolishName = p.Polishname,
-                    LatinName = p.Latinname,
-                    Subriquet = p.Subriquet,
-                    MoreInfo = p.moreInfo,
-
-                    PlantTypeDTO = new GetPlantTypeDTO
-                    {
-                        Name = p.Planttype.Name
-                    },
-
-                    GetSapDTO = p.Sap == null ? null : new GetSapDTO
-                    {
-                        SapColor = p.Sap.Color.ColorName,
-                        SapLeavesStains = p.Sap.Leavesstains,
-                        SapSticky = p.Sap.Sticky,
-                        SapMoreInfo = p.Sap.moreInfo
-                    },
-                    GetRootDTO = p.Root == null ? null : new GetRootDTO
-                    {
-                        RootColorName = p.Root.Color.ColorName,
-                        RootSurfaceName = p.Root.Surface.SurfaceName,
-                        RootThicknessName = p.Root.Thickness.ThicknessName,
-                        RootIsHollow = p.Root.isHollow,
-                        RootMoreInfo = p.Root.moreInfo,
-                    },
-                    GetStalkDTO = new GetStalkDTO
-                    {
-                        StalkColorName = p.Stalk.Color.ColorName,
-                        StalkShapeName = p.Stalk.Shape.ShapeName,
-                        StalkSurfaceName = p.Stalk.Surface.SurfaceName,
-                        StalkIsHollow = p.Stalk.isHollow,
-                        StalkMoreInfo = p.Stalk.moreInfo
-                    },
-
-                    Occurance = new GetOccuranceDTO
-                    {
-                        Occurance = p.Occurance.OccuranceName
-                    },
-
-                    GetHatDTO = p.Hat == null ? null : new GetHatDTO
-                    {
-                        HatColorName = p.Hat.Color.ColorName,
-                        HatShapeName = p.Hat.Shape.ShapeName,
-                        HatSurfaceName = p.Hat.Surface.SurfaceName,
-                        HatThicknessName = p.Hat.Thickness.ThicknessName,
-                        HatHasGills = p.Hat.Hasgills,
-                        HatHasSpots = p.Hat.Hasspots,
-                        HatHasRing = p.Hat.HasRing,
-                        HatMoreInfo = p.Hat.moreInfo
-                    },
-                    GetLeafDTO = p.Leaf == null ? null : new GetLeafDTO
-                    {
-                        LeafHasStripes = p.Leaf.Stripes,
-                        LeafHasSpots = p.Leaf.Spots,
-                        LeafHasHoles = p.Leaf.Holes,
-                        LeafShapeName = p.Leaf.Leafshape.ShapeName,
-                        LeafColorName = p.Leaf.Leafcolor.ColorName,
-                        LeafSurfaceName = p.Leaf.Surface.SurfaceName,
-                        LeafLength = p.Leaf.Leaflength,
-                        LeafThicknessName = p.Leaf.Thickness.ThicknessName,
-                        LeafFlavourName = p.Leaf.Flavour.FlavourName,
-                        LeafMoreInfo = p.Leaf.moreInfo
-                    },
-                    GetFlowerDTO = p.Flower == null ? null : new GetFlowerDTO
-                    {
-                        FlowerSizeInCm = p.Flower.Sizeincm,
-                        FlowerColorName = p.Flower.Color.ColorName,
-                        FlowerShapeName = p.Flower.Shape.ShapeName,
-                        FlowerFlavourName = p.Flower.Flavour.FlavourName,
-                        FlowerScentPower = p.Flower.Scentpower,
-                        FlowerMoreInfo = p.Flower.moreInfo
-                    },
-                    GetFruitDTO = p.Fruit == null ? null : new GetFruitDTO
-                    {
-                        FruitFlavourName = p.Fruit.Flavour.FlavourName,
-                        FruitShapeName = p.Fruit.Shape.ShapeName,
-                        FruitColorName = p.Fruit.Color.ColorName,
-                        FruitSurfaceName = p.Fruit.Surface.SurfaceName,
-                        FruitThicnkessName = p.Fruit.Thickness.ThicknessName,
-                        FruitMoreInfo = p.Fruit.moreInfo
-                    },
-
-                    SimiliarPlantDTO = p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
-                    {
-                        Id = sp.SimilarPlant.Id,
-                        Name = sp.SimilarPlant.Name,
-                        PolishName = sp.SimilarPlant.Polishname
-                    })
-                    .ToList(),
-
-                    PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
-                })
+             return await data.Plants
+                .Select(plantsDetailsProjection)
                 .ToListAsync();
-
-            return plants;
         }
         public async Task<IEnumerable<GetPlantDTO>> GetPlantsAsync() // tylko do wyswietlenia preview w bibliotece
         {
@@ -183,7 +202,8 @@ namespace HerbRecognition_APIs.Services
                         {
                             Name = p.Planttype.Name
                         },
-                        PoisonabilityDescription = p.Poisonability == null? null :p.Poisonability.Description
+                        PoisonabilityDescription = p.Poisonability == null? null :p.Poisonability.Description,
+                        MonthOfHarvestName = p.MonthOfHarvest != null ? p.MonthOfHarvest.MonthName : null,
                     }
                 )
                .OrderBy(p => p.PolishName)
@@ -210,6 +230,8 @@ namespace HerbRecognition_APIs.Services
                 if (dto.PoisonabilityId.HasValue && !await data.Poisonabilities.AnyAsync(x => x.Id == dto.PoisonabilityId))
                     throw new KeyNotFoundException($"Poisonability with ID {dto.PoisonabilityId} does not exist!");
 
+                await ValidateMonthOfHarvestAsync(dto.MonthOfHarvestId, "Plant"); 
+
                 // --------------- tworzenie nowej rosliny -----------------
                 var plant = new Plant
                 {
@@ -221,7 +243,8 @@ namespace HerbRecognition_APIs.Services
 
                     Planttypeid = dto.PlantTypeID,
                     Occuranceid = dto.OccuranceId,
-                    Poisonabilityid = dto.PoisonabilityId
+                    Poisonabilityid = dto.PoisonabilityId,
+                    MonthOfHarvestId = dto.MonthOfHarvestId
                 };
 
                 data.Plants.Add( plant );
@@ -270,11 +293,13 @@ namespace HerbRecognition_APIs.Services
                 if (dto.CreateSapDTO is not null)
                 {
                     await ValidateColorAsync(dto.CreateSapDTO.SapColorId, "SAP");
+                    await ValidateMonthOfHarvestAsync(dto.CreateSapDTO.SapMonthOfHarvestId, "SAP");
                      plant.Sap = new Sap
                      {
                          Colorid = dto.CreateSapDTO.SapColorId,
                          Leavesstains = dto.CreateSapDTO.SapLeavesStain,
                          Sticky = dto.CreateSapDTO.SapSticky,
+                         MonthOfHarvestId = dto.CreateSapDTO.SapMonthOfHarvestId,
                          moreInfo = dto.CreateSapDTO.SapMoreInfo
                      };
                 }
@@ -285,30 +310,37 @@ namespace HerbRecognition_APIs.Services
                     await ValidateColorAsync(dto.CreateRootDTO.RootColorId, "ROOT");
                     await ValidateSurfaceAsync(dto.CreateRootDTO.RootSurfaceId, "ROOT");
                     await ValidateThicknessAsync(dto.CreateRootDTO.RootThicknessId, "ROOT");
-                    
+                    await ValidateMonthOfHarvestAsync(dto.CreateRootDTO.RootMonthOfHarvestId, "ROOT");
+
                     plant.Root = new Root
                     {
                         Colorid = dto.CreateRootDTO.RootColorId,
                         Surfaceid = dto.CreateRootDTO.RootSurfaceId,
                         Thicknessid = dto.CreateRootDTO.RootThicknessId,
                         isHollow = dto.CreateRootDTO.RootIsHollow,
+                        MonthOfHarvestId= dto.CreateRootDTO.RootMonthOfHarvestId,
                         moreInfo = dto.CreateRootDTO.RootMoreInfo
                     };
                 }
 
-                // -- stalk - obowiazkowe
-                await ValidateShapeAsync(dto.CreateStalkDTO.StalkShapeId, "STALK");
-                await ValidateColorAsync(dto.CreateStalkDTO.StalkColorId, "STALK");
-                await ValidateSurfaceAsync(dto.CreateStalkDTO.StalkSurfaceId, "STALK");
-                
-                plant.Stalk = new Stalk
+                // -- stalk
+                if (dto.CreateStalkDTO is not null)
                 {
-                    Shapeid = dto.CreateStalkDTO.StalkShapeId,
-                    Colorid = dto.CreateStalkDTO.StalkColorId,
-                    Surfaceid = dto.CreateStalkDTO.StalkSurfaceId,
-                    isHollow = dto.CreateStalkDTO.StalkIsHollow,
-                    moreInfo = dto.CreateStalkDTO.StalkMoreInfo
-                };
+                    await ValidateShapeAsync(dto.CreateStalkDTO.StalkShapeId, "STALK");
+                    await ValidateColorAsync(dto.CreateStalkDTO.StalkColorId, "STALK");
+                    await ValidateSurfaceAsync(dto.CreateStalkDTO.StalkSurfaceId, "STALK");
+                    await ValidateMonthOfHarvestAsync(dto.CreateStalkDTO.StalkMonthOfHarvestId, "STALK");
+
+                    plant.Stalk = new Stalk
+                    {
+                        Shapeid = dto.CreateStalkDTO.StalkShapeId,
+                        Colorid = dto.CreateStalkDTO.StalkColorId,
+                        Surfaceid = dto.CreateStalkDTO.StalkSurfaceId,
+                        isHollow = dto.CreateStalkDTO.StalkIsHollow,
+                        MonthOfHarvestId = dto.CreateStalkDTO.StalkMonthOfHarvestId,
+                        moreInfo = dto.CreateStalkDTO.StalkMoreInfo
+                    };
+                }
                 
 
                 // -- hat
@@ -318,7 +350,8 @@ namespace HerbRecognition_APIs.Services
                     await ValidateShapeAsync(dto.CreateHatDTO.HatShapeId, "HAT");
                     await ValidateThicknessAsync(dto.CreateHatDTO.HatThicknessId, "HAT");
                     await ValidateSurfaceAsync(dto.CreateHatDTO.HatSurfaceId, "HAT");
-                    
+                    await ValidateMonthOfHarvestAsync(dto.CreateHatDTO.HatMonthOfHarvestId, "HAT");
+
                     plant.Hat = new Hat
                     {
                         Colorid = dto.CreateHatDTO.HatColorId,
@@ -328,6 +361,7 @@ namespace HerbRecognition_APIs.Services
                         Hasspots = dto.CreateHatDTO.HatHasSpots,
                         Hasgills = dto.CreateHatDTO.HatHasGills,
                         HasRing = dto.CreateHatDTO.HatHasRing,
+                        MonthOfHarvestId = dto.CreateHatDTO.HatMonthOfHarvestId,
                         moreInfo = dto.CreateHatDTO.HatMoreInfo
                     };
                 }
@@ -342,7 +376,8 @@ namespace HerbRecognition_APIs.Services
                     await ValidateColorAsync(dto.CreateLeafDTO.LeafColorId, "LEAF");
                     await ValidateSurfaceAsync(dto.CreateLeafDTO.LeafSurfaceId, "LEAF");
                     await ValidateThicknessAsync(dto.CreateLeafDTO.LeafThicknessId, "LEAF");
-                    
+                    await ValidateMonthOfHarvestAsync(dto.CreateLeafDTO.LeafMonthOfHarvestId, "LEAF");
+
                     plant.Leaf = new Leaf
                     {
                         Stripes = dto.CreateLeafDTO.LeafStripes,
@@ -351,7 +386,11 @@ namespace HerbRecognition_APIs.Services
                         Leafshapeid = dto.CreateLeafDTO.LeafShapeId,
                         Leafcolorid = dto.CreateLeafDTO.LeafColorId,
                         Surfaceid = dto.CreateLeafDTO.LeafSurfaceId,
-                        moreInfo = dto.CreateLeafDTO.leafMoreInfo
+                        Thicknessid = dto.CreateLeafDTO.LeafThicknessId,
+                        Flavourid = dto.CreateLeafDTO.LeafFlavourId,
+                        Leaflength = dto.CreateLeafDTO.LeafLength,
+                        MonthOfHarvestId = dto.CreateLeafDTO.LeafMonthOfHarvestId,
+                        moreInfo = dto.CreateLeafDTO.LeafMoreInfo
                     };
                 }
 
@@ -363,6 +402,7 @@ namespace HerbRecognition_APIs.Services
 
                     await ValidateColorAsync(dto.CreateFlowerDTO.FlowerColorId, "FLOWER");
                     await ValidateShapeAsync(dto.CreateFlowerDTO.FlowerShapeId, "FLOWER");
+                    await ValidateMonthOfHarvestAsync(dto.CreateFlowerDTO.FlowerMonthOfHarvestId, "FLOWER");
 
                     plant.Flower = new Flower
                     {
@@ -371,6 +411,7 @@ namespace HerbRecognition_APIs.Services
                         Shapeid = dto.CreateFlowerDTO.FlowerShapeId,
                         Flavourid = dto.CreateFlowerDTO.FlowerFlavourId,
                         Scentpower = dto.CreateFlowerDTO.FlowerScentPower,
+                        MonthOfHarvestId = dto.CreateFlowerDTO.FlowerMonthOfHarvestId,
                         moreInfo = dto.CreateFlowerDTO.FlowerMoreInfo
                     };
 
@@ -386,7 +427,8 @@ namespace HerbRecognition_APIs.Services
                     await ValidateColorAsync(dto.CreateFruitDTO.FruitColorId, "FRUIT");
                     await ValidateSurfaceAsync(dto.CreateFruitDTO.FruitSurfaceId, "FRUIT");
                     await ValidateThicknessAsync(dto.CreateFruitDTO.FruitThicknessId, "FRUIT");
-                    
+                    await ValidateMonthOfHarvestAsync(dto.CreateFruitDTO.FruitMonthOfHarvestId, "FRUIT");
+
                     plant.Fruit = new Fruit
                     {
                         Flavourid = dto.CreateFruitDTO.FruitFlavourId,
@@ -394,6 +436,7 @@ namespace HerbRecognition_APIs.Services
                         Colorid = dto.CreateFruitDTO.FruitColorId,
                         Surfaceid = dto.CreateFruitDTO.FruitSurfaceId,
                         Thicknessid = dto.CreateFruitDTO.FruitThicknessId,
+                        MonthOfHarvestId = dto.CreateFruitDTO.FruitMonthOfHarvestId,
                         moreInfo = dto.CreateFruitDTO.FruitMoreInfo
                     };
                 }
@@ -411,107 +454,10 @@ namespace HerbRecognition_APIs.Services
         }
         public async Task<GetPlantDTO?> GetPlantByIdAsync(int id)
         {
-            var plant = await data.Plants
+            return await data.Plants
                 .Where(p => p.Id == id)
-                .Select(p => new GetPlantDTO
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PolishName = p.Polishname,
-                    LatinName = p.Latinname,
-                    Subriquet = p.Subriquet,
-                    MoreInfo = p.moreInfo,
-
-                    PlantTypeDTO = new GetPlantTypeDTO
-                    {
-                        Name = p.Planttype.Name
-                    },
-
-                    GetSapDTO = p.Sap == null ? null : new GetSapDTO
-                    {
-                        SapColor = p.Sap.Color.ColorName,
-                        SapLeavesStains = p.Sap.Leavesstains,
-                        SapSticky = p.Sap.Sticky,
-                        SapMoreInfo = p.Sap.moreInfo
-                    },
-                    GetRootDTO = p.Root == null ? null : new GetRootDTO
-                    {
-                        RootColorName = p.Root.Color.ColorName,
-                        RootSurfaceName = p.Root.Surface.SurfaceName,
-                        RootThicknessName = p.Root.Thickness.ThicknessName,
-                        RootIsHollow = p.Root.isHollow,
-                        RootMoreInfo = p.Root.moreInfo,
-                    },
-                    GetStalkDTO = new GetStalkDTO
-                    {
-                        StalkColorName = p.Stalk.Color.ColorName,
-                        StalkShapeName = p.Stalk.Shape.ShapeName,
-                        StalkSurfaceName = p.Stalk.Surface.SurfaceName,
-                        StalkIsHollow = p.Stalk.isHollow,
-                        StalkMoreInfo = p.Stalk.moreInfo
-                    },
-
-                    Occurance = new GetOccuranceDTO
-                    {
-                        Occurance = p.Occurance.OccuranceName
-                    },
-
-                    GetHatDTO = p.Hat == null ? null : new GetHatDTO
-                    {
-                        HatColorName = p.Hat.Color.ColorName,
-                        HatShapeName = p.Hat.Shape.ShapeName,
-                        HatSurfaceName = p.Hat.Surface.SurfaceName,
-                        HatThicknessName = p.Hat.Thickness.ThicknessName,
-                        HatHasGills = p.Hat.Hasgills,
-                        HatHasSpots = p.Hat.Hasspots,
-                        HatHasRing = p.Hat.HasRing,
-                        HatMoreInfo = p.Hat.moreInfo
-                    },
-                    GetLeafDTO = p.Leaf == null ? null : new GetLeafDTO
-                    {
-                        LeafHasStripes = p.Leaf.Stripes,
-                        LeafHasSpots = p.Leaf.Spots,
-                        LeafHasHoles = p.Leaf.Holes,
-                        LeafShapeName = p.Leaf.Leafshape.ShapeName,
-                        LeafColorName = p.Leaf.Leafcolor.ColorName,
-                        LeafSurfaceName = p.Leaf.Surface.SurfaceName,
-                        LeafLength = p.Leaf.Leaflength,
-                        LeafThicknessName = p.Leaf.Thickness.ThicknessName,
-                        LeafFlavourName = p.Leaf.Flavour.FlavourName,
-                        LeafMoreInfo = p.Leaf.moreInfo
-                    },
-                    GetFlowerDTO = p.Flower == null ? null : new GetFlowerDTO
-                    {
-                        FlowerSizeInCm = p.Flower.Sizeincm,
-                        FlowerColorName = p.Flower.Color.ColorName,
-                        FlowerShapeName = p.Flower.Shape.ShapeName,
-                        FlowerFlavourName = p.Flower.Flavour.FlavourName,
-                        FlowerScentPower = p.Flower.Scentpower,
-                        FlowerMoreInfo = p.Flower.moreInfo
-                    },
-                    GetFruitDTO = p.Fruit == null ? null : new GetFruitDTO
-                    {
-                        FruitFlavourName = p.Fruit.Flavour.FlavourName,
-                        FruitShapeName = p.Fruit.Shape.ShapeName,
-                        FruitColorName = p.Fruit.Color.ColorName,
-                        FruitSurfaceName = p.Fruit.Surface.SurfaceName,
-                        FruitThicnkessName = p.Fruit.Thickness.ThicknessName,
-                        FruitMoreInfo = p.Fruit.moreInfo
-                    },
-
-                    SimiliarPlantDTO = p.SimilarPlants.Select(sp => new GetSimilarPlantDTO
-                    {
-                        Id = sp.SimilarPlant.Id,
-                        Name = sp.SimilarPlant.Name,
-                        PolishName = sp.SimilarPlant.Polishname
-                    })
-                    .ToList(),
-
-                    PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
-                })
-                .FirstAsync();
-
-            return plant;
+                .Select(plantsDetailsProjection)
+                .FirstOrDefaultAsync();
         }
         public static bool IsSimilar(string? text, string search)
         {
@@ -732,6 +678,15 @@ namespace HerbRecognition_APIs.Services
                     ColorG = p.G
                 }).ToListAsync();
         }
+        public async Task<List<GetMonthOfHarvestDTO>> GetAllDictMonthOfHarvestAsync()//monthOfHarvest
+        {
+            return await data.MonthOfHarvests
+                .Select(p => new GetMonthOfHarvestDTO
+                {
+                    MonthOfHarvestId = p.Id,
+                    MonthName = p.MonthName
+                }).ToListAsync() ;
+        }
 
         // ----------- UserInput Controller api/userInput/ ------
         public async Task<int> PostUserInputPlantAsync(CreatePlantDTO dto)
@@ -836,5 +791,7 @@ namespace HerbRecognition_APIs.Services
                              ?? property.Metadata.ClrType;
             property.CurrentValue = Convert.ChangeType(value ?? 0, targetType);
         }
+
+
     }
 }

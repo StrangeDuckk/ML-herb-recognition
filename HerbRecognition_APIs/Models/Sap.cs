@@ -13,8 +13,11 @@ public partial class Sap
 
     public bool Sticky { get; set; }
     public string? moreInfo { get; set; }
+    public int? MonthOfHarvestId { get; set; }
+
 
     public virtual Color Color { get; set; } = null!;
 
     public virtual ICollection<Plant> Plants { get; set; } = new List<Plant>();
+    public virtual MonthOfHarvest? MonthOfHarvest { get; set; }
 }

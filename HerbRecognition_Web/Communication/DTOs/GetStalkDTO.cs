@@ -7,5 +7,6 @@
         public string StalkSurfaceName { get; set; } = null!;
         public bool StalkIsHollow { get; set; }
         public string? StalkMoreInfo { get; set; }
+        public string? StalkMonthOfHarvestName { get; set; }
     }
 }

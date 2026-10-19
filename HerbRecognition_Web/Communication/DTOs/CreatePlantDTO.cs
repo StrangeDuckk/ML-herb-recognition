@@ -19,7 +19,7 @@ namespace HerbRecognition_Web.Communication.DTOs
 
         [StringLength(50, MinimumLength = 2)]
         public string? Subriquet { get; set; }
-        [Required]
+        
         [StringLength(200, MinimumLength = 2)]
         public string? MoreInfo { get; set; }
 
@@ -58,5 +58,8 @@ namespace HerbRecognition_Web.Communication.DTOs
 
         // ----- poisonability -----
         public int? PoisonabilityId { get; set; }
+
+        [Range(1, 12)]
+        public int? MonthOfHarvestId { get; set; }
     }
 }
