@@ -24,6 +24,7 @@ public partial class Leaf
     public int Thicknessid { get; set; }
 
     public int? Flavourid { get; set; }
+    public string? moreInfo { get; set; }
 
     public virtual Flavour? Flavour { get; set; }
 

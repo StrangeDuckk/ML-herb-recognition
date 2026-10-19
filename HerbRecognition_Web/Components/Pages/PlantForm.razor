@@ -455,6 +455,11 @@
                                     <span class="switch-slider"></span>
                             </label>
                         </div>
+                            <div class="submission-field">
+                                <label>Dodatkowe informacje</label>
+                                <InputText @bind-Value="form.CreateLeafDTO.leafMoreInfo"
+                                           maxlength="200" />
+                            </div>
                     </div>
                 </section>
                 }
@@ -1004,7 +1009,8 @@
             LeafSurfaceId = form.CreateLeafDTO.LeafSurfaceId,
             LeafLength = form.CreateLeafDTO.LeafLength,
             LeafThicknessId = form.CreateLeafDTO.LeafThicknessId,
-            LeafFlavourId = form.CreateLeafDTO.LeafFlavourId
+            LeafFlavourId = form.CreateLeafDTO.LeafFlavourId,
+            leafMoreInfo = form.CreateLeafDTO.leafMoreInfo
         } : null,
 
         CreateFlowerDTO = ShowFlowerSection ? new DTOs.CreateFlowerDTO

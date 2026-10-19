@@ -128,7 +128,8 @@ namespace HerbRecognition_APIs.Services
                         LeafSurfaceName = p.Leaf.Surface.SurfaceName,
                         LeafLength = p.Leaf.Leaflength,
                         LeafThicknessName = p.Leaf.Thickness.ThicknessName,
-                        LeafFlavourName = p.Leaf.Flavour.FlavourName
+                        LeafFlavourName = p.Leaf.Flavour.FlavourName,
+                        LeafMoreInfo = p.Leaf.moreInfo
                     },
                     GetFlowerDTO = p.Flower == null ? null : new GetFlowerDTO
                     {
@@ -344,6 +345,7 @@ namespace HerbRecognition_APIs.Services
                         Leafshapeid = dto.CreateLeafDTO.LeafShapeId,
                         Leafcolorid = dto.CreateLeafDTO.LeafColorId,
                         Surfaceid = dto.CreateLeafDTO.LeafSurfaceId,
+                        moreInfo = dto.CreateLeafDTO.leafMoreInfo
                     };
                 }
 
@@ -466,7 +468,8 @@ namespace HerbRecognition_APIs.Services
                         LeafSurfaceName = p.Leaf.Surface.SurfaceName,
                         LeafLength = p.Leaf.Leaflength,
                         LeafThicknessName = p.Leaf.Thickness.ThicknessName,
-                        LeafFlavourName = p.Leaf.Flavour.FlavourName
+                        LeafFlavourName = p.Leaf.Flavour.FlavourName,
+                        LeafMoreInfo = p.Leaf.moreInfo
                     },
                     GetFlowerDTO = p.Flower == null ? null : new GetFlowerDTO
                     {

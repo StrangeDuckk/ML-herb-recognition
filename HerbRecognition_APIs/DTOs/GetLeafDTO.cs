@@ -1,4 +1,6 @@
-﻿namespace HerbRecognition_APIs.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HerbRecognition_APIs.DTOs
 {
     public class GetLeafDTO
     {
@@ -11,5 +13,6 @@
         public decimal LeafLength { get; set; }
         public string LeafThicknessName { get; set; } = null!;
         public string LeafFlavourName { get; set; } = null!;
+        public string? LeafMoreInfo { get; set; }
     }
 }

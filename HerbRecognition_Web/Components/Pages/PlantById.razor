@@ -350,6 +350,12 @@
                                 @(plant.GetLeafDTO.LeafHasHoles ? "Tak" : "Nie")
                             </span>
                         </div>
+                        <div class="info-item">
+                            <span class="info-label">Dodatkowe informacje</span>
+                            <span class="info-value">
+                                @(plant.GetLeafDTO.LeafMoreInfo ?? "Brak informacji")
+                            </span>
+                        </div>
 
                     </div>
 
