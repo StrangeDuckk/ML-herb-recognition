@@ -20,6 +20,7 @@ public partial class Hat
     public bool Hasgills { get; set; }
 
     public bool HasRing { get; set; }
+    public string? moreInfo { get; set; }
 
     public virtual Color Color { get; set; } = null!;
 

@@ -360,6 +360,11 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+                            <div class="submission-field">
+                                <label>Dodatkowe informacje</label>
+                                <InputText @bind-Value="form.CreateHatDTO.HatMoreInfo"
+                                           maxlength="200" />
+                            </div>
                         </div>
                     </section>
                 }
@@ -985,7 +990,8 @@
             HatSurfaceId = form.CreateHatDTO.HatSurfaceId,
             HatHasSpots = hatHasSpots ,
             HatHasGills = hatHasGills ,
-            HatHasRing = hatHasRing 
+            HatHasRing = hatHasRing ,
+            HatMoreInfo = form.CreateHatDTO.HatMoreInfo
         } : null,
 
         CreateLeafDTO = ShowLeafSection ? new DTOs.CreateLeafDTO

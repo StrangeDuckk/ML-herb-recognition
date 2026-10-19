@@ -20,5 +20,9 @@ namespace HerbRecognition_Web.DTOs
 
         [Required]
         public bool HatHasRing { get; set; }
+
+        [Required]
+        [StringLength(200, MinimumLength = 2)]
+        public string? HatMoreInfo { get; set; }
     }
 }

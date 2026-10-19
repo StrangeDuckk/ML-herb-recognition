@@ -115,7 +115,8 @@ namespace HerbRecognition_APIs.Services
                         HatThicknessName = p.Hat.Thickness.ThicknessName,
                         HatHasGills = p.Hat.Hasgills,
                         HatHasSpots = p.Hat.Hasspots,
-                        HatHasRing = p.Hat.HasRing
+                        HatHasRing = p.Hat.HasRing,
+                        HatMoreInfo = p.Hat.moreInfo
                     },
                     GetLeafDTO = p.Leaf == null ? null : new GetLeafDTO
                     {
@@ -319,7 +320,8 @@ namespace HerbRecognition_APIs.Services
                         Surfaceid = dto.CreateHatDTO.HatSurfaceId,
                         Hasspots = dto.CreateHatDTO.HatHasSpots,
                         Hasgills = dto.CreateHatDTO.HatHasGills,
-                        HasRing = dto.CreateHatDTO.HatHasRing
+                        HasRing = dto.CreateHatDTO.HatHasRing,
+                        moreInfo = dto.CreateHatDTO.HatMoreInfo
                     };
                 }
 
@@ -451,7 +453,8 @@ namespace HerbRecognition_APIs.Services
                         HatThicknessName = p.Hat.Thickness.ThicknessName,
                         HatHasGills = p.Hat.Hasgills,
                         HatHasSpots = p.Hat.Hasspots,
-                        HatHasRing = p.Hat.HasRing
+                        HatHasRing = p.Hat.HasRing,
+                        HatMoreInfo = p.Hat.moreInfo
                     },
                     GetLeafDTO = p.Leaf == null ? null : new GetLeafDTO
                     {
@@ -521,7 +524,7 @@ namespace HerbRecognition_APIs.Services
             var matrix = new int[a.Length + 1, b.Length + 1];
 
             //porownanie roznicy pomiedzy dwoma wyrazami,
-            //porownanie najpierw pierwszego do pustego, potem pierwszego do 1 chata z drugiego
+            //porownanie najpierw pierwszego do pustego, potem pierwszego do 1 chara z drugiego
             for (int i = 0; i <= a.Length; i++)
                 matrix[i, 0] = i;
 
