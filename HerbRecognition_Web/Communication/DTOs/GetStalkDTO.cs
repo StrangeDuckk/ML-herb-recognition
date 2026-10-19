@@ -6,5 +6,6 @@
         public string StalkColorName { get; set; } = null!;
         public string StalkSurfaceName { get; set; } = null!;
         public bool StalkIsHollow { get; set; }
+        public string? StalkMoreInfo { get; set; }
     }
 }

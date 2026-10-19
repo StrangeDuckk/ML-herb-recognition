@@ -102,6 +102,7 @@ namespace HerbRecognition_APIs.Services
                         StalkShapeName = p.Stalk.Shape.ShapeName,
                         StalkSurfaceName = p.Stalk.Surface.SurfaceName,
                         StalkIsHollow = p.Stalk.isHollow,
+                        StalkMoreInfo = p.Stalk.moreInfo
                     },
 
                     Occurance = new GetOccuranceDTO
@@ -305,7 +306,8 @@ namespace HerbRecognition_APIs.Services
                     Shapeid = dto.CreateStalkDTO.StalkShapeId,
                     Colorid = dto.CreateStalkDTO.StalkColorId,
                     Surfaceid = dto.CreateStalkDTO.StalkSurfaceId,
-                    isHollow = dto.CreateStalkDTO.StalkIsHollow
+                    isHollow = dto.CreateStalkDTO.StalkIsHollow,
+                    moreInfo = dto.CreateStalkDTO.StalkMoreInfo
                 };
                 
 
@@ -445,7 +447,8 @@ namespace HerbRecognition_APIs.Services
                         StalkColorName = p.Stalk.Color.ColorName,
                         StalkShapeName = p.Stalk.Shape.ShapeName,
                         StalkSurfaceName = p.Stalk.Surface.SurfaceName,
-                        StalkIsHollow = p.Stalk.isHollow
+                        StalkIsHollow = p.Stalk.isHollow,
+                        StalkMoreInfo = p.Stalk.moreInfo
                     },
 
                     Occurance = new GetOccuranceDTO

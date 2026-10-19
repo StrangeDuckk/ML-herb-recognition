@@ -191,6 +191,11 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+                            <div class="submission-field">
+                                <label>Dodatkowe informacje</label>
+                                <InputText @bind-Value="form.CreateStalkDTO.StalkMoreInfo"
+                                           maxlength="200" />
+                            </div>
                         </div>
                     </section>
                 }
@@ -979,7 +984,8 @@
             StalkShapeId = form.CreateStalkDTO!.StalkShapeId,
             StalkColorId = form.CreateStalkDTO.StalkColorId,
             StalkSurfaceId = form.CreateStalkDTO.StalkSurfaceId,
-            StalkIsHollow = stalkHollow
+            StalkIsHollow = stalkHollow,
+            StalkMoreInfo = form.CreateStalkDTO.StalkMoreInfo
         } : null,
 
         CreateSapDTO = ShowSapSection ? new DTOs.CreateSapDTO
