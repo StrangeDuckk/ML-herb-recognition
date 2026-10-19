@@ -180,7 +180,12 @@
                                 @(plant.GetSapDTO.SapSticky ? "Tak" : "Nie")
                             </span>
                         </div>
-
+                        <div class="info-item">
+                            <span class="info-label">Dodatkowe informacje</span>
+                            <span class="info-value">
+                                @(plant.GetSapDTO.SapMoreInfo ?? "Brak informacji")
+                            </span>
+                        </div>
                     </div>
 
                 </section>

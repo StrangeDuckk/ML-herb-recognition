@@ -232,6 +232,11 @@
                                     <span class="switch-slider"></span>
                                 </label>
                             </div>
+                            <div class="submission-field">
+                                <label>Dodatkowe informacje</label>
+                                <InputText @bind-Value="form.CreateSapDTO.SapMoreInfo"
+                                           maxlength="200" />
+                            </div>
                         </div>
                     </section>
                 }
@@ -981,7 +986,8 @@
         {
             SapColorId = form.CreateSapDTO!.SapColorId,
             SapLeavesStain = sapLeavesStain , 
-            SapSticky = sapSticky 
+            SapSticky = sapSticky,
+            SapMoreInfo = form.CreateSapDTO.SapMoreInfo
         } : null,
 
         CreateRootDTO = ShowRootSection ? new DTOs.CreateRootDTO

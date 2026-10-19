@@ -86,6 +86,7 @@ namespace HerbRecognition_APIs.Services
                         SapColor = p.Sap.Color.ColorName,
                         SapLeavesStains = p.Sap.Leavesstains,
                         SapSticky = p.Sap.Sticky,
+                        SapMoreInfo = p.Sap.moreInfo
                     },
                     GetRootDTO = p.Root == null ? null : new GetRootDTO
                     {
@@ -272,7 +273,8 @@ namespace HerbRecognition_APIs.Services
                      {
                          Colorid = dto.CreateSapDTO.SapColorId,
                          Leavesstains = dto.CreateSapDTO.SapLeavesStain,
-                         Sticky = dto.CreateSapDTO.SapSticky
+                         Sticky = dto.CreateSapDTO.SapSticky,
+                         moreInfo = dto.CreateSapDTO.SapMoreInfo
                      };
                 }
 
@@ -428,6 +430,7 @@ namespace HerbRecognition_APIs.Services
                         SapColor = p.Sap.Color.ColorName,
                         SapLeavesStains = p.Sap.Leavesstains,
                         SapSticky = p.Sap.Sticky,
+                        SapMoreInfo = p.Sap.moreInfo
                     },
                     GetRootDTO = p.Root == null ? null : new GetRootDTO
                     {

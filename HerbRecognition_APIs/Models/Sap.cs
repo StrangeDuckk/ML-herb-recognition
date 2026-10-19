@@ -12,6 +12,7 @@ public partial class Sap
     public bool Leavesstains { get; set; }
 
     public bool Sticky { get; set; }
+    public string? moreInfo { get; set; }
 
     public virtual Color Color { get; set; } = null!;
 
