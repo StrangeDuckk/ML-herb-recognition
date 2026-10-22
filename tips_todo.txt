@@ -1,7 +1,7 @@
-- usprawnic formularz:
-	- zabezpieczenie przed sql injection
+- zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika
 
-- zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika + logowanie administratora
+- zabezpieczenie przed sql injection
+
 
 - zrobic wyszukiwanie po formularzu dodawania
 
