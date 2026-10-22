@@ -354,6 +354,29 @@
         color: #788278;
     }
 
+/* =========================================================
+   SIMILAR PLANTS
+   ========================================================= */
+
+
+.section-note {
+    margin: -4px 0 16px;
+    color: #7a857f;
+    font-size: 0.9rem;
+}
+
+.similar-plant-card.pending {
+    border-style: dashed;
+    border-color: #f1dcb0;
+    background: #fffaf0;
+    cursor: default;
+}
+
+    .similar-plant-card.pending:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
 
 /* =========================================================
    RESPONSIVE

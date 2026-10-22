@@ -22,6 +22,7 @@ namespace HerbRecognition_APIs.Services
         Task<CreatePlantDTO> GetUserInputPlantAsync(int id);
         Task<int> PostUserInputPlantAsync(CreatePlantDTO dto);
         Task<List<SimilarPlantCandidateDTO>> SearchSimilarCandidatesAsync(string query, int limit = 10);
+        Task<List<SimilarPlantCandidateDTO>> GetPendingSimilarToPlantAsync(int plantId);
         Task<List<GetPlantTypeDTO>> GetAllDictPlantTypesAsync();
         Task<List<GetOccuranceDTO>> GetAllDictOccurancesAsync();
         Task<List<GetShapeDTO>> GetAllDictShapesAsync();
@@ -607,67 +608,6 @@ namespace HerbRecognition_APIs.Services
 
             return plants;
         }
-        public async Task<List<SimilarPlantCandidateDTO>> SearchSimilarCandidatesAsync(string query, int limit = 10)
-        {
-            query = query.Trim();
-            if (query.Length < 2)
-                return new List<SimilarPlantCandidateDTO>();
-
-            var pattern = $"%{query}%";
-
-            // --- zatwierdzone (plant) --- wyszukiwanie przez linQ
-            var results = await data.Plants
-                .Where(p =>
-                    EF.Functions.ILike(p.Name, pattern) ||
-                    EF.Functions.ILike(p.Polishname, pattern) ||
-                    (p.Latinname != null && EF.Functions.ILike(p.Latinname, pattern)) ||
-                    (p.Subriquet != null && EF.Functions.ILike(p.Subriquet, pattern)))
-                .OrderBy(p => p.Polishname)
-                .Take(limit)
-                .Select(p => new SimilarPlantCandidateDTO
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PolishName = p.Polishname,
-                    LatinName = p.Latinname,
-                    PlantTypeName = p.Planttype.Name,
-                    IsApproved = true
-                })
-                .ToListAsync();
-
-            // --- czekające na weryfikację (userinput, pola wewnątrz jsonb) --- wyszukanie przez sql, bo trzymane w JSONie
-            var pending = await data.UserInputs
-                .FromSqlInterpolated($@"
-            SELECT * FROM userinput
-            WHERE inputdata->>'Name'       ILIKE {pattern}
-               OR inputdata->>'PolishName' ILIKE {pattern}
-               OR inputdata->>'LatinName'  ILIKE {pattern}
-               OR inputdata->>'Subriquet'  ILIKE {pattern}
-            ORDER BY id DESC
-            LIMIT {limit}")//pattern i limit przeciw sql injection
-                .AsNoTracking()
-                .ToListAsync();
-
-            var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
-
-            foreach (var submission in pending)
-            {
-                var dto = JsonSerializer.Deserialize<CreatePlantDTO>(submission.Inputdata);
-                if (dto is null) continue;
-
-                results.Add(new SimilarPlantCandidateDTO
-                {
-                    Id = submission.Id,
-                    Name = dto.Name,
-                    PolishName = dto.PolishName,
-                    LatinName = dto.LatinName,
-                    PlantTypeName = plantTypes.GetValueOrDefault(dto.PlantTypeID),
-                    IsApproved = false
-                });
-            }
-
-            return results;
-        }
 
         // ----------- dictionaries Controller api/dictionaries/ ------
         public async Task<List<GetPlantTypeDTO>> GetAllDictPlantTypesAsync() // planttype
@@ -758,6 +698,117 @@ namespace HerbRecognition_APIs.Services
         }
 
         // ----------- UserInput Controller api/userInput/ ------
+        private async Task<List<SimilarPlantCandidateDTO>> MapSubmissionsToCandidatesAsync(
+    IEnumerable<UserInput> submissions)
+        {
+            var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
+            var result = new List<SimilarPlantCandidateDTO>();
+
+            foreach (var submission in submissions)
+            {
+                CreatePlantDTO? dto;
+                try
+                {
+                    dto = JsonSerializer.Deserialize<CreatePlantDTO>(submission.Inputdata);
+                }
+                catch (JsonException ex)
+                {
+                    Console.Error.WriteLine(
+                        $"Pominięto zgłoszenie {submission.Id} – nieprawidłowy JSON: {ex.Message}");
+                    continue;
+                }
+
+                if (dto is null) continue;
+
+                result.Add(new SimilarPlantCandidateDTO
+                {
+                    Id = submission.Id,
+                    Name = dto.Name,
+                    PolishName = dto.PolishName,
+                    LatinName = dto.LatinName,
+                    PlantTypeName = plantTypes.GetValueOrDefault(dto.PlantTypeID),
+                    IsApproved = false
+                });
+            }
+
+            return result;
+        }
+        public async Task<List<SimilarPlantCandidateDTO>> GetPendingSimilarToPlantAsync(int plantId)
+        {
+            var submissions = await data.UserInputs
+                .FromSqlInterpolated($@"
+            SELECT * FROM userinput
+            WHERE inputdata->'SimilarPlantIds' @> jsonb_build_array({plantId})
+            ORDER BY id DESC")
+                .AsNoTracking()
+                .ToListAsync();
+
+            return await MapSubmissionsToCandidatesAsync(submissions);
+        }
+        public async Task<List<SimilarPlantCandidateDTO>> SearchSimilarCandidatesAsync(string query, int limit = 10)
+        {
+            query = query.Trim();
+            if (query.Length < 2)
+                return new List<SimilarPlantCandidateDTO>();
+
+            var pattern = $"%{query}%";
+
+            // --- zatwierdzone (plant) --- wyszukiwanie przez linQ
+            var results = await data.Plants
+                .Where(p =>
+                    EF.Functions.ILike(p.Name, pattern) ||
+                    EF.Functions.ILike(p.Polishname, pattern) ||
+                    (p.Latinname != null && EF.Functions.ILike(p.Latinname, pattern)) ||
+                    (p.Subriquet != null && EF.Functions.ILike(p.Subriquet, pattern)))
+                .OrderBy(p => p.Polishname)
+                .Take(limit)
+                .Select(p => new SimilarPlantCandidateDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PolishName = p.Polishname,
+                    LatinName = p.Latinname,
+                    PlantTypeName = p.Planttype.Name,
+                    IsApproved = true
+                })
+                .ToListAsync();
+
+            // --- czekające na weryfikację (userinput, pola wewnątrz jsonb) --- wyszukanie przez sql, bo trzymane w JSONie
+            var pending = await data.UserInputs
+                .FromSqlInterpolated($@"
+            SELECT * FROM userinput
+            WHERE inputdata->>'Name'       ILIKE {pattern}
+               OR inputdata->>'PolishName' ILIKE {pattern}
+               OR inputdata->>'LatinName'  ILIKE {pattern}
+               OR inputdata->>'Subriquet'  ILIKE {pattern}
+            ORDER BY id DESC
+            LIMIT {limit}")//pattern i limit przeciw sql injection
+                .AsNoTracking()
+                .ToListAsync();
+
+            results.AddRange(await MapSubmissionsToCandidatesAsync(pending));
+            return results;
+
+            //var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
+
+            //foreach (var submission in pending)
+            //{
+            //    var dto = JsonSerializer.Deserialize<CreatePlantDTO>(submission.Inputdata);
+            //    if (dto is null) continue;
+
+            //    results.Add(new SimilarPlantCandidateDTO
+            //    {
+            //        Id = submission.Id,
+            //        Name = dto.Name,
+            //        PolishName = dto.PolishName,
+            //        LatinName = dto.LatinName,
+            //        PlantTypeName = plantTypes.GetValueOrDefault(dto.PlantTypeID),
+            //        IsApproved = false
+            //    });
+            //}
+
+            //return results;
+        }
         public async Task<int> PostUserInputPlantAsync(CreatePlantDTO dto)
         {
             // -----  walidacja dla similar plants ------

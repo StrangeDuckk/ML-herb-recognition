@@ -631,8 +631,38 @@
                 </section>
             }
 
+            @if (pendingSimilar.Count > 0)
+            {
+                <section class="plant-section">
 
-            @if (plant.SimiliarPlantDTO is not null &&
+                    <div class="section-heading">
+                        <span class="section-label">OCZEKUJĄCE NA WERYFIKACJĘ</span>
+                        <h2>Zgłoszone podobne rośliny</h2>
+                    </div>
+
+                    <p class="section-note">
+                        Użytkownicy zgłosili te rośliny jako podobne. Zgłoszenia czekają na weryfikację.
+                    </p>
+
+                    <div class="similar-plants">
+                        @foreach (var pending in pendingSimilar)
+                        {
+                            <div class="similar-plant-card pending">
+                                <div>
+                                    <h3>@pending.PolishName</h3>
+                                    <p>@pending.Name</p>
+                                </div>
+
+                                <span class="similar-badge pending">
+                                    Zgłoszenie #@pending.Id
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                </section>
+            }
+            @* @if (plant.SimiliarPlantDTO is not null &&
                     plant.SimiliarPlantDTO.Count > 0)
             {
                 <section class="plant-section">
@@ -662,7 +692,7 @@
                     </div>
 
                 </section>
-            }
+            } *@
 
         </div>
     }
@@ -680,6 +710,8 @@
     private bool isLoading = true;
     private string? errorMessage;
 
+    private List<SimilarPlantCandidateDTO> pendingSimilar = new();
+
     protected override async Task OnParametersSetAsync()
     {
         await LoadPlantAsync();
@@ -690,10 +722,23 @@
         isLoading = true;
         errorMessage = null;
         plant = null;
+        pendingSimilar = new();
 
         try
         {
             plant = await PlantApiService.GetPlantByIdAsync(Id);
+
+            if (plant is not null)//sciagniecie podobnych
+            {
+                try
+                {
+                    pendingSimilar = await PlantApiService.GetPendingSimilarAsync(Id);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Nie udało się pobrać zgłoszeń podobnych roślin: {ex.Message}");
+                }
+            }
         }
         catch (HttpRequestException)
         {

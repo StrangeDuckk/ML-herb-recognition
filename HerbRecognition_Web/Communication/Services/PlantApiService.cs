@@ -44,5 +44,12 @@ namespace HerbRecognition_Web.Communication.Services
 
             return resoult ?? new List<SimilarPlantCandidateDTO>();
         }
+        public async Task<List<SimilarPlantCandidateDTO>> GetPendingSimilarAsync(int plantId)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<SimilarPlantCandidateDTO>>(
+                $"api/plants/{plantId}/pending-similar");
+
+            return result ?? new List<SimilarPlantCandidateDTO>();
+        }
     }
 }

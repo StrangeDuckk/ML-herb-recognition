@@ -39,6 +39,12 @@ namespace HerbRecognition_APIs.Controllers
             return Ok(plant);
         }
 
+        [HttpGet("{id:int}/pending-similar")] //zwrocenie oddzielnie podobnych roslin
+        public async Task<IActionResult> GetPendingSimilar(int id)
+        {
+            return Ok(await dbService.GetPendingSimilarToPlantAsync(id));
+        }
+
         [HttpGet("{name}")]
         public async Task<IActionResult> GetPlantsByNameAsync(string name)
         {
