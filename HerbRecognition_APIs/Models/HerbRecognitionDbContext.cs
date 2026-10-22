@@ -73,7 +73,7 @@ public partial class HerbRecognitionDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<PlantSimilarPlant>().Ignore("PlantId1");
+        //modelBuilder.Entity<PlantSimilarPlant>().Ignore("PlantId1");
 
         modelBuilder.Entity<Activesubstance>(entity =>
         {

@@ -566,22 +566,25 @@ CREATE TABLE monthofharvest (
     monthname VARCHAR(30) NOT NULL UNIQUE
 );
 
-ALTER TABLE plant  ADD COLUMN plantmonthofharvestid INT NULL
+ALTER TABLE plant  ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT plant_monthofharvestid_fkey  REFERENCES monthofharvest(id);
-ALTER TABLE stalk  ADD COLUMN stalkmonthofharvestid INT NULL
+ALTER TABLE stalk  ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT stalk_monthofharvestid_fkey  REFERENCES monthofharvest(id);
-ALTER TABLE sap    ADD COLUMN sapmonthofharvestid INT NULL
+ALTER TABLE sap    ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT sap_monthofharvestid_fkey    REFERENCES monthofharvest(id);
-ALTER TABLE root    ADD COLUMN rootmonthofharvestid INT NULL
+ALTER TABLE root    ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT root_monthofharvestid_fkey    REFERENCES monthofharvest(id);
-ALTER TABLE hat    ADD COLUMN hatmonthofharvestid INT NULL
+ALTER TABLE hat    ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT hat_monthofharvestid_fkey    REFERENCES monthofharvest(id);
-ALTER TABLE leaf   ADD COLUMN leafmonthofharvestid INT NULL
+ALTER TABLE leaf   ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT leaf_monthofharvestid_fkey   REFERENCES monthofharvest(id);
-ALTER TABLE flower ADD COLUMN flowermonthofharvestid INT NULL
+ALTER TABLE flower ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT flower_monthofharvestid_fkey REFERENCES monthofharvest(id);
-ALTER TABLE fruit  ADD COLUMN fruitmonthofharvestid INT NULL
+ALTER TABLE fruit  ADD COLUMN monthofharvestid INT NULL
     CONSTRAINT fruit_monthofharvestid_fkey  REFERENCES monthofharvest(id);
+
+-- naprawianie zaleznosci plant-plantsimilarplant
+ALTER TABLE plant_similarplant DROP COLUMN plantsimilarplantid;
 
 -- End of file.
 

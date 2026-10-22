@@ -1,0 +1,169 @@
+﻿@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@inject PlantApiService PlantApi
+@implements IDisposable
+
+<div class="similar-picker">
+
+    @if (Selected.Count > 0)
+    {
+        <div class="similar-chips">
+            @foreach (var item in Selected)
+            {
+                <span class="similar-chip @(item.IsApproved ? "" : "pending")">
+                    <span>@item.PolishName</span>
+                    @if (!item.IsApproved)
+                    {
+                        <small>zgłoszenie</small>
+                    }
+                    <button type="button" aria-label="Usuń @item.PolishName"
+                            @onclick="() => RemoveAsync(item)">
+                        ×
+                    </button>
+                </span>
+            }
+        </div>
+    }
+
+    <div class="similar-search" @onkeydown="OnKeyDown">
+        <input type="text"
+               value="@query"
+               @oninput="OnInputAsync"
+               placeholder="Wpisz nazwę rośliny (min. 2 znaki)..."
+               disabled="@(Selected.Count >= MaxItems)" />
+
+        @if (isOpen)
+        {
+            <div class="similar-backdrop" @onclick="Close"></div>
+
+            <div class="similar-results">
+                @if (isSearching)
+                {
+                    <div class="similar-info">Szukam...</div>
+                }
+                else if (error is not null)
+                {
+                    <div class="similar-info error">@error</div>
+                }
+                else if (results.Count == 0)
+                {
+                    <div class="similar-info">Nie znaleziono roślin.</div>
+                }
+                else
+                {
+                    @foreach (var r in results)
+                    {
+                        var alreadySelected = IsSelected(r);
+
+                        <button type="button" class="similar-option"
+                                disabled="@alreadySelected"
+                                @onclick="() => AddAsync(r)">
+                            <span class="similar-option-names">
+                                <strong>@r.PolishName</strong>
+                                <span>
+                                    @r.Name@(string.IsNullOrEmpty(r.LatinName) ? "" : $" · {r.LatinName}")
+                                </span>
+                            </span>
+
+                            <span class="similar-badge @(r.IsApproved ? "approved" : "pending")">
+                                @(alreadySelected ? "Wybrano"
+                                                    : r.IsApproved ? "W bazie"
+                                                    : $"Zgłoszenie #{r.Id}")
+                </span>
+            </button>
+                        }
+                }
+            </div>
+        }
+    </div>
+
+    @if (Selected.Count >= MaxItems)
+    {
+        <p class="similar-limit">Osiągnięto limit @MaxItems roślin.</p>
+    }
+</div>
+
+@code {
+    [Parameter] public List<SimilarPlantCandidateDTO> Selected { get; set; } = new();
+    [Parameter] public EventCallback<List<SimilarPlantCandidateDTO>> SelectedChanged { get; set; }
+    [Parameter] public int MaxItems { get; set; } = 10;
+
+    private string query = "";
+    private List<SimilarPlantCandidateDTO> results = new();
+    private bool isOpen;
+    private bool isSearching;
+    private string? error;
+    private CancellationTokenSource? cts;
+
+    private async Task OnInputAsync(ChangeEventArgs e)
+    {
+        query = e.Value?.ToString() ?? "";
+
+        cts?.Cancel();
+
+        if (query.Trim().Length < 2)
+        {
+            isOpen = false;
+            results.Clear();
+            return;
+        }
+
+        cts = new CancellationTokenSource();
+        var token = cts.Token;
+
+        isOpen = true;
+        isSearching = true;
+        error = null;
+
+        try
+        {
+            await Task.Delay(300, token);   // czekamy, aż użytkownik skończy pisać
+            results = await PlantApi.SearchSimilarCandidatesAsync(query.Trim(), token);
+            isSearching = false;
+        }
+        catch (OperationCanceledException)
+        {
+            // nowsze wpisanie przejęło wyszukiwanie
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd wyszukiwania podobnych roślin: {ex}");
+            error = "Nie udało się wyszukać roślin.";
+            isSearching = false;
+        }
+    }
+
+    private bool IsSelected(SimilarPlantCandidateDTO c) =>
+        Selected.Any(s => s.Id == c.Id && s.IsApproved == c.IsApproved);
+
+    private async Task AddAsync(SimilarPlantCandidateDTO item)
+    {
+        if (IsSelected(item) || Selected.Count >= MaxItems) return;
+
+        Selected.Add(item);
+        query = "";
+        results.Clear();
+        isOpen = false;
+
+        await SelectedChanged.InvokeAsync(Selected);
+    }
+
+    private async Task RemoveAsync(SimilarPlantCandidateDTO item)
+    {
+        Selected.Remove(item);
+        await SelectedChanged.InvokeAsync(Selected);
+    }
+
+    private void Close() => isOpen = false;
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") isOpen = false;
+    }
+
+    public void Dispose()
+    {
+        cts?.Cancel();
+        cts?.Dispose();
+    }
+}

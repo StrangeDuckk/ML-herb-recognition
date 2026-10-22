@@ -35,8 +35,6 @@ public partial class Plant
     public int? MonthOfHarvestId { get; set; }
 
 
-    public PlantSimilarPlant? Similarplants { get; set; }
-
     public int? Poisonabilityid { get; set; }
     public string? moreInfo { get; set; }
 
@@ -45,8 +43,6 @@ public partial class Plant
     public virtual Fruit? Fruit { get; set; }
 
     public virtual Hat? Hat { get; set; }
-
-    public virtual ICollection<Plant> InverseSimilarplants { get; set; } = new List<Plant>();
 
     public virtual Leaf? Leaf { get; set; }
 

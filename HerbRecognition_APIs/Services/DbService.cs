@@ -21,6 +21,7 @@ namespace HerbRecognition_APIs.Services
         Task<IEnumerable<GetPlantDTO>> GetPlantsAsync();
         Task<CreatePlantDTO> GetUserInputPlantAsync(int id);
         Task<int> PostUserInputPlantAsync(CreatePlantDTO dto);
+        Task<List<SimilarPlantCandidateDTO>> SearchSimilarCandidatesAsync(string query, int limit = 10);
         Task<List<GetPlantTypeDTO>> GetAllDictPlantTypesAsync();
         Task<List<GetOccuranceDTO>> GetAllDictOccurancesAsync();
         Task<List<GetShapeDTO>> GetAllDictShapesAsync();
@@ -230,6 +231,7 @@ namespace HerbRecognition_APIs.Services
                 if (dto.PoisonabilityId.HasValue && !await data.Poisonabilities.AnyAsync(x => x.Id == dto.PoisonabilityId))
                     throw new KeyNotFoundException($"Poisonability with ID {dto.PoisonabilityId} does not exist!");
 
+                // -- monthOdHarvest
                 await ValidateMonthOfHarvestAsync(dto.MonthOfHarvestId, "Plant"); 
 
                 // --------------- tworzenie nowej rosliny -----------------
@@ -278,12 +280,18 @@ namespace HerbRecognition_APIs.Services
                         .ToListAsync();
 
                     foreach(var simPlant in similarPlants)
-                    {
+                    {                    
                         data.PlantSimilarplants.Add(new PlantSimilarPlant
                         {
                             PlantId = plant.Id,
                             SimilarPlantId = simPlant.Id
                         });
+                        data.PlantSimilarplants.Add(new PlantSimilarPlant
+                        {
+                            PlantId = simPlant.Id,
+                            SimilarPlantId = plant.Id
+                        });
+                        
                     }
 
                     await data.SaveChangesAsync();
@@ -599,6 +607,67 @@ namespace HerbRecognition_APIs.Services
 
             return plants;
         }
+        public async Task<List<SimilarPlantCandidateDTO>> SearchSimilarCandidatesAsync(string query, int limit = 10)
+        {
+            query = query.Trim();
+            if (query.Length < 2)
+                return new List<SimilarPlantCandidateDTO>();
+
+            var pattern = $"%{query}%";
+
+            // --- zatwierdzone (plant) --- wyszukiwanie przez linQ
+            var results = await data.Plants
+                .Where(p =>
+                    EF.Functions.ILike(p.Name, pattern) ||
+                    EF.Functions.ILike(p.Polishname, pattern) ||
+                    (p.Latinname != null && EF.Functions.ILike(p.Latinname, pattern)) ||
+                    (p.Subriquet != null && EF.Functions.ILike(p.Subriquet, pattern)))
+                .OrderBy(p => p.Polishname)
+                .Take(limit)
+                .Select(p => new SimilarPlantCandidateDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PolishName = p.Polishname,
+                    LatinName = p.Latinname,
+                    PlantTypeName = p.Planttype.Name,
+                    IsApproved = true
+                })
+                .ToListAsync();
+
+            // --- czekające na weryfikację (userinput, pola wewnątrz jsonb) --- wyszukanie przez sql, bo trzymane w JSONie
+            var pending = await data.UserInputs
+                .FromSqlInterpolated($@"
+            SELECT * FROM userinput
+            WHERE inputdata->>'Name'       ILIKE {pattern}
+               OR inputdata->>'PolishName' ILIKE {pattern}
+               OR inputdata->>'LatinName'  ILIKE {pattern}
+               OR inputdata->>'Subriquet'  ILIKE {pattern}
+            ORDER BY id DESC
+            LIMIT {limit}")//pattern i limit przeciw sql injection
+                .AsNoTracking()
+                .ToListAsync();
+
+            var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
+
+            foreach (var submission in pending)
+            {
+                var dto = JsonSerializer.Deserialize<CreatePlantDTO>(submission.Inputdata);
+                if (dto is null) continue;
+
+                results.Add(new SimilarPlantCandidateDTO
+                {
+                    Id = submission.Id,
+                    Name = dto.Name,
+                    PolishName = dto.PolishName,
+                    LatinName = dto.LatinName,
+                    PlantTypeName = plantTypes.GetValueOrDefault(dto.PlantTypeID),
+                    IsApproved = false
+                });
+            }
+
+            return results;
+        }
 
         // ----------- dictionaries Controller api/dictionaries/ ------
         public async Task<List<GetPlantTypeDTO>> GetAllDictPlantTypesAsync() // planttype
@@ -691,6 +760,24 @@ namespace HerbRecognition_APIs.Services
         // ----------- UserInput Controller api/userInput/ ------
         public async Task<int> PostUserInputPlantAsync(CreatePlantDTO dto)
         {
+            // -----  walidacja dla similar plants ------
+
+            if (dto.SimilarPlantIds is { Count: > 0 })
+            {
+                var ids = dto.SimilarPlantIds.Distinct().ToList();
+                if (await data.Plants.CountAsync(p => ids.Contains(p.Id)) != ids.Count)
+                    throw new KeyNotFoundException("Część wskazanych podobnych roślin nie istnieje.");
+            }
+
+            if (dto.SimilarUserInputIds is { Count: > 0 })
+            {
+                var ids = dto.SimilarUserInputIds.Distinct().ToList();
+                if (await data.UserInputs.CountAsync(u => ids.Contains(u.Id)) != ids.Count)
+                    throw new KeyNotFoundException("Część wskazanych zgłoszeń nie istnieje.");
+            }
+
+            // ------------------------------------------
+
             var json = JsonSerializer.Serialize(dto);
 
             var submission = new UserInput
@@ -801,7 +888,5 @@ namespace HerbRecognition_APIs.Services
                              ?? property.Metadata.ClrType;
             property.CurrentValue = Convert.ChangeType(value ?? 0, targetType);
         }
-
-
     }
 }

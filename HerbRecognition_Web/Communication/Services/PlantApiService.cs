@@ -34,5 +34,15 @@ namespace HerbRecognition_Web.Communication.Services
 
             return plants ?? new List<GetPlantDTO>();
         }
+
+        public async Task<List<SimilarPlantCandidateDTO>> SearchSimilarCandidatesAsync(string name, CancellationToken cancellation = default)
+        {
+            var resoult = await _httpClient.GetFromJsonAsync<List<SimilarPlantCandidateDTO>>(
+                    $"api/search/similarplants?name={Uri.EscapeDataString(name)}",
+                    cancellation
+                );
+
+            return resoult ?? new List<SimilarPlantCandidateDTO>();
+        }
     }
 }

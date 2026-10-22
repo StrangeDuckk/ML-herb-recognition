@@ -709,6 +709,16 @@
                 </section>
                 }
 
+                <section class="submission-section">
+                    <h2>9. Podobne rośliny</h2>
+                    <p class="section-description">
+                        Wskaż rośliny, z którymi można pomylić zgłaszaną roślinę.
+                        Możesz wybrać rośliny z bazy oraz te, które czekają na weryfikację.
+                    </p>
+
+                    <SimilarPlantPicker @bind-Selected="similarPlants" />
+                </section>
+
                 @if (!string.IsNullOrWhiteSpace(submitError))
                 {
                     <div class="plants-error">
@@ -772,8 +782,8 @@
     private List<DictionaryOption> poisonabilities = new();
     private List<DictionaryOption> surfaces = new();
     private List<DictionaryOption> thicknesses = new();
-    private List<ColorOption> colors = new();
     private List<DictionaryOption> months = new();
+    private List<ColorOption> colors = new();
 
     private bool stalkHollow;
     private bool sapLeavesStain;
@@ -792,6 +802,14 @@
     private string? loadError;
     private string? submitError;
     private int submissionId;
+
+    // similar plants:
+    private List<SimilarPlantCandidateDTO> similarPlants = new();
+    private static List<int>? IdsOrNull(IEnumerable<SimilarPlantCandidateDTO> items)
+    {
+        var ids = items.Select(i => i.Id).ToList();
+        return ids.Count > 0 ? ids : null;
+    }
 
     //private void OnNameInput(ChangeEventArgs e) { form.Name = e.Value?.ToString() ?? string.Empty; Console.WriteLine($"Wpisana nazwa: [{form.Name}]"); }
 
@@ -1075,7 +1093,8 @@
         PlantTypeID = form.PlantTypeID,
         OccuranceId = form.OccuranceId,
         PoisonabilityId = form.PoisonabilityId,
-        SimilarPlantIds = form.SimilarPlantIds,
+        SimilarPlantIds = IdsOrNull(similarPlants.Where(p => p.IsApproved)),
+        SimilarUserInputIds = IdsOrNull(similarPlants.Where(p => !p.IsApproved)),
         MonthOfHarvestId = form.MonthOfHarvestId,
 
         CreateStalkDTO = ShowStalkSection ? new DTOs.CreateStalkDTO

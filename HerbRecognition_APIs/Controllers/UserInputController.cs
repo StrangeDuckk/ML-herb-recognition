@@ -11,14 +11,21 @@ namespace HerbRecognition_APIs.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUserInputPlantAsync([FromBody] CreatePlantDTO dto)
         {
-            var sumbissionId = await dbService.PostUserInputPlantAsync(dto);
-
-            return CreatedAtAction(nameof(GetUserInput), new { id = sumbissionId }, new
+            try
             {
-                Id = sumbissionId,
-                Message = "Zgloszenie zostalo zapisane.",
-                Url = $"/api/userInput/{sumbissionId}"
-            });
+                var sumbissionId = await dbService.PostUserInputPlantAsync(dto);
+
+                return CreatedAtAction(nameof(GetUserInput), new { id = sumbissionId }, new
+                {
+                    Id = sumbissionId,
+                    Message = "Zgloszenie zostalo zapisane.",
+                    Url = $"/api/userInput/{sumbissionId}"
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id:int}")]

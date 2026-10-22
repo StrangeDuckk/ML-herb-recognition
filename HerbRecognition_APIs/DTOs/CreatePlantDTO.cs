@@ -58,7 +58,8 @@ namespace HerbRecognition_APIs.DTOs
         public CreateFruitDTO? CreateFruitDTO { get; set; }
 
         // ----- similarPlants ----- wiele 
-        public List<int>? SimilarPlantIds { get; set; } //same idiki
+        public List<int>? SimilarPlantIds { get; set; } //same idiki, zatwierdzone
+        public List<int>? SimilarUserInputIds { get; set; }  // zgłoszenia czekające na weryfikację (tabela userinput)
 
         // ----- poisonability -----
         public int? PoisonabilityId { get; set; }
