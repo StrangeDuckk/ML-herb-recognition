@@ -61,6 +61,7 @@ builder.Services.AddDbContext<HerbRecognitionDbContext>(options =>
 );
 
 builder.Services.AddScoped<IDbService, DbService>();
+builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 
 // --- CORS -----
 builder.Services.AddCors(options =>

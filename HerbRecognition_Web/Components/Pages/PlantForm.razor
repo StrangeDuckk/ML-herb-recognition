@@ -1,5 +1,58 @@
 ﻿@page "/plant-form"
 
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject UserInputApiService UserInputApiService
+
+<PageTitle>Formularz zgłoszenia rośliny</PageTitle>
+
+<div class="plants-page submission-page">
+
+    <section class="plants-header">
+        <div>
+            <span class="section-label">HERB RECOGNITION</span>
+            <h1>Zgłoś nową roślinę</h1>
+            <p>
+                Uzupełnij informacje o roślinie.
+                Zgłoszenie zostanie zweryfikowane przed dodaniem do bazy.
+            </p>
+        </div>
+    </section>
+
+    @if (submitted)
+    {
+        <div class="submission-success">
+            <h2>Zgłoszenie zapisane!</h2>
+            <p>Dziękujemy. Zgłoszenie oczekuje na weryfikację.</p>
+            <p>Numer zgłoszenia: <strong>@submissionId</strong></p>
+            <a href="/search" class="submission-button">Wróć do wyszukiwania</a>
+        </div>
+    }
+    else
+    {
+        <PlantSubmissionForm SubmitText="Wyślij zgłoszenie"
+                             OnSubmit="SubmitAsync"
+                             FormName="PlantSubmitAsync" />
+    }
+</div>
+
+@code {
+    private bool submitted;
+    private int submissionId;
+
+    // wyjątki stąd pokaże formularz nad przyciskiem
+    private async Task SubmitAsync(CreatePlantDTO payload)
+    {
+        submissionId = await UserInputApiService.PostUserInputPlantAsync(payload);
+        submitted = true;
+    }
+}
+
+
+@* @page "/plant-form"
+
 @using System.Net.Http.Json
 @using System.Text.Json
 @using System.ComponentModel.DataAnnotations
@@ -1178,4 +1231,4 @@
 
     private static string? NullIfEmpty(string? s) =>
         string.IsNullOrWhiteSpace(s) ? null : s.Trim();
-}
+} *@

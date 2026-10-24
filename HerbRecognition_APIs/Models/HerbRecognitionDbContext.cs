@@ -514,8 +514,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnName("rootid");
 
             entity.Property(e => e.Stalkid)
-                .HasColumnName("stalkid")
-                .IsRequired();
+                .HasColumnName("stalkid");
 
             entity.Property(e => e.Occuranceid)
                 .HasColumnName("occuranceid")

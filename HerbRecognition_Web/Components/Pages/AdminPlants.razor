@@ -1,0 +1,136 @@
+﻿@page "/admin/plants"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject AdminAuthService Auth
+@inject AdminApiService AdminApi
+@inject NavigationManager Nav
+
+<PageTitle>Rośliny – panel administratora</PageTitle>
+
+<div class="plants-page admin-page">
+
+    <section class="plants-header admin-header">
+        <div>
+            <span class="section-label">PANEL ADMINISTRATORA</span>
+            <h1>Rośliny w bazie</h1>
+        </div>
+        <button type="button" class="admin-btn secondary" @onclick="RedirectToLogin">Wyloguj</button>
+    </section>
+
+    <AdminNav />
+
+    <section class="admin-content">
+        <div class="admin-content-head">
+            <h2>Zatwierdzone rośliny</h2>
+            @if (!isLoading)
+            {
+                <span class="admin-count">@items.Count</span>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="admin-message @(isError ? "error" : "success")">@message</div>
+        }
+
+        @if (isLoading)
+        {
+            <p class="admin-empty">Ładowanie roślin...</p>
+        }
+        else if (items.Count == 0)
+        {
+            <p class="admin-empty">Baza nie zawiera jeszcze roślin. Zatwierdź zgłoszenie, żeby dodać pierwszą.</p>
+        }
+        else
+        {
+            <AdminRecordTable Items="items"
+                              EditUrl="@(id => $"/admin/plants/{id}")"
+                              ViewUrl="@(id => $"/plants/{id}")"
+                              OnDelete="DeleteAsync"
+                              IsBusy="isBusy" />
+        }
+    </section>
+</div>
+
+@code {
+    private List<UserInputSummaryDTO> items = new();
+
+    private bool isLoading = true;
+    private bool isBusy;
+    private bool isError;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            RedirectToLogin();
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            items = await AdminApi.GetPlantsAsync();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            items = new();
+            ShowMessage($"Nie udało się wczytać roślin: {ex.Message}", error: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        isBusy = true;
+        message = null;
+
+        try
+        {
+            await AdminApi.DeletePlantAsync(id);
+            await LoadAsync();
+            ShowMessage($"Usunięto roślinę #{id}.", error: false);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Nie udało się usunąć rośliny: {ex.Message}", error: true);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void ShowMessage(string text, bool error)
+    {
+        message = text;
+        isError = error;
+    }
+
+    private void RedirectToLogin()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}

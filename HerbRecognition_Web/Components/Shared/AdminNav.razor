@@ -1,0 +1,13 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+
+<nav class="admin-sections" aria-label="Sekcje panelu administratora">
+    <NavLink href="/admin" Match="NavLinkMatch.All" class="admin-section-link">
+        Słowniki
+    </NavLink>
+    <NavLink href="/admin/plants" Match="NavLinkMatch.Prefix" class="admin-section-link">
+        Rośliny
+    </NavLink>
+    <NavLink href="/admin/submissions" Match="NavLinkMatch.Prefix" class="admin-section-link">
+        Zgłoszenia
+    </NavLink>
+</nav>

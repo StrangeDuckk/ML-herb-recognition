@@ -1,0 +1,124 @@
+﻿@page "/admin/plants/{Id:int}"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject AdminAuthService Auth
+@inject AdminApiService AdminApi
+@inject NavigationManager Nav
+
+<PageTitle>Roślina #@Id – panel administratora</PageTitle>
+
+<div class="plants-page submission-page admin-page">
+
+    <section class="plants-header admin-header">
+        <div>
+            <span class="section-label">PANEL ADMINISTRATORA</span>
+            <h1>Roślina #@Id</h1>
+            <p>
+                Zmiany są widoczne na stronie rośliny od razu po zapisaniu.
+                Wyłączenie sekcji (np. owoców) usuwa jej dane z bazy.
+            </p>
+        </div>
+        <button type="button" class="admin-btn secondary" @onclick="RedirectToLogin">Wyloguj</button>
+    </section>
+
+    <AdminNav />
+
+    <div class="admin-edit-links">
+        <a href="/admin/plants" class="back-link">← Wszystkie rośliny</a>
+        <a href="@($"/plants/{Id}")" class="back-link">Zobacz stronę rośliny</a>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie rośliny...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(loadError))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się wczytać rośliny</h2>
+            <p>@loadError</p>
+            <a href="/admin/plants" class="submission-button">Wróć do listy roślin</a>
+        </div>
+    }
+    else if (plant is not null)
+    {
+        @if (!string.IsNullOrEmpty(savedMessage))
+        {
+            <div class="admin-message success">@savedMessage</div>
+        }
+
+        <PlantSubmissionForm @key="Id"
+                             Initial="plant"
+                             ExcludePlantId="Id"
+                             SubmitText="Zapisz zmiany"
+                             OnSubmit="SaveAsync"
+                             FormName="AdminPlantEdit" />
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private CreatePlantDTO? plant;
+
+    private bool isLoading = true;
+    private string? loadError;
+    private string? savedMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            RedirectToLogin();
+            return;
+        }
+
+        isLoading = true;
+        loadError = null;
+        savedMessage = null;
+        plant = null;
+
+        try
+        {
+            plant = await AdminApi.GetPlantAsync(Id);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            loadError = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync(CreatePlantDTO dto)
+    {
+        try
+        {
+            await AdminApi.UpdatePlantAsync(Id, dto);
+            savedMessage = $"Zapisano zmiany ({DateTime.Now:HH:mm}).";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        // pozostałe błędy pokaże formularz
+    }
+
+    private void RedirectToLogin()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}

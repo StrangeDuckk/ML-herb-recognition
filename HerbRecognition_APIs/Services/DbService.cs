@@ -14,7 +14,7 @@ namespace HerbRecognition_APIs.Services
 {
     public interface IDbService
     {
-        Task<Plant> CreatePlantAsync(CreatePlantDTO dto);
+        //Task<Plant> CreatePlantAsync(CreatePlantDTO dto);
         Task<IEnumerable<GetPlantDTO>> GetAllPlantsAsync();
         Task<GetPlantDTO?> GetPlantByIdAsync(int id);
         Task<IEnumerable<GetPlantDTO?>> GetPlantByNameAsync(string name);
@@ -213,257 +213,257 @@ namespace HerbRecognition_APIs.Services
 
             return plants_preview;
         }
-        public async Task<Plant> CreatePlantAsync(CreatePlantDTO dto)
-        {
-            await using var transaction = await data.Database.BeginTransactionAsync();
+        //public async Task<Plant> CreatePlantAsync(CreatePlantDTO dto)
+        //{
+        //    await using var transaction = await data.Database.BeginTransactionAsync();
 
-            try
-            {
-                // ---- walidacja slownikow -------
-                // -- plantType
-                if (!await data.Planttypes.AnyAsync(x => x.Id == dto.PlantTypeID))
-                    throw new KeyNotFoundException($"PlantType with ID {dto.PlantTypeID} does not exist!");
+        //    try
+        //    {
+        //        // ---- walidacja slownikow -------
+        //        // -- plantType
+        //        if (!await data.Planttypes.AnyAsync(x => x.Id == dto.PlantTypeID))
+        //            throw new KeyNotFoundException($"PlantType with ID {dto.PlantTypeID} does not exist!");
 
-                // -- occurance
-                if (!await data.Occurances.AnyAsync(x => x.Id == dto.OccuranceId))
-                    throw new KeyNotFoundException($"Occurance with ID {dto.OccuranceId} does not exist!");
+        //        // -- occurance
+        //        if (!await data.Occurances.AnyAsync(x => x.Id == dto.OccuranceId))
+        //            throw new KeyNotFoundException($"Occurance with ID {dto.OccuranceId} does not exist!");
 
-                // -- poisonability
-                if (dto.PoisonabilityId.HasValue && !await data.Poisonabilities.AnyAsync(x => x.Id == dto.PoisonabilityId))
-                    throw new KeyNotFoundException($"Poisonability with ID {dto.PoisonabilityId} does not exist!");
+        //        // -- poisonability
+        //        if (dto.PoisonabilityId.HasValue && !await data.Poisonabilities.AnyAsync(x => x.Id == dto.PoisonabilityId))
+        //            throw new KeyNotFoundException($"Poisonability with ID {dto.PoisonabilityId} does not exist!");
 
-                // -- monthOdHarvest
-                await ValidateMonthOfHarvestAsync(dto.MonthOfHarvestId, "Plant"); 
+        //        // -- monthOdHarvest
+        //        await ValidateMonthOfHarvestAsync(dto.MonthOfHarvestId, "Plant"); 
 
-                // --------------- tworzenie nowej rosliny -----------------
-                var plant = new Plant
-                {
-                    Name = dto.Name,
-                    Polishname = dto.PolishName,
-                    Latinname = dto.LatinName,
-                    Subriquet = dto.Subriquet,
-                    moreInfo = dto.MoreInfo,
+        //        // --------------- tworzenie nowej rosliny -----------------
+        //        var plant = new Plant
+        //        {
+        //            Name = dto.Name,
+        //            Polishname = dto.PolishName,
+        //            Latinname = dto.LatinName,
+        //            Subriquet = dto.Subriquet,
+        //            moreInfo = dto.MoreInfo,
 
-                    Planttypeid = dto.PlantTypeID,
-                    Occuranceid = dto.OccuranceId,
-                    Poisonabilityid = dto.PoisonabilityId,
-                    MonthOfHarvestId = dto.MonthOfHarvestId
-                };
+        //            Planttypeid = dto.PlantTypeID,
+        //            Occuranceid = dto.OccuranceId,
+        //            Poisonabilityid = dto.PoisonabilityId,
+        //            MonthOfHarvestId = dto.MonthOfHarvestId
+        //        };
 
-                data.Plants.Add( plant );
-                await data.SaveChangesAsync();
+        //        data.Plants.Add( plant );
+        //        await data.SaveChangesAsync();
 
-                // ----------- walidacja i tworzenie bocznych tabel -----------
-                // -- similar plants --------
-                if (dto.SimilarPlantIds is not null && dto.SimilarPlantIds.Count > 0)
-                {
-                    var similarPlantIds = dto.SimilarPlantIds
-                        .Distinct()
-                        .ToList();
+        //        // ----------- walidacja i tworzenie bocznych tabel -----------
+        //        // -- similar plants --------
+        //        if (dto.SimilarPlantIds is not null && dto.SimilarPlantIds.Count > 0)
+        //        {
+        //            var similarPlantIds = dto.SimilarPlantIds
+        //                .Distinct()
+        //                .ToList();
 
-                    var existingSimilarPlantsIds = await data .Plants
-                        .Where(p => similarPlantIds.Contains(p.Id))
-                        .Select(plant => plant.Id)
-                        .ToListAsync();
+        //            var existingSimilarPlantsIds = await data .Plants
+        //                .Where(p => similarPlantIds.Contains(p.Id))
+        //                .Select(plant => plant.Id)
+        //                .ToListAsync();
 
-                    var missingIds = similarPlantIds
-                        .Distinct()
-                        .Except(existingSimilarPlantsIds)
-                        .ToList();
+        //            var missingIds = similarPlantIds
+        //                .Distinct()
+        //                .Except(existingSimilarPlantsIds)
+        //                .ToList();
 
-                    if(missingIds.Count > 0)
-                    {
-                        throw new KeyNotFoundException($"Similar plant with ID {string.Join(',', missingIds)} does not exist");
-                    }
+        //            if(missingIds.Count > 0)
+        //            {
+        //                throw new KeyNotFoundException($"Similar plant with ID {string.Join(',', missingIds)} does not exist");
+        //            }
 
-                    var similarPlants = await data.Plants
-                        .Where(p => dto.SimilarPlantIds.Contains(p.Id))
-                        .ToListAsync();
+        //            var similarPlants = await data.Plants
+        //                .Where(p => dto.SimilarPlantIds.Contains(p.Id))
+        //                .ToListAsync();
 
-                    foreach(var simPlant in similarPlants)
-                    {                    
-                        data.PlantSimilarplants.Add(new PlantSimilarPlant
-                        {
-                            PlantId = plant.Id,
-                            SimilarPlantId = simPlant.Id
-                        });
-                        data.PlantSimilarplants.Add(new PlantSimilarPlant
-                        {
-                            PlantId = simPlant.Id,
-                            SimilarPlantId = plant.Id
-                        });
+        //            foreach(var simPlant in similarPlants)
+        //            {                    
+        //                data.PlantSimilarplants.Add(new PlantSimilarPlant
+        //                {
+        //                    PlantId = plant.Id,
+        //                    SimilarPlantId = simPlant.Id
+        //                });
+        //                data.PlantSimilarplants.Add(new PlantSimilarPlant
+        //                {
+        //                    PlantId = simPlant.Id,
+        //                    SimilarPlantId = plant.Id
+        //                });
                         
-                    }
+        //            }
 
-                    await data.SaveChangesAsync();
-                }
+        //            await data.SaveChangesAsync();
+        //        }
 
-                // -- sap
-                if (dto.CreateSapDTO is not null)
-                {
-                    await ValidateColorAsync(dto.CreateSapDTO.SapColorId, "SAP");
-                    await ValidateMonthOfHarvestAsync(dto.CreateSapDTO.SapMonthOfHarvestId, "SAP");
-                     plant.Sap = new Sap
-                     {
-                         Colorid = dto.CreateSapDTO.SapColorId,
-                         Leavesstains = dto.CreateSapDTO.SapLeavesStain,
-                         Sticky = dto.CreateSapDTO.SapSticky,
-                         MonthOfHarvestId = dto.CreateSapDTO.SapMonthOfHarvestId,
-                         moreInfo = dto.CreateSapDTO.SapMoreInfo
-                     };
-                }
+        //        // -- sap
+        //        if (dto.CreateSapDTO is not null)
+        //        {
+        //            await ValidateColorAsync(dto.CreateSapDTO.SapColorId, "SAP");
+        //            await ValidateMonthOfHarvestAsync(dto.CreateSapDTO.SapMonthOfHarvestId, "SAP");
+        //             plant.Sap = new Sap
+        //             {
+        //                 Colorid = dto.CreateSapDTO.SapColorId,
+        //                 Leavesstains = dto.CreateSapDTO.SapLeavesStain,
+        //                 Sticky = dto.CreateSapDTO.SapSticky,
+        //                 MonthOfHarvestId = dto.CreateSapDTO.SapMonthOfHarvestId,
+        //                 moreInfo = dto.CreateSapDTO.SapMoreInfo
+        //             };
+        //        }
 
-                // -- root
-                if (dto.CreateRootDTO is not null)
-                {
-                    await ValidateColorAsync(dto.CreateRootDTO.RootColorId, "ROOT");
-                    await ValidateSurfaceAsync(dto.CreateRootDTO.RootSurfaceId, "ROOT");
-                    await ValidateThicknessAsync(dto.CreateRootDTO.RootThicknessId, "ROOT");
-                    await ValidateMonthOfHarvestAsync(dto.CreateRootDTO.RootMonthOfHarvestId, "ROOT");
+        //        // -- root
+        //        if (dto.CreateRootDTO is not null)
+        //        {
+        //            await ValidateColorAsync(dto.CreateRootDTO.RootColorId, "ROOT");
+        //            await ValidateSurfaceAsync(dto.CreateRootDTO.RootSurfaceId, "ROOT");
+        //            await ValidateThicknessAsync(dto.CreateRootDTO.RootThicknessId, "ROOT");
+        //            await ValidateMonthOfHarvestAsync(dto.CreateRootDTO.RootMonthOfHarvestId, "ROOT");
 
-                    plant.Root = new Root
-                    {
-                        Colorid = dto.CreateRootDTO.RootColorId,
-                        Surfaceid = dto.CreateRootDTO.RootSurfaceId,
-                        Thicknessid = dto.CreateRootDTO.RootThicknessId,
-                        isHollow = dto.CreateRootDTO.RootIsHollow,
-                        MonthOfHarvestId= dto.CreateRootDTO.RootMonthOfHarvestId,
-                        moreInfo = dto.CreateRootDTO.RootMoreInfo
-                    };
-                }
+        //            plant.Root = new Root
+        //            {
+        //                Colorid = dto.CreateRootDTO.RootColorId,
+        //                Surfaceid = dto.CreateRootDTO.RootSurfaceId,
+        //                Thicknessid = dto.CreateRootDTO.RootThicknessId,
+        //                isHollow = dto.CreateRootDTO.RootIsHollow,
+        //                MonthOfHarvestId= dto.CreateRootDTO.RootMonthOfHarvestId,
+        //                moreInfo = dto.CreateRootDTO.RootMoreInfo
+        //            };
+        //        }
 
-                // -- stalk
-                if (dto.CreateStalkDTO is not null)
-                {
-                    await ValidateShapeAsync(dto.CreateStalkDTO.StalkShapeId, "STALK");
-                    await ValidateColorAsync(dto.CreateStalkDTO.StalkColorId, "STALK");
-                    await ValidateSurfaceAsync(dto.CreateStalkDTO.StalkSurfaceId, "STALK");
-                    await ValidateMonthOfHarvestAsync(dto.CreateStalkDTO.StalkMonthOfHarvestId, "STALK");
+        //        // -- stalk
+        //        if (dto.CreateStalkDTO is not null)
+        //        {
+        //            await ValidateShapeAsync(dto.CreateStalkDTO.StalkShapeId, "STALK");
+        //            await ValidateColorAsync(dto.CreateStalkDTO.StalkColorId, "STALK");
+        //            await ValidateSurfaceAsync(dto.CreateStalkDTO.StalkSurfaceId, "STALK");
+        //            await ValidateMonthOfHarvestAsync(dto.CreateStalkDTO.StalkMonthOfHarvestId, "STALK");
 
-                    plant.Stalk = new Stalk
-                    {
-                        Shapeid = dto.CreateStalkDTO.StalkShapeId,
-                        Colorid = dto.CreateStalkDTO.StalkColorId,
-                        Surfaceid = dto.CreateStalkDTO.StalkSurfaceId,
-                        isHollow = dto.CreateStalkDTO.StalkIsHollow,
-                        MonthOfHarvestId = dto.CreateStalkDTO.StalkMonthOfHarvestId,
-                        moreInfo = dto.CreateStalkDTO.StalkMoreInfo
-                    };
-                }
+        //            plant.Stalk = new Stalk
+        //            {
+        //                Shapeid = dto.CreateStalkDTO.StalkShapeId,
+        //                Colorid = dto.CreateStalkDTO.StalkColorId,
+        //                Surfaceid = dto.CreateStalkDTO.StalkSurfaceId,
+        //                isHollow = dto.CreateStalkDTO.StalkIsHollow,
+        //                MonthOfHarvestId = dto.CreateStalkDTO.StalkMonthOfHarvestId,
+        //                moreInfo = dto.CreateStalkDTO.StalkMoreInfo
+        //            };
+        //        }
                 
 
-                // -- hat
-                if (dto.CreateHatDTO is not null)
-                {
-                    await ValidateColorAsync(dto.CreateHatDTO.HatColorId, "HAT");
-                    await ValidateShapeAsync(dto.CreateHatDTO.HatShapeId, "HAT");
-                    await ValidateThicknessAsync(dto.CreateHatDTO.HatThicknessId, "HAT");
-                    await ValidateSurfaceAsync(dto.CreateHatDTO.HatSurfaceId, "HAT");
-                    await ValidateMonthOfHarvestAsync(dto.CreateHatDTO.HatMonthOfHarvestId, "HAT");
+        //        // -- hat
+        //        if (dto.CreateHatDTO is not null)
+        //        {
+        //            await ValidateColorAsync(dto.CreateHatDTO.HatColorId, "HAT");
+        //            await ValidateShapeAsync(dto.CreateHatDTO.HatShapeId, "HAT");
+        //            await ValidateThicknessAsync(dto.CreateHatDTO.HatThicknessId, "HAT");
+        //            await ValidateSurfaceAsync(dto.CreateHatDTO.HatSurfaceId, "HAT");
+        //            await ValidateMonthOfHarvestAsync(dto.CreateHatDTO.HatMonthOfHarvestId, "HAT");
 
-                    plant.Hat = new Hat
-                    {
-                        Colorid = dto.CreateHatDTO.HatColorId,
-                        Shapeid = dto.CreateHatDTO.HatShapeId,
-                        Thicknessid = dto.CreateHatDTO.HatThicknessId,
-                        Surfaceid = dto.CreateHatDTO.HatSurfaceId,
-                        Hasspots = dto.CreateHatDTO.HatHasSpots,
-                        Hasgills = dto.CreateHatDTO.HatHasGills,
-                        HasRing = dto.CreateHatDTO.HatHasRing,
-                        MonthOfHarvestId = dto.CreateHatDTO.HatMonthOfHarvestId,
-                        moreInfo = dto.CreateHatDTO.HatMoreInfo
-                    };
-                }
+        //            plant.Hat = new Hat
+        //            {
+        //                Colorid = dto.CreateHatDTO.HatColorId,
+        //                Shapeid = dto.CreateHatDTO.HatShapeId,
+        //                Thicknessid = dto.CreateHatDTO.HatThicknessId,
+        //                Surfaceid = dto.CreateHatDTO.HatSurfaceId,
+        //                Hasspots = dto.CreateHatDTO.HatHasSpots,
+        //                Hasgills = dto.CreateHatDTO.HatHasGills,
+        //                HasRing = dto.CreateHatDTO.HatHasRing,
+        //                MonthOfHarvestId = dto.CreateHatDTO.HatMonthOfHarvestId,
+        //                moreInfo = dto.CreateHatDTO.HatMoreInfo
+        //            };
+        //        }
 
-                // -- leaf
-                if (dto.CreateLeafDTO is not null)
-                {
-                    if(dto.CreateLeafDTO.LeafFlavourId.HasValue)
-                        await ValidateFlavourAsync(dto.CreateLeafDTO.LeafFlavourId, "LEAF");
+        //        // -- leaf
+        //        if (dto.CreateLeafDTO is not null)
+        //        {
+        //            if(dto.CreateLeafDTO.LeafFlavourId.HasValue)
+        //                await ValidateFlavourAsync(dto.CreateLeafDTO.LeafFlavourId, "LEAF");
 
-                    await ValidateShapeAsync(dto.CreateLeafDTO.LeafShapeId, "LEAF");
-                    await ValidateColorAsync(dto.CreateLeafDTO.LeafColorId, "LEAF");
-                    await ValidateSurfaceAsync(dto.CreateLeafDTO.LeafSurfaceId, "LEAF");
-                    await ValidateThicknessAsync(dto.CreateLeafDTO.LeafThicknessId, "LEAF");
-                    await ValidateMonthOfHarvestAsync(dto.CreateLeafDTO.LeafMonthOfHarvestId, "LEAF");
+        //            await ValidateShapeAsync(dto.CreateLeafDTO.LeafShapeId, "LEAF");
+        //            await ValidateColorAsync(dto.CreateLeafDTO.LeafColorId, "LEAF");
+        //            await ValidateSurfaceAsync(dto.CreateLeafDTO.LeafSurfaceId, "LEAF");
+        //            await ValidateThicknessAsync(dto.CreateLeafDTO.LeafThicknessId, "LEAF");
+        //            await ValidateMonthOfHarvestAsync(dto.CreateLeafDTO.LeafMonthOfHarvestId, "LEAF");
 
-                    plant.Leaf = new Leaf
-                    {
-                        Stripes = dto.CreateLeafDTO.LeafStripes,
-                        Spots = dto.CreateLeafDTO.LeafSpots,
-                        Holes = dto.CreateLeafDTO.LeafHoles,
-                        Leafshapeid = dto.CreateLeafDTO.LeafShapeId,
-                        Leafcolorid = dto.CreateLeafDTO.LeafColorId,
-                        Surfaceid = dto.CreateLeafDTO.LeafSurfaceId,
-                        Thicknessid = dto.CreateLeafDTO.LeafThicknessId,
-                        Flavourid = dto.CreateLeafDTO.LeafFlavourId,
-                        Leaflength = dto.CreateLeafDTO.LeafLength,
-                        MonthOfHarvestId = dto.CreateLeafDTO.LeafMonthOfHarvestId,
-                        moreInfo = dto.CreateLeafDTO.LeafMoreInfo
-                    };
-                }
+        //            plant.Leaf = new Leaf
+        //            {
+        //                Stripes = dto.CreateLeafDTO.LeafStripes,
+        //                Spots = dto.CreateLeafDTO.LeafSpots,
+        //                Holes = dto.CreateLeafDTO.LeafHoles,
+        //                Leafshapeid = dto.CreateLeafDTO.LeafShapeId,
+        //                Leafcolorid = dto.CreateLeafDTO.LeafColorId,
+        //                Surfaceid = dto.CreateLeafDTO.LeafSurfaceId,
+        //                Thicknessid = dto.CreateLeafDTO.LeafThicknessId,
+        //                Flavourid = dto.CreateLeafDTO.LeafFlavourId,
+        //                Leaflength = dto.CreateLeafDTO.LeafLength,
+        //                MonthOfHarvestId = dto.CreateLeafDTO.LeafMonthOfHarvestId,
+        //                moreInfo = dto.CreateLeafDTO.LeafMoreInfo
+        //            };
+        //        }
 
-                // -- flower
-                if (dto.CreateFlowerDTO is not null)
-                {
-                    if (dto.CreateFlowerDTO.FlowerFlavourId.HasValue)
-                        await ValidateFlavourAsync(dto.CreateFlowerDTO.FlowerFlavourId, "FLOWER");
+        //        // -- flower
+        //        if (dto.CreateFlowerDTO is not null)
+        //        {
+        //            if (dto.CreateFlowerDTO.FlowerFlavourId.HasValue)
+        //                await ValidateFlavourAsync(dto.CreateFlowerDTO.FlowerFlavourId, "FLOWER");
 
-                    await ValidateColorAsync(dto.CreateFlowerDTO.FlowerColorId, "FLOWER");
-                    await ValidateShapeAsync(dto.CreateFlowerDTO.FlowerShapeId, "FLOWER");
-                    await ValidateMonthOfHarvestAsync(dto.CreateFlowerDTO.FlowerMonthOfHarvestId, "FLOWER");
+        //            await ValidateColorAsync(dto.CreateFlowerDTO.FlowerColorId, "FLOWER");
+        //            await ValidateShapeAsync(dto.CreateFlowerDTO.FlowerShapeId, "FLOWER");
+        //            await ValidateMonthOfHarvestAsync(dto.CreateFlowerDTO.FlowerMonthOfHarvestId, "FLOWER");
 
-                    plant.Flower = new Flower
-                    {
-                        Sizeincm = dto.CreateFlowerDTO.FlowerSizeInCm,
-                        Colorid = dto.CreateFlowerDTO.FlowerColorId,
-                        Shapeid = dto.CreateFlowerDTO.FlowerShapeId,
-                        Flavourid = dto.CreateFlowerDTO.FlowerFlavourId,
-                        Scentpower = dto.CreateFlowerDTO.FlowerScentPower,
-                        MonthOfHarvestId = dto.CreateFlowerDTO.FlowerMonthOfHarvestId,
-                        moreInfo = dto.CreateFlowerDTO.FlowerMoreInfo
-                    };
+        //            plant.Flower = new Flower
+        //            {
+        //                Sizeincm = dto.CreateFlowerDTO.FlowerSizeInCm,
+        //                Colorid = dto.CreateFlowerDTO.FlowerColorId,
+        //                Shapeid = dto.CreateFlowerDTO.FlowerShapeId,
+        //                Flavourid = dto.CreateFlowerDTO.FlowerFlavourId,
+        //                Scentpower = dto.CreateFlowerDTO.FlowerScentPower,
+        //                MonthOfHarvestId = dto.CreateFlowerDTO.FlowerMonthOfHarvestId,
+        //                moreInfo = dto.CreateFlowerDTO.FlowerMoreInfo
+        //            };
 
-                }
+        //        }
 
-                // -- fruit
-                if (dto.CreateFruitDTO is not null)
-                {
-                    if (dto.CreateFruitDTO.FruitFlavourId.HasValue)
-                        await ValidateFlavourAsync(dto.CreateFruitDTO.FruitFlavourId, "FRUIT");
+        //        // -- fruit
+        //        if (dto.CreateFruitDTO is not null)
+        //        {
+        //            if (dto.CreateFruitDTO.FruitFlavourId.HasValue)
+        //                await ValidateFlavourAsync(dto.CreateFruitDTO.FruitFlavourId, "FRUIT");
 
-                    await ValidateShapeAsync(dto.CreateFruitDTO.FruitShapeId, "FRUIT");
-                    await ValidateColorAsync(dto.CreateFruitDTO.FruitColorId, "FRUIT");
-                    await ValidateSurfaceAsync(dto.CreateFruitDTO.FruitSurfaceId, "FRUIT");
-                    await ValidateThicknessAsync(dto.CreateFruitDTO.FruitThicknessId, "FRUIT");
-                    await ValidateMonthOfHarvestAsync(dto.CreateFruitDTO.FruitMonthOfHarvestId, "FRUIT");
+        //            await ValidateShapeAsync(dto.CreateFruitDTO.FruitShapeId, "FRUIT");
+        //            await ValidateColorAsync(dto.CreateFruitDTO.FruitColorId, "FRUIT");
+        //            await ValidateSurfaceAsync(dto.CreateFruitDTO.FruitSurfaceId, "FRUIT");
+        //            await ValidateThicknessAsync(dto.CreateFruitDTO.FruitThicknessId, "FRUIT");
+        //            await ValidateMonthOfHarvestAsync(dto.CreateFruitDTO.FruitMonthOfHarvestId, "FRUIT");
 
-                    plant.Fruit = new Fruit
-                    {
-                        Flavourid = dto.CreateFruitDTO.FruitFlavourId,
-                        Shapeid = dto.CreateFruitDTO.FruitShapeId,
-                        Colorid = dto.CreateFruitDTO.FruitColorId,
-                        Surfaceid = dto.CreateFruitDTO.FruitSurfaceId,
-                        Thicknessid = dto.CreateFruitDTO.FruitThicknessId,
-                        MonthOfHarvestId = dto.CreateFruitDTO.FruitMonthOfHarvestId,
-                        moreInfo = dto.CreateFruitDTO.FruitMoreInfo
-                    };
-                }
+        //            plant.Fruit = new Fruit
+        //            {
+        //                Flavourid = dto.CreateFruitDTO.FruitFlavourId,
+        //                Shapeid = dto.CreateFruitDTO.FruitShapeId,
+        //                Colorid = dto.CreateFruitDTO.FruitColorId,
+        //                Surfaceid = dto.CreateFruitDTO.FruitSurfaceId,
+        //                Thicknessid = dto.CreateFruitDTO.FruitThicknessId,
+        //                MonthOfHarvestId = dto.CreateFruitDTO.FruitMonthOfHarvestId,
+        //                moreInfo = dto.CreateFruitDTO.FruitMoreInfo
+        //            };
+        //        }
 
-                await data.SaveChangesAsync();
+        //        await data.SaveChangesAsync();
 
-                await transaction.CommitAsync();
-                return plant;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
+        //        await transaction.CommitAsync();
+        //        return plant;
+        //    }
+        //    catch
+        //    {
+        //        await transaction.RollbackAsync();
+        //        throw;
+        //    }
+        //}
         public async Task<GetPlantDTO?> GetPlantByIdAsync(int id)
         {
-            return await data.Plants
+            return await data.Plants//todo blad jesli zaakceptowana roslina bez lisci itp
                 .Where(p => p.Id == id)
                 .Select(plantsDetailsProjection)
                 .FirstOrDefaultAsync();

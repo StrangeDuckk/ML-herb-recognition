@@ -1,0 +1,1228 @@
+﻿@using System.Text.Json
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject HttpClient Http
+@inject PlantApiService PlantApi
+
+@*
+    Wspólny formularz rośliny.
+    - strona użytkownika: pusty formularz, jeden przycisk (OnSubmit),
+    - panel admina: Initial = dane zgłoszenia, dwa przyciski (OnSubmit + OnSecondary).
+    Błędy rzucone przez OnSubmit/OnSecondary są wyświetlane nad przyciskami.
+*@
+
+@if (isLoading)
+{
+    <div class="plants-status">
+        <div class="loading-spinner"></div>
+        <p>Ładowanie formularza...</p>
+    </div>
+}
+else if (!string.IsNullOrEmpty(loadError))
+{
+    <div class="plants-error">
+        <h2>Nie udało się załadować formularza</h2>
+        <p>@loadError</p>
+        <button type="button" class="submission-button" @onclick="InitializeAsync">
+            Spróbuj ponownie
+        </button>
+    </div>
+}
+else
+{
+    <EditForm EditContext="editContext" FormName="@FormName">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="submission-form">
+
+            <section class="submission-section">
+                <h2>1. Informacje podstawowe</h2>
+
+                <div class="submission-grid">
+                    <div class="submission-field">
+                        <label>Nazwa zwyczajowa *</label>
+                        <InputText @bind-Value="form.Name" maxlength="50" />
+                        <ValidationMessage For="@(() => form.Name)" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Nazwa polska *</label>
+                        <InputText @bind-Value="form.PolishName" maxlength="50" />
+                        <ValidationMessage For="@(() => form.PolishName)" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Nazwa łacińska</label>
+                        <InputText @bind-Value="form.LatinName" maxlength="50" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Inna nazwa</label>
+                        <InputText @bind-Value="form.Subriquet" maxlength="50" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Miesiąc zbioru</label>
+                        <InputSelect @bind-Value="form.MonthOfHarvestId">
+                            <option value="">Nie dotyczy / brak informacji</option>
+                            @foreach (var m in months)
+                            {
+                                <option value="@m.Id">@m.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Dodatkowe informacje</label>
+                        <InputText @bind-Value="form.MoreInfo" maxlength="200" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Typ rośliny *</label>
+                        <InputSelect @bind-Value="form.PlantTypeID" @bind-Value:after="OnPlantTypeChanged">
+                            <option value="0">Wybierz typ</option>
+                            @foreach (var item in plantTypes)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => form.PlantTypeID)" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Występowanie *</label>
+                        <InputSelect @bind-Value="form.OccuranceId">
+                            <option value="0">Wybierz występowanie</option>
+                            @foreach (var item in occurances)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => form.OccuranceId)" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label>Trujące właściwości</label>
+                        <InputSelect @bind-Value="form.PoisonabilityId">
+                            <option value="">Nie trujące</option>
+                            @foreach (var item in poisonabilities)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+            </section>
+
+            @* ================= 2. Łodyga / pień / trzon ================= *@
+            @if (CanHaveStalk)
+            {
+                <div class="submission-section-toggle">
+                    <label class="switch-label">
+                        <span>Czy posiada @StalkSectionName.ToLower()?</span>
+                        <InputCheckbox @bind-Value="HasStalk" class="switch-input" />
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            }
+            @if (ShowStalkSection)
+            {
+                <section class="submission-section">
+                    <h2>2. @StalkSectionName</h2>
+                    <p class="section-description">Wszystkie pola są wymagane.</p>
+
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateStalkDTO!.StalkShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kolor *</label>
+                            <ColorSelect @bind-Value="form.CreateStalkDTO!.StalkColorId" Colors="colors" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateStalkDTO!.StalkSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy @StalkSectionName.ToLower() jest pusty/pusta w środku?</span>
+                                <InputCheckbox @bind-Value="stalkHollow" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateStalkDTO!.StalkMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateStalkDTO!.StalkMoreInfo" maxlength="200" />
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ================= 3. Sok ================= *@
+            @if (CanHaveSap)
+            {
+                <div class="submission-section-toggle">
+                    <label class="switch-label">
+                        <span>Czy posiada sok?</span>
+                        <InputCheckbox @bind-Value="HasSap" class="switch-input" />
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            }
+            @if (ShowSapSection)
+            {
+                <section class="submission-section">
+                    <h2>3. Sok</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kolor soku *</label>
+                            <ColorSelect @bind-Value="form.CreateSapDTO!.SapColorId" Colors="colors" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy sok pozostawia plamy?</span>
+                                <InputCheckbox @bind-Value="sapLeavesStain" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy sok jest lepki?</span>
+                                <InputCheckbox @bind-Value="sapSticky" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateSapDTO!.SapMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateSapDTO!.SapMoreInfo" maxlength="200" />
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ================= 4. Korzeń ================= *@
+            @if (CanHaveRoot)
+            {
+                <div class="submission-section-toggle">
+                    <label class="switch-label">
+                        <span>Czy posiada korzeń?</span>
+                        <InputCheckbox @bind-Value="HasRoot" class="switch-input" />
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            }
+            @if (ShowRootSection)
+            {
+                <section class="submission-section">
+                    <h2>4. Korzeń</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kolor korzenia *</label>
+                            <ColorSelect @bind-Value="form.CreateRootDTO!.RootColorId" Colors="colors" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateRootDTO!.RootSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateRootDTO!.RootThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy jest pusty w środku?</span>
+                                <InputCheckbox @bind-Value="rootIsHollow" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateRootDTO!.RootMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateRootDTO!.RootMoreInfo" maxlength="200" />
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ================= 5. Kapelusz ================= *@
+            @if (CanHaveHat)
+            {
+                <div class="submission-section-toggle">
+                    <label class="switch-label">
+                        <span>Czy posiada kapelusz?</span>
+                        <InputCheckbox @bind-Value="HasHat" class="switch-input" />
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            }
+            @if (ShowHatSection)
+            {
+                <section class="submission-section">
+                    <h2>5. Kapelusz</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kolor kapelusza *</label>
+                            <ColorSelect @bind-Value="form.CreateHatDTO!.HatColorId" Colors="colors" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy ma plamy na kapeluszu?</span>
+                                <InputCheckbox @bind-Value="hatHasSpots" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy ma blaszki?</span>
+                                <InputCheckbox @bind-Value="hatHasGills" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy ma pierścień?</span>
+                                <InputCheckbox @bind-Value="hatHasRing" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateHatDTO!.HatMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateHatDTO!.HatMoreInfo" maxlength="200" />
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ================= 6. Liście ================= *@
+            @if (CanHaveLeaf)
+            {
+                <div class="submission-section-toggle">
+                    <label class="switch-label">
+                        <span>Czy posiada liście?</span>
+                        <InputCheckbox @bind-Value="HasLeaf" class="switch-input" />
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            }
+            @if (ShowLeafSection)
+            {
+                <section class="submission-section">
+                    <h2>6. Liście</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kolor liścia *</label>
+                            <ColorSelect @bind-Value="form.CreateLeafDTO!.LeafColorId" Colors="colors" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Smak *</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafFlavourId">
+                                <option value="">Wybierz smak</option>
+                                @foreach (var x in flavours)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Długość liścia (cm) *</label>
+                            <InputNumber @bind-Value="form.CreateLeafDTO!.LeafLength" min="0.1" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy ma paski?</span>
+                                <InputCheckbox @bind-Value="leafStripes" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy ma plamy?</span>
+                                <InputCheckbox @bind-Value="leafSpots" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label class="switch-label">
+                                <span>Czy ma otwory?</span>
+                                <InputCheckbox @bind-Value="leafHoles" class="switch-input" />
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateLeafDTO!.LeafMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateLeafDTO!.LeafMoreInfo" maxlength="200" />
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ================= 7. Kwiaty ================= *@
+            @if (CanHaveFlower)
+            {
+                <div class="submission-section-toggle">
+                    <label class="switch-label">
+                        <span>Czy posiada kwiaty?</span>
+                        <InputCheckbox @bind-Value="HasFlower" class="switch-input" />
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            }
+            @if (ShowFlowerSection)
+            {
+                <section class="submission-section">
+                    <h2>7. Kwiaty</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Rozmiar kwiatu (cm) *</label>
+                            <InputNumber @bind-Value="form.CreateFlowerDTO!.FlowerSizeInCm" min="0.1" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kolor główny kwiatu *</label>
+                            <ColorSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId" Colors="colors" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Smak *</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerFlavourId">
+                                <option value="">Wybierz smak</option>
+                                @foreach (var x in flavours)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Siła zapachu (0–5) *</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerScentPower">
+                                @for (var i = 0; i <= 5; i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateFlowerDTO!.FlowerMoreInfo" maxlength="200" />
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ================= 8. Owoce ================= *@
+            @if (CanHaveFruit)
+            {
+                <div class="submission-section-toggle">
+                    <label class="switch-label">
+                        <span>Czy posiada owoce?</span>
+                        <InputCheckbox @bind-Value="HasFruit" class="switch-input" />
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            }
+            @if (ShowFruitSection)
+            {
+                <section class="submission-section">
+                    <h2>8. Owoce</h2>
+                    <div class="submission-grid">
+                        <div class="submission-field">
+                            <label>Smak *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitFlavourId">
+                                <option value="">Wybierz smak</option>
+                                @foreach (var x in flavours)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kształt *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitShapeId">
+                                <option value="0">Wybierz kształt</option>
+                                @foreach (var x in shapes)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Kolor główny owocu *</label>
+                            <ColorSelect @bind-Value="form.CreateFruitDTO!.FruitColorId" Colors="colors" />
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Powierzchnia *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitSurfaceId">
+                                <option value="0">Wybierz powierzchnię</option>
+                                @foreach (var x in surfaces)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Grubość *</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitThicknessId">
+                                <option value="0">Wybierz grubość</option>
+                                @foreach (var x in thicknesses)
+                                {
+                                    <option value="@x.Id">@x.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Miesiąc zbioru</label>
+                            <InputSelect @bind-Value="form.CreateFruitDTO!.FruitMonthOfHarvestId">
+                                <option value="">Nie dotyczy / brak informacji</option>
+                                @foreach (var m in months)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="submission-field">
+                            <label>Dodatkowe informacje</label>
+                            <InputText @bind-Value="form.CreateFruitDTO!.FruitMoreInfo" maxlength="200" />
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ================= 9. Podobne rośliny ================= *@
+            <section class="submission-section">
+                <h2>9. Podobne rośliny</h2>
+                <p class="section-description">
+                    Wskaż rośliny, z którymi można pomylić zgłaszaną roślinę.
+                    Możesz wybrać rośliny z bazy oraz te, które czekają na weryfikację.
+                </p>
+
+                <SimilarPlantPicker @bind-Selected="similarPlants"
+                                    ExcludeUserInputId="ExcludeUserInputId"
+                                    ExcludePlantId="ExcludePlantId" />
+            </section>
+
+            @if (!string.IsNullOrWhiteSpace(submitError))
+            {
+                <div class="plants-error">@submitError</div>
+            }
+
+            <div class="submission-actions">
+                @if (OnSecondary.HasDelegate)
+                {
+                    <button type="button"
+                            class="submission-button secondary"
+                            disabled="@IsBusy"
+                            @onclick="() => RunAsync(OnSecondary, SecondaryText)">
+                        @(busyAction == SecondaryText ? "Zapisywanie..." : SecondaryText)
+                    </button>
+                }
+
+                <button type="button"
+                        class="submission-button"
+                        disabled="@IsBusy"
+                        @onclick="() => RunAsync(OnSubmit, SubmitText)">
+                    @(busyAction == SubmitText ? "Zapisywanie..." : SubmitText)
+                </button>
+            </div>
+
+        </div>
+    </EditForm>
+}
+
+@code {
+    // ------------------------------------------------------------------
+    //  Parametry
+    // ------------------------------------------------------------------
+
+    /// <summary>Dane do wczytania (edycja zgłoszenia). Null = pusty formularz.</summary>
+    [Parameter] public CreatePlantDTO? Initial { get; set; }
+
+    /// <summary>Id edytowanego zgłoszenia – nie pokazujemy go w wynikach "podobnych".</summary>
+    [Parameter] public int? ExcludeUserInputId { get; set; }
+
+    /// <summary>Id edytowanej rośliny – nie pokazujemy jej w wynikach "podobnych".</summary>
+    [Parameter] public int? ExcludePlantId { get; set; }
+
+    [Parameter] public string SubmitText { get; set; } = "Wyślij zgłoszenie";
+    [Parameter] public EventCallback<CreatePlantDTO> OnSubmit { get; set; }
+
+    [Parameter] public string SecondaryText { get; set; } = "Zapisz zmiany";
+    [Parameter] public EventCallback<CreatePlantDTO> OnSecondary { get; set; }
+
+    [Parameter] public string FormName { get; set; } = "PlantSubmission";
+
+    // ------------------------------------------------------------------
+    //  Stan formularza
+    // ------------------------------------------------------------------
+
+    private CreatePlantDTO form = new();
+    private EditContext editContext = default!;
+
+    private bool IsTree => form.PlantTypeID == 1;
+    private bool IsHerb => form.PlantTypeID == 2;
+    private bool IsFungus => form.PlantTypeID == 3;
+
+    private string StalkSectionName => IsTree ? "Pień" : IsFungus ? "Trzon" : "Łodyga";
+
+    // przełączniki sekcji
+    private bool HasStalk;
+    private bool HasSap;
+    private bool HasRoot;
+    private bool HasHat;
+    private bool HasLeaf;
+    private bool HasFlower;
+    private bool HasFruit;
+
+    // które sekcje są możliwe dla typu rośliny
+    private bool CanHaveStalk => IsTree || IsHerb || IsFungus;
+    private bool CanHaveSap => IsTree || IsHerb || IsFungus;
+    private bool CanHaveRoot => IsTree || IsHerb;
+    private bool CanHaveHat => IsFungus;
+    private bool CanHaveLeaf => IsTree || IsHerb;
+    private bool CanHaveFlower => IsTree || IsHerb;
+    private bool CanHaveFruit => IsTree || IsHerb;
+
+    // rzeczywista widoczność sekcji
+    private bool ShowStalkSection => CanHaveStalk && HasStalk;
+    private bool ShowSapSection => CanHaveSap && HasSap;
+    private bool ShowRootSection => CanHaveRoot && HasRoot;
+    private bool ShowHatSection => CanHaveHat && HasHat;
+    private bool ShowLeafSection => CanHaveLeaf && HasLeaf;
+    private bool ShowFlowerSection => CanHaveFlower && HasFlower;
+    private bool ShowFruitSection => CanHaveFruit && HasFruit;
+
+    // słowniki
+    private List<DictionaryOption> plantTypes = new();
+    private List<DictionaryOption> occurances = new();
+    private List<DictionaryOption> shapes = new();
+    private List<DictionaryOption> flavours = new();
+    private List<DictionaryOption> poisonabilities = new();
+    private List<DictionaryOption> surfaces = new();
+    private List<DictionaryOption> thicknesses = new();
+    private List<DictionaryOption> months = new();
+    private List<ColorOption> colors = new();
+
+    // pola Tak/Nie
+    private bool stalkHollow;
+    private bool sapLeavesStain;
+    private bool sapSticky;
+    private bool rootIsHollow;
+    private bool hatHasSpots;
+    private bool hatHasGills;
+    private bool hatHasRing;
+    private bool leafStripes;
+    private bool leafSpots;
+    private bool leafHoles;
+
+    // podobne rośliny
+    private List<SimilarPlantCandidateDTO> similarPlants = new();
+
+    private bool isLoading = true;
+    private string? loadError;
+    private string? submitError;
+    private string? busyAction;
+    private bool IsBusy => busyAction is not null;
+
+    // ------------------------------------------------------------------
+    //  Inicjalizacja
+    // ------------------------------------------------------------------
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        isLoading = true;
+        loadError = null;
+
+        form = new CreatePlantDTO();
+        InitializeParts();
+        editContext = new EditContext(form);
+
+        await LoadDictionariesAsync();
+
+        if (loadError is null && Initial is not null)
+            await LoadFromAsync(Initial);
+
+        isLoading = false;
+    }
+
+    private void InitializeParts()
+    {
+        form.CreateStalkDTO = new();
+        form.CreateSapDTO = new();
+        form.CreateRootDTO = new();
+        form.CreateHatDTO = new();
+        form.CreateLeafDTO = new();
+        form.CreateFlowerDTO = new();
+        form.CreateFruitDTO = new();
+    }
+
+    /// <summary>Wczytuje zapisane zgłoszenie do formularza (edycja w panelu admina).</summary>
+    private async Task LoadFromAsync(CreatePlantDTO dto)
+    {
+        form.Name = dto.Name ?? "";
+        form.PolishName = dto.PolishName ?? "";
+        form.LatinName = dto.LatinName;
+        form.Subriquet = dto.Subriquet;
+        form.MoreInfo = dto.MoreInfo;
+        form.PlantTypeID = dto.PlantTypeID;      // bez OnPlantTypeChanged – nie nadpisujemy przełączników
+        form.OccuranceId = dto.OccuranceId;
+        form.PoisonabilityId = dto.PoisonabilityId;
+        form.MonthOfHarvestId = dto.MonthOfHarvestId;
+
+        HasStalk = dto.CreateStalkDTO is not null;
+        form.CreateStalkDTO = dto.CreateStalkDTO ?? new();
+        stalkHollow = dto.CreateStalkDTO?.StalkIsHollow ?? false;
+
+        HasSap = dto.CreateSapDTO is not null;
+        form.CreateSapDTO = dto.CreateSapDTO ?? new();
+        sapLeavesStain = dto.CreateSapDTO?.SapLeavesStain ?? false;
+        sapSticky = dto.CreateSapDTO?.SapSticky ?? false;
+
+        HasRoot = dto.CreateRootDTO is not null;
+        form.CreateRootDTO = dto.CreateRootDTO ?? new();
+        rootIsHollow = dto.CreateRootDTO?.RootIsHollow ?? false;
+
+        HasHat = dto.CreateHatDTO is not null;
+        form.CreateHatDTO = dto.CreateHatDTO ?? new();
+        hatHasSpots = dto.CreateHatDTO?.HatHasSpots ?? false;
+        hatHasGills = dto.CreateHatDTO?.HatHasGills ?? false;
+        hatHasRing = dto.CreateHatDTO?.HatHasRing ?? false;
+
+        HasLeaf = dto.CreateLeafDTO is not null;
+        form.CreateLeafDTO = dto.CreateLeafDTO ?? new();
+        leafStripes = dto.CreateLeafDTO?.LeafStripes ?? false;
+        leafSpots = dto.CreateLeafDTO?.LeafSpots ?? false;
+        leafHoles = dto.CreateLeafDTO?.LeafHoles ?? false;
+
+        HasFlower = dto.CreateFlowerDTO is not null;
+        form.CreateFlowerDTO = dto.CreateFlowerDTO ?? new();
+
+        HasFruit = dto.CreateFruitDTO is not null;
+        form.CreateFruitDTO = dto.CreateFruitDTO ?? new();
+
+        var hasSimilar = (dto.SimilarPlantIds?.Count ?? 0) + (dto.SimilarUserInputIds?.Count ?? 0) > 0;
+        if (!hasSimilar)
+        {
+            similarPlants = new();
+            return;
+        }
+
+        try
+        {
+            similarPlants = await PlantApi.ResolveSimilarAsync(dto.SimilarPlantIds, dto.SimilarUserInputIds);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Nie udało się wczytać podobnych roślin: {ex}");
+            similarPlants = new();
+            submitError = "Nie udało się wczytać podobnych roślin. " +
+                          "Zapisanie formularza teraz usunie te powiązania – odśwież stronę, zanim zapiszesz.";
+        }
+    }
+
+    private void OnPlantTypeChanged()
+    {
+        if (IsTree || IsHerb)
+        {
+            HasStalk = true; HasSap = true; HasRoot = true; HasHat = false;
+            HasLeaf = true; HasFlower = true; HasFruit = true;
+        }
+        else if (IsFungus)
+        {
+            HasStalk = true; HasSap = true; HasRoot = false; HasHat = true;
+            HasLeaf = false; HasFlower = false; HasFruit = false;
+        }
+        else
+        {
+            HasStalk = false; HasSap = false; HasRoot = false; HasHat = false;
+            HasLeaf = false; HasFlower = false; HasFruit = false;
+        }
+
+        submitError = null;
+    }
+
+    // ------------------------------------------------------------------
+    //  Słowniki
+    // ------------------------------------------------------------------
+
+    private async Task LoadDictionariesAsync()
+    {
+        try
+        {
+            plantTypes = await LoadOptionsAsync("plantType", "plantTypeId", "name");
+            occurances = await LoadOptionsAsync("occurance", "occuranceId", "occurance");
+            shapes = await LoadOptionsAsync("shape", "shapeId", "shapeName");
+            flavours = await LoadOptionsAsync("flavour", "flavourId", "flavourName");
+            poisonabilities = await LoadOptionsAsync("poisonability", "poisonabilityId", "poisonabilityDescription");
+            surfaces = await LoadOptionsAsync("surface", "surfaceId", "surfaceName");
+            thicknesses = await LoadOptionsAsync("thickness", "thicknessId", "thicknessName");
+            months = await LoadOptionsAsync("monthOfHarvest", "monthOfHarvestId", "monthName");
+            colors = await LoadColorsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd ładowania słowników: {ex}");
+
+            loadError = ex switch
+            {
+                HttpRequestException httpEx => $"Błąd HTTP lub połączenia z API: {httpEx.Message}",
+                JsonException jsonEx => $"Nieprawidłowy format JSON: {jsonEx.Message}",
+                InvalidOperationException invalidEx => $"Nieprawidłowe dane słownika: {invalidEx.Message}",
+                _ => $"Nieoczekiwany błąd: {ex.Message}"
+            };
+        }
+    }
+
+    private async Task<List<DictionaryOption>> LoadOptionsAsync(
+        string endpoint, string idPropertyName, string nameProperty)
+    {
+        using var response = await Http.GetAsync($"api/dictionaries/{endpoint}");
+        response.EnsureSuccessStatusCode();
+
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var document = await JsonDocument.ParseAsync(stream);
+
+        if (document.RootElement.ValueKind != JsonValueKind.Array)
+            throw new InvalidOperationException($"Słownik {endpoint} nie zwraca tablicy JSON.");
+
+        var result = new List<DictionaryOption>();
+
+        foreach (var element in document.RootElement.EnumerateArray())
+        {
+            if (!element.TryGetProperty(idPropertyName, out var idProperty))
+                throw new InvalidOperationException($"Brak pola klucza {idPropertyName} w słowniku {endpoint}.");
+
+            if (!element.TryGetProperty(nameProperty, out var nameValue))
+                throw new InvalidOperationException($"Brak pola {nameProperty} w słowniku {endpoint}.");
+
+            result.Add(new DictionaryOption
+            {
+                Id = idProperty.GetInt32(),
+                Name = nameValue.GetString() ?? ""
+            });
+        }
+
+        return result;
+    }
+
+    private async Task<List<ColorOption>> LoadColorsAsync()
+    {
+        using var response = await Http.GetAsync("api/dictionaries/color");
+        response.EnsureSuccessStatusCode();
+
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var document = await JsonDocument.ParseAsync(stream);
+
+        return document.RootElement.EnumerateArray()
+            .Select(e => new ColorOption
+            {
+                Id = e.GetProperty("colorId").GetInt32(),
+                Name = e.GetProperty("colorName").GetString() ?? "",
+                R = e.GetProperty("colorR").GetInt32(),
+                G = e.GetProperty("colorG").GetInt32(),
+                B = e.GetProperty("colorB").GetInt32()
+            })
+            .ToList();
+    }
+
+    // ------------------------------------------------------------------
+    //  Wysyłanie
+    // ------------------------------------------------------------------
+
+    private async Task RunAsync(EventCallback<CreatePlantDTO> action, string label)
+    {
+        submitError = null;
+
+        if (!editContext.Validate())
+        {
+            submitError = "Popraw pola zaznaczone na początku formularza.";
+            return;
+        }
+
+        if (!ValidateRequiredFields())
+            return;
+
+        busyAction = label;
+
+        try
+        {
+            await action.InvokeAsync(BuildPayload());
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd zapisu formularza: {ex}");
+            submitError = $"Nie udało się zapisać: {ex.Message}";
+        }
+        finally
+        {
+            busyAction = null;
+        }
+    }
+
+    private bool ValidateRequiredFields()
+    {
+        if (string.IsNullOrWhiteSpace(form.Name) || string.IsNullOrWhiteSpace(form.PolishName))
+        {
+            submitError = "Uzupełnij nazwę zwyczajową i nazwę polską.";
+            return false;
+        }
+
+        var invalid = form.PlantTypeID <= 0 || form.OccuranceId <= 0;
+
+        if (ShowStalkSection)
+            invalid |= form.CreateStalkDTO!.StalkShapeId <= 0
+                    || form.CreateStalkDTO.StalkColorId <= 0
+                    || form.CreateStalkDTO.StalkSurfaceId <= 0;
+
+        if (ShowSapSection)
+            invalid |= form.CreateSapDTO!.SapColorId <= 0;
+
+        if (ShowRootSection)
+            invalid |= form.CreateRootDTO!.RootColorId <= 0
+                    || form.CreateRootDTO.RootSurfaceId <= 0
+                    || form.CreateRootDTO.RootThicknessId <= 0;
+
+        if (ShowHatSection)
+            invalid |= form.CreateHatDTO!.HatColorId <= 0
+                    || form.CreateHatDTO.HatShapeId <= 0
+                    || form.CreateHatDTO.HatThicknessId <= 0
+                    || form.CreateHatDTO.HatSurfaceId <= 0;
+
+        if (ShowLeafSection)
+            invalid |= form.CreateLeafDTO!.LeafShapeId <= 0
+                    || form.CreateLeafDTO.LeafColorId <= 0
+                    || form.CreateLeafDTO.LeafSurfaceId <= 0
+                    || form.CreateLeafDTO.LeafThicknessId <= 0
+                    || !form.CreateLeafDTO.LeafFlavourId.HasValue;
+
+        if (ShowFlowerSection)
+            invalid |= form.CreateFlowerDTO!.FlowerColorId <= 0
+                    || form.CreateFlowerDTO.FlowerShapeId <= 0
+                    || !form.CreateFlowerDTO.FlowerFlavourId.HasValue;
+
+        if (ShowFruitSection)
+            invalid |= !form.CreateFruitDTO!.FruitFlavourId.HasValue
+                    || form.CreateFruitDTO.FruitShapeId <= 0
+                    || form.CreateFruitDTO.FruitColorId <= 0
+                    || form.CreateFruitDTO.FruitSurfaceId <= 0
+                    || form.CreateFruitDTO.FruitThicknessId <= 0;
+
+        if (invalid)
+        {
+            submitError = "Uzupełnij wszystkie wymagane pola widocznych sekcji.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private CreatePlantDTO BuildPayload() => new()
+    {
+        Name = form.Name.Trim(),
+        PolishName = form.PolishName.Trim(),
+        LatinName = NullIfEmpty(form.LatinName),
+        Subriquet = NullIfEmpty(form.Subriquet),
+        MoreInfo = NullIfEmpty(form.MoreInfo),
+        PlantTypeID = form.PlantTypeID,
+        OccuranceId = form.OccuranceId,
+        PoisonabilityId = form.PoisonabilityId,
+        MonthOfHarvestId = form.MonthOfHarvestId,
+        SimilarPlantIds = IdsOrNull(similarPlants.Where(p => p.IsApproved)),
+        SimilarUserInputIds = IdsOrNull(similarPlants.Where(p => !p.IsApproved)),
+
+        CreateStalkDTO = ShowStalkSection ? new HerbRecognition_Web.DTOs.CreateStalkDTO
+        {
+            StalkShapeId = form.CreateStalkDTO!.StalkShapeId,
+            StalkColorId = form.CreateStalkDTO.StalkColorId,
+            StalkSurfaceId = form.CreateStalkDTO.StalkSurfaceId,
+            StalkIsHollow = stalkHollow,
+            StalkMoreInfo = NullIfEmpty(form.CreateStalkDTO.StalkMoreInfo),
+            StalkMonthOfHarvestId = form.CreateStalkDTO.StalkMonthOfHarvestId
+        } : null,
+
+        CreateSapDTO = ShowSapSection ? new HerbRecognition_Web.DTOs.CreateSapDTO
+        {
+            SapColorId = form.CreateSapDTO!.SapColorId,
+            SapLeavesStain = sapLeavesStain,
+            SapSticky = sapSticky,
+            SapMoreInfo = NullIfEmpty(form.CreateSapDTO.SapMoreInfo),
+            SapMonthOfHarvestId = form.CreateSapDTO.SapMonthOfHarvestId
+        } : null,
+
+        CreateRootDTO = ShowRootSection ? new HerbRecognition_Web.DTOs.CreateRootDTO
+        {
+            RootColorId = form.CreateRootDTO!.RootColorId,
+            RootSurfaceId = form.CreateRootDTO.RootSurfaceId,
+            RootThicknessId = form.CreateRootDTO.RootThicknessId,
+            RootIsHollow = rootIsHollow,
+            RootMoreInfo = NullIfEmpty(form.CreateRootDTO.RootMoreInfo),
+            RootMonthOfHarvestId = form.CreateRootDTO.RootMonthOfHarvestId
+        } : null,
+
+        CreateHatDTO = ShowHatSection ? new HerbRecognition_Web.DTOs.CreateHatDTO
+        {
+            HatColorId = form.CreateHatDTO!.HatColorId,
+            HatShapeId = form.CreateHatDTO.HatShapeId,
+            HatThicknessId = form.CreateHatDTO.HatThicknessId,
+            HatSurfaceId = form.CreateHatDTO.HatSurfaceId,
+            HatHasSpots = hatHasSpots,
+            HatHasGills = hatHasGills,
+            HatHasRing = hatHasRing,
+            HatMoreInfo = NullIfEmpty(form.CreateHatDTO.HatMoreInfo),
+            HatMonthOfHarvestId = form.CreateHatDTO.HatMonthOfHarvestId
+        } : null,
+
+        CreateLeafDTO = ShowLeafSection ? new HerbRecognition_Web.DTOs.CreateLeafDTO
+        {
+            LeafStripes = leafStripes,
+            LeafSpots = leafSpots,
+            LeafHoles = leafHoles,
+            LeafShapeId = form.CreateLeafDTO!.LeafShapeId,
+            LeafColorId = form.CreateLeafDTO.LeafColorId,
+            LeafSurfaceId = form.CreateLeafDTO.LeafSurfaceId,
+            LeafLength = form.CreateLeafDTO.LeafLength,
+            LeafThicknessId = form.CreateLeafDTO.LeafThicknessId,
+            LeafFlavourId = form.CreateLeafDTO.LeafFlavourId,
+            LeafMoreInfo = NullIfEmpty(form.CreateLeafDTO.LeafMoreInfo),
+            LeafMonthOfHarvestId = form.CreateLeafDTO.LeafMonthOfHarvestId
+        } : null,
+
+        CreateFlowerDTO = ShowFlowerSection ? new HerbRecognition_Web.DTOs.CreateFlowerDTO
+        {
+            FlowerSizeInCm = form.CreateFlowerDTO!.FlowerSizeInCm,
+            FlowerColorId = form.CreateFlowerDTO.FlowerColorId,
+            FlowerShapeId = form.CreateFlowerDTO.FlowerShapeId,
+            FlowerFlavourId = form.CreateFlowerDTO.FlowerFlavourId,
+            FlowerScentPower = form.CreateFlowerDTO.FlowerScentPower,
+            FlowerMoreInfo = NullIfEmpty(form.CreateFlowerDTO.FlowerMoreInfo),
+            FlowerMonthOfHarvestId = form.CreateFlowerDTO.FlowerMonthOfHarvestId
+        } : null,
+
+        CreateFruitDTO = ShowFruitSection ? new HerbRecognition_Web.DTOs.CreateFruitDTO
+        {
+            FruitFlavourId = form.CreateFruitDTO!.FruitFlavourId,
+            FruitShapeId = form.CreateFruitDTO.FruitShapeId,
+            FruitColorId = form.CreateFruitDTO.FruitColorId,
+            FruitSurfaceId = form.CreateFruitDTO.FruitSurfaceId,
+            FruitThicknessId = form.CreateFruitDTO.FruitThicknessId,
+            FruitMoreInfo = NullIfEmpty(form.CreateFruitDTO.FruitMoreInfo),
+            FruitMonthOfHarvestId = form.CreateFruitDTO.FruitMonthOfHarvestId
+        } : null
+    };
+
+    private static List<int>? IdsOrNull(IEnumerable<SimilarPlantCandidateDTO> items)
+    {
+        var ids = items.Select(i => i.Id).ToList();
+        return ids.Count > 0 ? ids : null;
+    }
+
+    private static string? NullIfEmpty(string? s) =>
+        string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+    private sealed class DictionaryOption
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+}

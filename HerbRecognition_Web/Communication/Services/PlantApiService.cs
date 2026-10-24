@@ -51,5 +51,18 @@ namespace HerbRecognition_Web.Communication.Services
 
             return result ?? new List<SimilarPlantCandidateDTO>();
         }
+        public async Task<List<SimilarPlantCandidateDTO>> ResolveSimilarAsync(IEnumerable<int>? plantIds, IEnumerable<int>? userInputIds) //id na nazwy dla similarplants
+        {
+            var parts = (plantIds ?? Enumerable.Empty<int>()).Select(id => $"plantIds={id}")
+                .Concat((userInputIds ?? Enumerable.Empty<int>()).Select(id => $"userInputIds={id}"))
+                .ToList();
+
+            if (parts.Count == 0)
+                return new List<SimilarPlantCandidateDTO>();
+
+            return await _httpClient.GetFromJsonAsync<List<SimilarPlantCandidateDTO>>(
+                       $"api/search/similarplants/resolve?{string.Join("&", parts)}")
+                   ?? new List<SimilarPlantCandidateDTO>();
+        }
     }
 }

@@ -586,5 +586,8 @@ ALTER TABLE fruit  ADD COLUMN monthofharvestid INT NULL
 -- naprawianie zaleznosci plant-plantsimilarplant
 ALTER TABLE plant_similarplant DROP COLUMN plantsimilarplantid;
 
+-- usuniecie wymagania na stlak
+ALTER TABLE plant ALTER COLUMN stalkid DROP NOT NULL;
+
 -- End of file.
 

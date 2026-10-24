@@ -1,0 +1,126 @@
+﻿@using HerbRecognition_Web.Communication.DTOs
+
+@*
+    Wspólna tabela panelu admina – ta sama dla zgłoszeń i roślin z bazy.
+    Usuwanie wymaga potwierdzenia ("Na pewno usuń").
+*@
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nr</th>
+                <th>Roślina</th>
+                <th>Typ</th>
+                <th>Części</th>
+                <th>Podobne</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+                <tr class="@(item.IsCorrupted ? "admin-row-corrupted" : "")">
+                    <td class="admin-id">#@item.Id</td>
+
+                    <td>
+                        <div class="admin-plant-names">
+                            @if (ViewUrl is not null && !item.IsCorrupted)
+                            {
+                                <a href="@ViewUrl(item.Id)" class="admin-plant-link"><strong>@item.PolishName</strong></a>
+                            }
+                            else
+                            {
+                                <strong>@item.PolishName</strong>
+                            }
+
+                            @if (!item.IsCorrupted)
+                            {
+                                <span>
+                                    @item.Name
+                                    @if (!string.IsNullOrEmpty(item.LatinName))
+                                    {
+                                        <em>(@item.LatinName)</em>
+                                    }
+                                </span>
+                            }
+                            else
+                            {
+                                <span>Dane nie dają się odczytać – możesz je tylko usunąć.</span>
+                            }
+                        </div>
+                    </td>
+
+                    <td>@(item.PlantTypeName ?? "–")</td>
+
+                    <td>
+                        @if (item.Parts.Count == 0)
+                        {
+                            <span class="admin-muted">tylko dane podstawowe</span>
+                        }
+                        else
+                        {
+                            <div class="admin-parts">
+                                @foreach (var part in item.Parts)
+                                {
+                                    <span class="admin-part">@part</span>
+                                }
+                            </div>
+                        }
+                    </td>
+
+                    <td>@(item.SimilarCount == 0 ? "–" : item.SimilarCount.ToString())</td>
+
+                    <td>
+                        <div class="admin-actions">
+                            @if (confirmDeleteId == item.Id)
+                            {
+                                <button type="button" class="admin-btn small danger solid"
+                                        disabled="@IsBusy"
+                                        @onclick="() => DeleteAsync(item.Id)">
+                                    Na pewno usuń
+                                </button>
+                                <button type="button" class="admin-btn small secondary"
+                                        @onclick="() => confirmDeleteId = null">
+                                    Anuluj
+                                </button>
+                            }
+                            else
+                            {
+                                @if (!item.IsCorrupted)
+                                {
+                                    <a class="admin-btn small secondary" href="@EditUrl(item.Id)">Edytuj</a>
+                                }
+                                <button type="button" class="admin-btn small danger"
+                                        @onclick="() => confirmDeleteId = item.Id">
+                                    Usuń
+                                </button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<UserInputSummaryDTO> Items { get; set; } = new();
+
+    /// <summary>Adres edycji rekordu, np. id => $"/admin/plants/{id}".</summary>
+    [Parameter, EditorRequired] public Func<int, string> EditUrl { get; set; } = default!;
+
+    /// <summary>Opcjonalny link z nazwy rośliny (np. do strony publicznej).</summary>
+    [Parameter] public Func<int, string>? ViewUrl { get; set; }
+
+    [Parameter] public EventCallback<int> OnDelete { get; set; }
+    [Parameter] public bool IsBusy { get; set; }
+
+    private int? confirmDeleteId;
+
+    private async Task DeleteAsync(int id)
+    {
+        await OnDelete.InvokeAsync(id);
+        confirmDeleteId = null;
+    }
+}

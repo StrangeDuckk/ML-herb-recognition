@@ -21,7 +21,7 @@ public partial class Plant
 
     public int? Rootid { get; set; }
 
-    public int Stalkid { get; set; }
+    public int? Stalkid { get; set; }
 
     public int Occuranceid { get; set; }
 
@@ -62,6 +62,6 @@ public partial class Plant
 
     public virtual ICollection<PlantSimilarPlant> SimilarPlants { get; set; } = new List<PlantSimilarPlant>();
     public virtual ICollection<PlantSimilarPlant> SimilarTo { get; set; } = new List<PlantSimilarPlant>();
-    public virtual Stalk Stalk { get; set; } = null!;
+    public virtual Stalk? Stalk { get; set; } = null!;
     public virtual MonthOfHarvest? MonthOfHarvest { get; set; }
 }

@@ -2,6 +2,7 @@
 @using System.Text.Json
 @using HerbRecognition_Web.Communication.DTOs
 @using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
 @inject AdminAuthService Auth
 @inject AdminApiService AdminApi
 @inject HttpClient Http
@@ -197,6 +198,7 @@
                 </div>
             }
         </section>
+        <AdminNav />
     </div>
 </div>
 
