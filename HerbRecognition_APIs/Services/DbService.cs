@@ -789,25 +789,6 @@ namespace HerbRecognition_APIs.Services
             results.AddRange(await MapSubmissionsToCandidatesAsync(pending));
             return results;
 
-            //var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
-
-            //foreach (var submission in pending)
-            //{
-            //    var dto = JsonSerializer.Deserialize<CreatePlantDTO>(submission.Inputdata);
-            //    if (dto is null) continue;
-
-            //    results.Add(new SimilarPlantCandidateDTO
-            //    {
-            //        Id = submission.Id,
-            //        Name = dto.Name,
-            //        PolishName = dto.PolishName,
-            //        LatinName = dto.LatinName,
-            //        PlantTypeName = plantTypes.GetValueOrDefault(dto.PlantTypeID),
-            //        IsApproved = false
-            //    });
-            //}
-
-            //return results;
         }
         public async Task<int> PostUserInputPlantAsync(CreatePlantDTO dto)
         {

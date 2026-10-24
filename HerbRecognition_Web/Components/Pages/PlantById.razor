@@ -662,37 +662,6 @@
 
                 </section>
             }
-            @* @if (plant.SimiliarPlantDTO is not null &&
-                    plant.SimiliarPlantDTO.Count > 0)
-            {
-                <section class="plant-section">
-
-                    <div class="section-heading">
-                        <span class="section-label">POWIĄZANE</span>
-                        <h2>Podobne rośliny</h2>
-                    </div>
-
-                    <div class="similar-plants">
-
-                        @foreach (var similarPlant in plant.SimiliarPlantDTO)
-                        {
-                            <a href="@($"/plants/{similarPlant.Id}")"
-                               class="similar-plant-card">
-
-                                <div>
-                                    <h3>@similarPlant.PolishName</h3>
-                                    <p>@similarPlant.Name</p>
-                                </div>
-
-                                <span>→</span>
-
-                            </a>
-                        }
-
-                    </div>
-
-                </section>
-            } *@
 
         </div>
     }

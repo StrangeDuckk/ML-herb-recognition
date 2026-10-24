@@ -19,8 +19,6 @@ namespace HerbRecognition_Web.Communication.Services
                     dto
             );
 
-            //response.EnsureSuccessStatusCode();
-
             if (!response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
@@ -30,21 +28,6 @@ namespace HerbRecognition_Web.Communication.Services
             var created = await response.Content.ReadFromJsonAsync<CreatedResponse>();
             return created?.Id ?? throw new InvalidOperationException("Brak Id w odpowiedzi API.");
 
-            //var result = System.Text.Json.JsonSerializer.Deserialize<CreatedUserInputDTO>(
-            //    responseBody,
-            //    new System.Text.Json.JsonSerializerOptions
-            //    {
-            //        PropertyNameCaseInsensitive = true
-            //    });
-
-            //        return result?.Id
-            //            ?? throw new InvalidOperationException(
-            //                "API nie zwróciło ID zgłoszenia."
-            //            );
-
-            //var resoult = await response.Content.ReadFromJsonAsync<CreatedUserInputDTO>();
-
-            //return resoult?.Id ?? throw new InvalidOperationException("API nie zwrocilo ID zlgoszenia");
         }
 
         private sealed record CreatedResponse(int Id, string Message, string Url);

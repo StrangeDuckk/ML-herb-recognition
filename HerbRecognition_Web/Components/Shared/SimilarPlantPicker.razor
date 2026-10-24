@@ -88,6 +88,7 @@
     [Parameter] public EventCallback<List<SimilarPlantCandidateDTO>> SelectedChanged { get; set; }
     [Parameter] public int MaxItems { get; set; } = 10;
     [Parameter] public int? ExcludeUserInputId { get; set; } //nie tworzenie relacji do samego siebie
+    [Parameter] public int? ExcludePlantId { get; set; }
 
     private string query = "";
     private List<SimilarPlantCandidateDTO> results = new();

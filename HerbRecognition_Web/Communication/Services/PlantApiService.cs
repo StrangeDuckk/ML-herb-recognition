@@ -64,5 +64,10 @@ namespace HerbRecognition_Web.Communication.Services
                        $"api/search/similarplants/resolve?{string.Join("&", parts)}")
                    ?? new List<SimilarPlantCandidateDTO>();
         }
+        public async Task<List<PendingPlantPreviewDTO>> GetPendingPlantsAsync()
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<PendingPlantPreviewDTO>>("api/plants/pending");
+            return result ?? new List<PendingPlantPreviewDTO>();
+        }
     }
 }

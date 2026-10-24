@@ -1,16 +1,11 @@
-﻿using HerbRecognition_APIs.DTOs;
-using HerbRecognition_APIs.Models;
-using HerbRecognition_APIs.Services;
+﻿using HerbRecognition_APIs.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Internal;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace HerbRecognition_APIs.Controllers
 {
     [ApiController]
     [Route("api/plants")]
-    public class PlantController(IDbService dbService) : ControllerBase
+    public class PlantController(IDbService dbService, ISubmissionService submissions) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetPlants()
@@ -56,16 +51,11 @@ namespace HerbRecognition_APIs.Controllers
             return Ok(plants);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> CreatePlantAsync([FromBody] CreatePlantDTO dto)
-        //{
-        //    var plant = await dbService.CreatePlantAsync(dto);
-
-        //    return CreatedAtAction(
-        //        nameof(GetPlantsById),
-        //        new { id = plant.Id },
-        //        plant
-        //    );
-        //}
+        // GET api/plants/pending
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingPlants()
+        {
+            return Ok(await submissions.GetPendingPreviewsAsync());
+        }
     }
 }

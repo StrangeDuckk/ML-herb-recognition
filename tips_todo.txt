@@ -1,5 +1,3 @@
-- zrobic widok dla mnie do sprawdzania i edycji danych od uzytkownika
-
 - zabezpieczenie przed sql injection
 
 

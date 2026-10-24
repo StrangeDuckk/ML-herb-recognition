@@ -1,5 +1,6 @@
 ﻿@page "/plants"
 
+@using System.Globalization
 @using HerbRecognition_Web.Communication.DTOs
 @using HerbRecognition_Web.Communication.Services
 
@@ -10,19 +11,39 @@
 <div class="plants-page">
 
     <section class="plants-header">
-
         <div>
             <span class="section-label">HERB RECOGNITION</span>
 
             <h1>Wszystkie rośliny</h1>
 
-            <p>
-                Odkrywaj rośliny znajdujące się w bazie Herb Recognition.
-            </p>
+            <p>Odkrywaj rośliny znajdujące się w bazie Herb Recognition.</p>
 
             <HerbRecognition_Web.Components.Shared.SearchBar />
-        </div>
 
+            <div class="library-filter">
+                <label class="switch-label">
+                    <input type="checkbox"
+                           class="switch-input"
+                           @bind="showPending"
+                           @bind:after="OnShowPendingChangedAsync" />
+                    <span class="switch-slider"></span>
+                    <span>Pokaż też rośliny czekające na weryfikację</span>
+                </label>
+
+                @if (showPending && isLoadingPending)
+                {
+                    <span class="library-filter-note">Ładowanie zgłoszeń...</span>
+                }
+                else if (showPending && pendingError is not null)
+                {
+                    <span class="library-filter-note error">@pendingError</span>
+                }
+                else if (showPending)
+                {
+                    <span class="library-filter-note">Niezweryfikowane: @pendingPlants.Count</span>
+                }
+            </div>
+        </div>
     </section>
 
 
@@ -37,15 +58,11 @@
     {
         <div class="plants-error">
             <h2>Nie udało się pobrać roślin</h2>
-
             <p>@errorMessage</p>
-
-            <button @onclick="LoadPlantsAsync">
-                Spróbuj ponownie
-            </button>
+            <button @onclick="LoadPlantsAsync">Spróbuj ponownie</button>
         </div>
     }
-    else if (plants.Count == 0)
+    else if (!Cards.Any())
     {
         <div class="plants-status">
             <h2>Brak roślin</h2>
@@ -56,88 +73,71 @@
     {
         <section class="plants-grid">
 
-            @foreach (var plant in plants)
+            @foreach (var card in Cards)
             {
-                <article class="plant-card">
+                <article class="plant-card @(card.IsPending ? "pending" : "")">
 
                     <div class="plant-card-content">
 
                         <div class="plant-card-top">
 
                             <div class="plant-pills">
-                                <div class="plant-type-badge">
-                                    @(plant.PlantTypeDTO?.Name ?? "Unknown")
-                                </div>
-
-                                @if (!string.IsNullOrEmpty(plant.MonthOfHarvestName))
-                                {
-                                    <div class="plant-type-badge plant-month">
-                                        Zbiór: @plant.MonthOfHarvestName
-                                    </div>
-                                }
-                            </div>
-                            @* <div class="plant-pills">
                                 <span class="plant-type">
-                                    @(plant.PlantTypeDTO?.Name ?? "Unknown")
+                                    @(card.PlantTypeName ?? "Unknown")
                                 </span>
 
-                                @if (!string.IsNullOrEmpty(plant.MonthOfHarvestName))
+                                @if (!string.IsNullOrEmpty(card.MonthOfHarvestName))
                                 {
                                     <span class="plant-type plant-month">
-                                        Zbiór: @plant.MonthOfHarvestName
+                                        Zbiór: @card.MonthOfHarvestName
                                     </span>
                                 }
-                            </div> *@
+
+                                @if (card.IsPending)
+                                {
+                                    <span class="plant-type plant-pending">Niezweryfikowana</span>
+                                }
+                            </div>
 
                             <span class="plant-id">
-                                #@plant.Id
+                                @(card.IsPending ? $"Zgłoszenie #{card.Id}" : $"#{card.Id}")
                             </span>
-
-                            @* <span class="plant-type">
-                                @(plant.PlantTypeDTO?.Name ?? "Unknown")
-                            </span>
-
-                            <span class="plant-id">
-                                #@plant.Id
-                            </span> *@
 
                         </div>
 
+                        <h2>@card.PolishName</h2>
 
-                        <h2>@plant.PolishName</h2>
+                        <p class="plant-name">@card.Name</p>
 
-                        <p class="plant-name">
-                            @plant.Name
-                        </p>
+                        <p class="plant-latin">@card.LatinName</p>
 
-                        <p class="plant-latin">
-                            @plant.LatinName
-                        </p>
-
-
-                        @if (!string.IsNullOrWhiteSpace(plant.Subriquet))
+                        @if (!string.IsNullOrWhiteSpace(card.Subriquet))
                         {
-                            <p class="plant-subriquet">
-                                „@plant.Subriquet”
-                            </p>
+                            <p class="plant-subriquet">„@card.Subriquet”</p>
                         }
 
-
-                        <a href="@($"/plants/{plant.Id}")"
-                           class="plant-card-link">
-
-                            Zobacz szczegóły
-                            <span>→</span>
-
-                        </a>
+                        @if (card.IsPending)
+                        {
+                            <p class="plant-card-note">
+                                Szczegóły będą dostępne po zweryfikowaniu zgłoszenia.
+                            </p>
+                        }
+                        else
+                        {
+                            <a href="@($"/plants/{card.Id}")" class="plant-card-link">
+                                Zobacz szczegóły
+                                <span>→</span>
+                            </a>
+                        }
 
                     </div>
 
                 </article>
             }
+
             <div class="plant-card-content">
-                <p> Nie ma rośliny, której szukasz? Możesz zgłosić ją za pomocą formularza. </p>
-                <a href="/plant-form" class="plant-form-button"> Przejdź do formularza <span>→</span> </a>
+                <p>Nie ma rośliny, której szukasz? Możesz zgłosić ją za pomocą formularza.</p>
+                <a href="/plant-form" class="plant-form-button">Przejdź do formularza <span>→</span></a>
             </div>
 
         </section>
@@ -149,17 +149,35 @@
 @code {
 
     private List<GetPreviewPlantDTO> plants = new();
+    private List<PendingPlantPreviewDTO> pendingPlants = new();
 
     private bool isLoading = true;
-
     private string? errorMessage;
 
+    private bool showPending;
+    private bool pendingLoaded;
+    private bool isLoadingPending;
+    private string? pendingError;
+
+    private static readonly StringComparer PolishOrder =
+        StringComparer.Create(new CultureInfo("pl-PL"), ignoreCase: true);
+
+    // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie posortowane po nazwie polskiej
+    private IEnumerable<LibraryCard> Cards =>
+        plants.Select(p => new LibraryCard(
+                p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
+                p.PlantTypeDTO?.Name, p.MonthOfHarvestName, IsPending: false))
+            .Concat(showPending
+                ? pendingPlants.Select(p => new LibraryCard(
+                    p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
+                    p.PlantTypeName, p.MonthOfHarvestName, IsPending: true))
+                : Enumerable.Empty<LibraryCard>())
+            .OrderBy(c => c.PolishName, PolishOrder);
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPlantsAsync();
     }
-
 
     private async Task LoadPlantsAsync()
     {
@@ -172,6 +190,7 @@
         }
         catch (Exception ex)
         {
+            Console.Error.WriteLine($"Błąd pobierania roślin: {ex}");
             errorMessage = "Wystąpił problem podczas komunikacji z API.";
         }
         finally
@@ -179,4 +198,38 @@
             isLoading = false;
         }
     }
+
+    // zgłoszenia pobieramy dopiero przy pierwszym włączeniu przełącznika
+    private async Task OnShowPendingChangedAsync()
+    {
+        if (!showPending || pendingLoaded) return;
+
+        isLoadingPending = true;
+        pendingError = null;
+
+        try
+        {
+            pendingPlants = await PlantApiService.GetPendingPlantsAsync();
+            pendingLoaded = true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd pobierania zgłoszeń: {ex}");
+            pendingError = "Nie udało się pobrać niezweryfikowanych roślin.";
+        }
+        finally
+        {
+            isLoadingPending = false;
+        }
+    }
+
+    private sealed record LibraryCard(
+        int Id,
+        string Name,
+        string PolishName,
+        string? LatinName,
+        string? Subriquet,
+        string? PlantTypeName,
+        string? MonthOfHarvestName,
+        bool IsPending);
 }
