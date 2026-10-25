@@ -224,254 +224,6 @@ namespace HerbRecognition_APIs.Services
 
             return plants_preview;
         }
-        //public async Task<Plant> CreatePlantAsync(CreatePlantDTO dto)
-        //{
-        //    await using var transaction = await data.Database.BeginTransactionAsync();
-
-        //    try
-        //    {
-        //        // ---- walidacja slownikow -------
-        //        // -- plantType
-        //        if (!await data.Planttypes.AnyAsync(x => x.Id == dto.PlantTypeID))
-        //            throw new KeyNotFoundException($"PlantType with ID {dto.PlantTypeID} does not exist!");
-
-        //        // -- occurance
-        //        if (!await data.Occurances.AnyAsync(x => x.Id == dto.OccuranceId))
-        //            throw new KeyNotFoundException($"Occurance with ID {dto.OccuranceId} does not exist!");
-
-        //        // -- poisonability
-        //        if (dto.PoisonabilityId.HasValue && !await data.Poisonabilities.AnyAsync(x => x.Id == dto.PoisonabilityId))
-        //            throw new KeyNotFoundException($"Poisonability with ID {dto.PoisonabilityId} does not exist!");
-
-        //        // -- monthOdHarvest
-        //        await ValidateMonthOfHarvestAsync(dto.MonthOfHarvestId, "Plant"); 
-
-        //        // --------------- tworzenie nowej rosliny -----------------
-        //        var plant = new Plant
-        //        {
-        //            Name = dto.Name,
-        //            Polishname = dto.PolishName,
-        //            Latinname = dto.LatinName,
-        //            Subriquet = dto.Subriquet,
-        //            moreInfo = dto.MoreInfo,
-
-        //            Planttypeid = dto.PlantTypeID,
-        //            Occuranceid = dto.OccuranceId,
-        //            Poisonabilityid = dto.PoisonabilityId,
-        //            MonthOfHarvestId = dto.MonthOfHarvestId
-        //        };
-
-        //        data.Plants.Add( plant );
-        //        await data.SaveChangesAsync();
-
-        //        // ----------- walidacja i tworzenie bocznych tabel -----------
-        //        // -- similar plants --------
-        //        if (dto.SimilarPlantIds is not null && dto.SimilarPlantIds.Count > 0)
-        //        {
-        //            var similarPlantIds = dto.SimilarPlantIds
-        //                .Distinct()
-        //                .ToList();
-
-        //            var existingSimilarPlantsIds = await data .Plants
-        //                .Where(p => similarPlantIds.Contains(p.Id))
-        //                .Select(plant => plant.Id)
-        //                .ToListAsync();
-
-        //            var missingIds = similarPlantIds
-        //                .Distinct()
-        //                .Except(existingSimilarPlantsIds)
-        //                .ToList();
-
-        //            if(missingIds.Count > 0)
-        //            {
-        //                throw new KeyNotFoundException($"Similar plant with ID {string.Join(',', missingIds)} does not exist");
-        //            }
-
-        //            var similarPlants = await data.Plants
-        //                .Where(p => dto.SimilarPlantIds.Contains(p.Id))
-        //                .ToListAsync();
-
-        //            foreach(var simPlant in similarPlants)
-        //            {                    
-        //                data.PlantSimilarplants.Add(new PlantSimilarPlant
-        //                {
-        //                    PlantId = plant.Id,
-        //                    SimilarPlantId = simPlant.Id
-        //                });
-        //                data.PlantSimilarplants.Add(new PlantSimilarPlant
-        //                {
-        //                    PlantId = simPlant.Id,
-        //                    SimilarPlantId = plant.Id
-        //                });
-                        
-        //            }
-
-        //            await data.SaveChangesAsync();
-        //        }
-
-        //        // -- sap
-        //        if (dto.CreateSapDTO is not null)
-        //        {
-        //            await ValidateColorAsync(dto.CreateSapDTO.SapColorId, "SAP");
-        //            await ValidateMonthOfHarvestAsync(dto.CreateSapDTO.SapMonthOfHarvestId, "SAP");
-        //             plant.Sap = new Sap
-        //             {
-        //                 Colorid = dto.CreateSapDTO.SapColorId,
-        //                 Leavesstains = dto.CreateSapDTO.SapLeavesStain,
-        //                 Sticky = dto.CreateSapDTO.SapSticky,
-        //                 MonthOfHarvestId = dto.CreateSapDTO.SapMonthOfHarvestId,
-        //                 moreInfo = dto.CreateSapDTO.SapMoreInfo
-        //             };
-        //        }
-
-        //        // -- root
-        //        if (dto.CreateRootDTO is not null)
-        //        {
-        //            await ValidateColorAsync(dto.CreateRootDTO.RootColorId, "ROOT");
-        //            await ValidateSurfaceAsync(dto.CreateRootDTO.RootSurfaceId, "ROOT");
-        //            await ValidateThicknessAsync(dto.CreateRootDTO.RootThicknessId, "ROOT");
-        //            await ValidateMonthOfHarvestAsync(dto.CreateRootDTO.RootMonthOfHarvestId, "ROOT");
-
-        //            plant.Root = new Root
-        //            {
-        //                Colorid = dto.CreateRootDTO.RootColorId,
-        //                Surfaceid = dto.CreateRootDTO.RootSurfaceId,
-        //                Thicknessid = dto.CreateRootDTO.RootThicknessId,
-        //                isHollow = dto.CreateRootDTO.RootIsHollow,
-        //                MonthOfHarvestId= dto.CreateRootDTO.RootMonthOfHarvestId,
-        //                moreInfo = dto.CreateRootDTO.RootMoreInfo
-        //            };
-        //        }
-
-        //        // -- stalk
-        //        if (dto.CreateStalkDTO is not null)
-        //        {
-        //            await ValidateShapeAsync(dto.CreateStalkDTO.StalkShapeId, "STALK");
-        //            await ValidateColorAsync(dto.CreateStalkDTO.StalkColorId, "STALK");
-        //            await ValidateSurfaceAsync(dto.CreateStalkDTO.StalkSurfaceId, "STALK");
-        //            await ValidateMonthOfHarvestAsync(dto.CreateStalkDTO.StalkMonthOfHarvestId, "STALK");
-
-        //            plant.Stalk = new Stalk
-        //            {
-        //                Shapeid = dto.CreateStalkDTO.StalkShapeId,
-        //                Colorid = dto.CreateStalkDTO.StalkColorId,
-        //                Surfaceid = dto.CreateStalkDTO.StalkSurfaceId,
-        //                isHollow = dto.CreateStalkDTO.StalkIsHollow,
-        //                MonthOfHarvestId = dto.CreateStalkDTO.StalkMonthOfHarvestId,
-        //                moreInfo = dto.CreateStalkDTO.StalkMoreInfo
-        //            };
-        //        }
-                
-
-        //        // -- hat
-        //        if (dto.CreateHatDTO is not null)
-        //        {
-        //            await ValidateColorAsync(dto.CreateHatDTO.HatColorId, "HAT");
-        //            await ValidateShapeAsync(dto.CreateHatDTO.HatShapeId, "HAT");
-        //            await ValidateThicknessAsync(dto.CreateHatDTO.HatThicknessId, "HAT");
-        //            await ValidateSurfaceAsync(dto.CreateHatDTO.HatSurfaceId, "HAT");
-        //            await ValidateMonthOfHarvestAsync(dto.CreateHatDTO.HatMonthOfHarvestId, "HAT");
-
-        //            plant.Hat = new Hat
-        //            {
-        //                Colorid = dto.CreateHatDTO.HatColorId,
-        //                Shapeid = dto.CreateHatDTO.HatShapeId,
-        //                Thicknessid = dto.CreateHatDTO.HatThicknessId,
-        //                Surfaceid = dto.CreateHatDTO.HatSurfaceId,
-        //                Hasspots = dto.CreateHatDTO.HatHasSpots,
-        //                Hasgills = dto.CreateHatDTO.HatHasGills,
-        //                HasRing = dto.CreateHatDTO.HatHasRing,
-        //                MonthOfHarvestId = dto.CreateHatDTO.HatMonthOfHarvestId,
-        //                moreInfo = dto.CreateHatDTO.HatMoreInfo
-        //            };
-        //        }
-
-        //        // -- leaf
-        //        if (dto.CreateLeafDTO is not null)
-        //        {
-        //            if(dto.CreateLeafDTO.LeafFlavourId.HasValue)
-        //                await ValidateFlavourAsync(dto.CreateLeafDTO.LeafFlavourId, "LEAF");
-
-        //            await ValidateShapeAsync(dto.CreateLeafDTO.LeafShapeId, "LEAF");
-        //            await ValidateColorAsync(dto.CreateLeafDTO.LeafColorId, "LEAF");
-        //            await ValidateSurfaceAsync(dto.CreateLeafDTO.LeafSurfaceId, "LEAF");
-        //            await ValidateThicknessAsync(dto.CreateLeafDTO.LeafThicknessId, "LEAF");
-        //            await ValidateMonthOfHarvestAsync(dto.CreateLeafDTO.LeafMonthOfHarvestId, "LEAF");
-
-        //            plant.Leaf = new Leaf
-        //            {
-        //                Stripes = dto.CreateLeafDTO.LeafStripes,
-        //                Spots = dto.CreateLeafDTO.LeafSpots,
-        //                Holes = dto.CreateLeafDTO.LeafHoles,
-        //                Leafshapeid = dto.CreateLeafDTO.LeafShapeId,
-        //                Leafcolorid = dto.CreateLeafDTO.LeafColorId,
-        //                Surfaceid = dto.CreateLeafDTO.LeafSurfaceId,
-        //                Thicknessid = dto.CreateLeafDTO.LeafThicknessId,
-        //                Flavourid = dto.CreateLeafDTO.LeafFlavourId,
-        //                Leaflength = dto.CreateLeafDTO.LeafLength,
-        //                MonthOfHarvestId = dto.CreateLeafDTO.LeafMonthOfHarvestId,
-        //                moreInfo = dto.CreateLeafDTO.LeafMoreInfo
-        //            };
-        //        }
-
-        //        // -- flower
-        //        if (dto.CreateFlowerDTO is not null)
-        //        {
-        //            if (dto.CreateFlowerDTO.FlowerFlavourId.HasValue)
-        //                await ValidateFlavourAsync(dto.CreateFlowerDTO.FlowerFlavourId, "FLOWER");
-
-        //            await ValidateColorAsync(dto.CreateFlowerDTO.FlowerColorId, "FLOWER");
-        //            await ValidateShapeAsync(dto.CreateFlowerDTO.FlowerShapeId, "FLOWER");
-        //            await ValidateMonthOfHarvestAsync(dto.CreateFlowerDTO.FlowerMonthOfHarvestId, "FLOWER");
-
-        //            plant.Flower = new Flower
-        //            {
-        //                Sizeincm = dto.CreateFlowerDTO.FlowerSizeInCm,
-        //                Colorid = dto.CreateFlowerDTO.FlowerColorId,
-        //                Shapeid = dto.CreateFlowerDTO.FlowerShapeId,
-        //                Flavourid = dto.CreateFlowerDTO.FlowerFlavourId,
-        //                Scentpower = dto.CreateFlowerDTO.FlowerScentPower,
-        //                MonthOfHarvestId = dto.CreateFlowerDTO.FlowerMonthOfHarvestId,
-        //                moreInfo = dto.CreateFlowerDTO.FlowerMoreInfo
-        //            };
-
-        //        }
-
-        //        // -- fruit
-        //        if (dto.CreateFruitDTO is not null)
-        //        {
-        //            if (dto.CreateFruitDTO.FruitFlavourId.HasValue)
-        //                await ValidateFlavourAsync(dto.CreateFruitDTO.FruitFlavourId, "FRUIT");
-
-        //            await ValidateShapeAsync(dto.CreateFruitDTO.FruitShapeId, "FRUIT");
-        //            await ValidateColorAsync(dto.CreateFruitDTO.FruitColorId, "FRUIT");
-        //            await ValidateSurfaceAsync(dto.CreateFruitDTO.FruitSurfaceId, "FRUIT");
-        //            await ValidateThicknessAsync(dto.CreateFruitDTO.FruitThicknessId, "FRUIT");
-        //            await ValidateMonthOfHarvestAsync(dto.CreateFruitDTO.FruitMonthOfHarvestId, "FRUIT");
-
-        //            plant.Fruit = new Fruit
-        //            {
-        //                Flavourid = dto.CreateFruitDTO.FruitFlavourId,
-        //                Shapeid = dto.CreateFruitDTO.FruitShapeId,
-        //                Colorid = dto.CreateFruitDTO.FruitColorId,
-        //                Surfaceid = dto.CreateFruitDTO.FruitSurfaceId,
-        //                Thicknessid = dto.CreateFruitDTO.FruitThicknessId,
-        //                MonthOfHarvestId = dto.CreateFruitDTO.FruitMonthOfHarvestId,
-        //                moreInfo = dto.CreateFruitDTO.FruitMoreInfo
-        //            };
-        //        }
-
-        //        await data.SaveChangesAsync();
-
-        //        await transaction.CommitAsync();
-        //        return plant;
-        //    }
-        //    catch
-        //    {
-        //        await transaction.RollbackAsync();
-        //        throw;
-        //    }
-        //}
         public async Task<GetPlantDTO?> GetPlantByIdAsync(int id)
         {
             return await data.Plants//todo blad jesli zaakceptowana roslina bez lisci itp
@@ -479,165 +231,23 @@ namespace HerbRecognition_APIs.Services
                 .Select(plantsDetailsProjection)
                 .FirstOrDefaultAsync();
         }
-       
-        //public static bool IsSimilar(string? text, string search)
-        //{
-        //    if(string.IsNullOrWhiteSpace(text)) return false;
-
-        //    text = text.Trim().ToLowerInvariant();
-        //    search = search.Trim().ToLowerInvariant();
-
-        //    //dokladna nazwa
-        //    if (text ==  search) return true; 
-
-        //    //czesciowe
-        //    if(text.Contains(search)) return true;
-
-        //    //literowki
-        //    var literowkaDistance = LevenshteinDistance(text, search);
-
-        //    return literowkaDistance <= 2;//maksymalnie dwie różnice
-        //}
-        //private static int LevenshteinDistance(string a, string b)//todo poprawic //o ile liter roznia sie od siebie dwa wyrazy
-        //{//zalozenie ze poczatek jest w miare poprawny
-        //    var matrix = new int[a.Length + 1, b.Length + 1];
-
-        //    //porownanie roznicy pomiedzy dwoma wyrazami,
-        //    //porownanie najpierw pierwszego do pustego, potem pierwszego do 1 chara z drugiego
-        //    for (int i = 0; i <= a.Length; i++)
-        //        matrix[i, 0] = i;
-
-        //    //potem drugiego do pierwszego w ten sam sposob
-        //    for (int j = 0; j <= b.Length; j++)
-        //        matrix[0, j] = j;
-
-        //    for (int i = 1; i <= a.Length; i++)
-        //    {
-        //        for (int j = 1; j <= b.Length; j++)
-        //        {
-        //            //obliczenie jaki jest koszt przejscia z kazda na kazda kombinacje
-        //            var cost = a[i - 1] == b[j - 1] ? 0 : 1; //sprawdzenie czy aktualne znaki sa takie same
-
-        //            matrix[i, j] = Math.Min( //wybranie najtanszej mozliwosci (dodanie znaku, usuniecie znaku albo zmiana znaku)
-        //                Math.Min(
-        //                    matrix[i - 1, j] + 1,
-        //                    matrix[i, j - 1] + 1
-        //                ),
-        //                matrix[i - 1, j - 1] + cost
-        //            );
-        //        }
-        //    }
-
-        //    return matrix[a.Length, b.Length];
-        //}
-
-
-        //public async Task<IEnumerable<GetPlantDTO?>> GetPlantByNameAsync(string name)
-        //{
-        //    if(string.IsNullOrWhiteSpace(name))
-        //        return Enumerable.Empty<GetPlantDTO?>();
-
-        //    var query = data.Plants
-        //        .Select(p => new GetPlantDTO
-        //        {
-        //            Id = p.Id,
-        //            Name = p.Name,
-        //            PolishName = p.Polishname,
-        //            LatinName = p.Latinname,
-        //            Subriquet = p.Subriquet,
-
-        //            PlantTypeDTO = new GetPlantTypeDTO
-        //            {
-        //                Name = p.Planttype.Name
-        //            },
-
-        //            PoisonabilityDescription =
-        //                p.Poisonability == null
-        //                    ? null
-        //                    : p.Poisonability.Description
-        //        });
-
-        //    name = name.Trim();
-
-        //    //najpierw wyszukanie dla contains
-        //    var containsSearchPlants = await data.Plants
-        //        .Where(p =>
-        //            p.Name.Contains(name) ||
-        //            p.Polishname.Contains(name) ||
-        //            p.Latinname.Contains(name) ||
-        //            p.Subriquet.Contains(name)
-        //        )
-        //        .Select(
-        //            p => new GetPlantDTO
-        //            {
-        //                Id = p.Id,
-        //                Name = p.Name,
-        //                PolishName = p.Polishname,
-        //                LatinName = p.Latinname,
-        //                Subriquet = p.Subriquet,
-
-        //                PlantTypeDTO = new GetPlantTypeDTO
-        //                {
-        //                    Name = p.Planttype.Name
-        //                },
-        //                PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
-        //            }
-        //        )
-        //       .OrderBy(p => p.PolishName)
-        //       .ToListAsync();
-
-        //    if (containsSearchPlants.Any())
-        //        return containsSearchPlants;
-
-        //    //awaryjne wyszukanie dla literowek
-        //    var allPlantsCandidates = await data.Plants
-        //        .Select(
-        //            p => new GetPlantDTO
-        //            {
-        //                Id = p.Id,
-        //                Name = p.Name,
-        //                PolishName = p.Polishname,
-        //                LatinName = p.Latinname,
-        //                Subriquet = p.Subriquet,
-
-        //                PlantTypeDTO = new GetPlantTypeDTO
-        //                {
-        //                    Name = p.Planttype.Name
-        //                },
-        //                PoisonabilityDescription = p.Poisonability == null ? null : p.Poisonability.Description
-        //            }
-        //        )
-        //       .ToListAsync();
-
-        //    // fuzzy search
-        //    var plants = allPlantsCandidates
-        //        .Where(p =>
-        //            IsSimilar(p.Name, name) ||
-        //            IsSimilar(p.PolishName, name) ||
-        //            IsSimilar(p.LatinName, name) ||
-        //            IsSimilar(p.Subriquet, name))
-        //        .OrderBy(p => p.PolishName)
-        //        .ToList();
-
-
-        //    return plants;
-        //}
-
         public async Task<IEnumerable<GetPlantDTO?>> GetPlantByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return Enumerable.Empty<GetPlantDTO?>();
-
-            name = name.Trim();
-            var pattern = $"%{name}%";
+            
+            //name = name.Trim();
+            name = LikePattern.Limit(name);
+            //var pattern = $"%{name}%";
+            var pattern = LikePattern.Contains(name);
 
             // 1. szybkie wyszukiwanie w bazie – bez rozróżniania wielkości liter
             var found = await data.Plants
                 .Where(p =>
-                    EF.Functions.ILike(p.Name, pattern) ||
-                    EF.Functions.ILike(p.Polishname, pattern) ||
-                    (p.Latinname != null && EF.Functions.ILike(p.Latinname, pattern)) ||
-                    (p.Subriquet != null && EF.Functions.ILike(p.Subriquet, pattern)))
+                    EF.Functions.ILike(p.Name, pattern, LikePattern.EscapeCharacter) ||
+                    EF.Functions.ILike(p.Polishname, pattern, LikePattern.EscapeCharacter) ||
+                    (p.Latinname != null && EF.Functions.ILike(p.Latinname, pattern, LikePattern.EscapeCharacter)) ||
+                    (p.Subriquet != null && EF.Functions.ILike(p.Subriquet, pattern, LikePattern.EscapeCharacter)))
                 .Select(plantPreviewProjection)
                 .OrderBy(p => p.PolishName)
                 .ToListAsync();
@@ -659,8 +269,6 @@ namespace HerbRecognition_APIs.Services
         }
 
         // ----------- dictionaries Controller api/dictionaries/ ------
-
-
         public async Task<List<GetPlantTypeDTO>> GetAllDictPlantTypesAsync() // planttype
         {
             var planttypes = await data.Planttypes
@@ -749,8 +357,7 @@ namespace HerbRecognition_APIs.Services
         }
 
         // ----------- UserInput Controller api/userInput/ ------
-        private async Task<List<SimilarPlantCandidateDTO>> MapSubmissionsToCandidatesAsync(
-    IEnumerable<UserInput> submissions)
+        private async Task<List<SimilarPlantCandidateDTO>> MapSubmissionsToCandidatesAsync(IEnumerable<UserInput> submissions)
         {
             var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
             var result = new List<SimilarPlantCandidateDTO>();
@@ -802,15 +409,15 @@ namespace HerbRecognition_APIs.Services
             if (query.Length < 2)
                 return new List<SimilarPlantCandidateDTO>();
 
-            var pattern = $"%{query}%";
+            var pattern = LikePattern.Contains(query);
 
             // --- zatwierdzone (plant) --- wyszukiwanie przez linQ
             var results = await data.Plants
                 .Where(p =>
-                    EF.Functions.ILike(p.Name, pattern) ||
-                    EF.Functions.ILike(p.Polishname, pattern) ||
-                    (p.Latinname != null && EF.Functions.ILike(p.Latinname, pattern)) ||
-                    (p.Subriquet != null && EF.Functions.ILike(p.Subriquet, pattern)))
+                    EF.Functions.ILike(p.Name, pattern, LikePattern.EscapeCharacter) ||
+                    EF.Functions.ILike(p.Polishname, pattern, LikePattern.EscapeCharacter) ||
+                    (p.Latinname != null && EF.Functions.ILike(p.Latinname, pattern, LikePattern.EscapeCharacter)) ||
+                    (p.Subriquet != null && EF.Functions.ILike(p.Subriquet, pattern, LikePattern.EscapeCharacter)))
                 .OrderBy(p => p.Polishname)
                 .Take(limit)
                 .Select(p => new SimilarPlantCandidateDTO
@@ -828,10 +435,10 @@ namespace HerbRecognition_APIs.Services
             var pending = await data.UserInputs
                 .FromSqlInterpolated($@"
             SELECT * FROM userinput
-            WHERE inputdata->>'Name'       ILIKE {pattern}
-               OR inputdata->>'PolishName' ILIKE {pattern}
-               OR inputdata->>'LatinName'  ILIKE {pattern}
-               OR inputdata->>'Subriquet'  ILIKE {pattern}
+            WHERE inputdata->>'Name'       ILIKE {pattern} ESCAPE '\'
+               OR inputdata->>'PolishName' ILIKE {pattern} ESCAPE '\'
+               OR inputdata->>'LatinName'  ILIKE {pattern} ESCAPE '\'
+               OR inputdata->>'Subriquet'  ILIKE {pattern} ESCAPE '\'
             ORDER BY id DESC
             LIMIT {limit}")//pattern i limit przeciw sql injection
                 .AsNoTracking()

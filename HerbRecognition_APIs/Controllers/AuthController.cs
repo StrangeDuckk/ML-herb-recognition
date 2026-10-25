@@ -1,5 +1,6 @@
 ﻿using HerbRecognition_APIs.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -10,19 +11,30 @@ namespace HerbRecognition_APIs.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController(IConfiguration config): ControllerBase
+    public class AuthController(IConfiguration config, ILogger<AuthController> logger) : ControllerBase
     {
         [HttpPost("login")]
+        [EnableRateLimiting("login")]          // max 5 prób na 5 minut z jednego adresu
         public IActionResult Login([FromBody] LoginDTO dto)
         {
             var username = config["AdminAuth:Username"];
             var password = config["AdminAuth:Password"];
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-                return StatusCode(500, "Logowaie nie jest skonfigorowane na serwerze.");
+                return StatusCode(500, "Logowanie nie jest skonfigurowane na serwerze.");
 
-            if (!SecureEquals(dto.Username, username) || !SecureEquals(dto.Password, password))
+            // oba porównania zawsze się wykonują (& zamiast &&) – czas odpowiedzi
+            // nie zdradza, czy login był poprawny
+            var usernameOk = SecureEquals(dto.Username, username);
+            var passwordOk = SecureEquals(dto.Password, password);
+
+            if (!(usernameOk & passwordOk))
+            {
+                logger.LogWarning("Nieudane logowanie do panelu admina z adresu {Ip}",
+                    HttpContext.Connection.RemoteIpAddress);
+
                 return Unauthorized("Nieprawidłowy login lub hasło.");
+            }
 
             var jwt = config.GetSection("Jwt");
             var expiresAt = DateTime.UtcNow.AddHours(8);
@@ -33,7 +45,8 @@ namespace HerbRecognition_APIs.Controllers
                 claims: new[]
                 {
                     new Claim(ClaimTypes.Name, username),
-                    new Claim(ClaimTypes.Role, "Admin")
+                    new Claim(ClaimTypes.Role, "Admin"),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 },
                 expires: expiresAt,
                 signingCredentials: new SigningCredentials(
@@ -47,9 +60,11 @@ namespace HerbRecognition_APIs.Controllers
             });
         }
 
-        // porównanie w stałym czasie – utrudnia zgadywanie hasła po czasie odpowiedzi
-        private static bool SecureEquals(string? a, string b) =>
+        // Porównanie w stałym czasie. Najpierw skrót SHA-256, żeby oba ciągi miały
+        // tę samą długość – inaczej FixedTimeEquals kończy od razu i zdradza długość hasła.
+        private static bool SecureEquals(string? provided, string expected) =>
             CryptographicOperations.FixedTimeEquals(
-                Encoding.UTF8.GetBytes(a ?? ""), Encoding.UTF8.GetBytes(b));
+                SHA256.HashData(Encoding.UTF8.GetBytes(provided ?? "")),
+                SHA256.HashData(Encoding.UTF8.GetBytes(expected)));
     }
 }

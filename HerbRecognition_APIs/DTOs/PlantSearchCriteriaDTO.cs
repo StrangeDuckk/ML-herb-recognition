@@ -1,4 +1,6 @@
-﻿namespace HerbRecognition_APIs.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HerbRecognition_APIs.DTOs
 {
     /// <summary>
     /// Kryteria wyszukiwania przez formularz. Każde pole jest opcjonalne:
@@ -7,10 +9,14 @@
     public class PlantSearchCriteriaDTO
     {
         // ----- tekst (waga 1) -----
+        [StringLength(100)]
         public string? Name { get; set; }
+        [StringLength(100)]
         public string? PolishName { get; set; }
+        [StringLength(100)]
         public string? LatinName { get; set; }
         public string? Subriquet { get; set; }
+        [StringLength(200)]
         public string? MoreInfo { get; set; }
 
         // ----- słowniki (waga 3) -----
@@ -32,6 +38,7 @@
         public PartCriteriaDTO? Fruit { get; set; }
 
         // ----- ustawienia wyszukiwania -----
+        [Range(0, 100)]
         public int MinMatchPercent { get; set; }
         public bool IncludePending { get; set; } = true;
     }
@@ -61,10 +68,13 @@
         public bool? HasHoles { get; set; }
 
         // liczby (waga 1)
+        [Range(0, 1000)]
         public decimal? Size { get; set; }        // długość liścia / rozmiar kwiatu w cm
+        [Range(0, 5)]
         public int? ScentPower { get; set; }      // 0–5
 
         // tekst (waga 1)
+        [StringLength(200)]
         public string? MoreInfo { get; set; }
     }
 }

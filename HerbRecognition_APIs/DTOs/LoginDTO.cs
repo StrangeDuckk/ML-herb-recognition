@@ -4,7 +4,7 @@ namespace HerbRecognition_APIs.DTOs
 {
     public class LoginDTO
     {
-        [Required] public string Username { get; set; } = "";
-        [Required] public string Password { get; set; } = "";
+        [Required][StringLength(100)] public string Username { get; set; } = "";
+        [Required][StringLength(100)] public string Password { get; set; } = "";
     }
 }

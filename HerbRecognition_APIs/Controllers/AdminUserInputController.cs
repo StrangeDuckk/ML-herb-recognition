@@ -9,7 +9,8 @@ namespace HerbRecognition_APIs.Controllers
     [ApiController]
     [Route("api/admin/userinputs")]
     [Authorize(Roles = "Admin")]
-    public class AdminUserInputController(ISubmissionService submissions) : ControllerBase
+    public class AdminUserInputController(ISubmissionService submissions, ILogger<AdminUserInputController> logger)
+        : ControllerBase
     {
         // GET api/admin/userinputs
         [HttpGet]
@@ -29,7 +30,7 @@ namespace HerbRecognition_APIs.Controllers
                 : Ok(dto);
         }
 
-        // PUT api/admin/userinputs/5  – "Zapisz zmiany" (zostaje w userinput)
+        // PUT api/admin/userinputs/5  – "Zapisz zmiany"
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] CreatePlantDTO dto)
         {
@@ -69,7 +70,8 @@ namespace HerbRecognition_APIs.Controllers
             }
             catch (DbUpdateException ex)
             {
-                return BadRequest($"Nie udało się zapisać rośliny: {ex.InnerException?.Message ?? ex.Message}");
+                logger.LogError(ex, "Nie udało się zatwierdzić zgłoszenia {Id}", id);
+                return BadRequest("Nie udało się zapisać rośliny. Sprawdź poprawność danych.");
             }
         }
     }

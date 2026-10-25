@@ -1,5 +1,6 @@
 ﻿using HerbRecognition_APIs.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace HerbRecognition_APIs.Controllers
 {
@@ -10,17 +11,14 @@ namespace HerbRecognition_APIs.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPlants()
         {
-            var plants = await dbService.GetPlantsAsync();
-
-            return Ok(plants);
+            return Ok(await dbService.GetPlantsAsync());
         }
 
-        [HttpGet("/all")]
+        // było "/all" – ukośnik na początku robił z tego adres https://host/all, poza api/plants
+        [HttpGet("all")]
         public async Task<IActionResult> GetAllPlants()
         {
-            var plants = await dbService.GetAllPlantsAsync();
-
-            return Ok(plants);
+            return Ok(await dbService.GetAllPlantsAsync());
         }
 
         [HttpGet("{id:int}")]
@@ -28,27 +26,13 @@ namespace HerbRecognition_APIs.Controllers
         {
             var plant = await dbService.GetPlantByIdAsync(id);
 
-            if (plant == null)
-                return NotFound();
-
-            return Ok(plant);
+            return plant is null ? NotFound() : Ok(plant);
         }
 
-        [HttpGet("{id:int}/pending-similar")] //zwrocenie oddzielnie podobnych roslin
+        [HttpGet("{id:int}/pending-similar")]
         public async Task<IActionResult> GetPendingSimilar(int id)
         {
             return Ok(await dbService.GetPendingSimilarToPlantAsync(id));
-        }
-
-        [HttpGet("{name}")]
-        public async Task<IActionResult> GetPlantsByNameAsync(string name)
-        {
-            var plants = await dbService.GetPlantByNameAsync(name);
-
-            if (!plants.Any())
-                return NotFound();
-
-            return Ok(plants);
         }
 
         // GET api/plants/pending
@@ -56,6 +40,18 @@ namespace HerbRecognition_APIs.Controllers
         public async Task<IActionResult> GetPendingPlants()
         {
             return Ok(await submissions.GetPendingPreviewsAsync());
+        }
+
+        [HttpGet("{name}")]
+        [EnableRateLimiting("search")]
+        public async Task<IActionResult> GetPlantsByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name) || name.Length > LikePattern.MaxSearchLength)
+                return BadRequest($"Nazwa musi mieć od 1 do {LikePattern.MaxSearchLength} znaków.");
+
+            var plants = await dbService.GetPlantByNameAsync(name);
+
+            return plants.Any() ? Ok(plants) : NotFound();
         }
     }
 }

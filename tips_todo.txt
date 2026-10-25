@@ -1,5 +1,3 @@
-- zabezpieczenie przed sql injection
-
 - przeniesienie na hosting
 
 - zajac sie zdjeciami kwiatkow

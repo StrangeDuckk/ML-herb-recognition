@@ -9,7 +9,7 @@ namespace HerbRecognition_APIs.Controllers
     [ApiController]
     [Route("api/admin")]
     [Authorize(Roles = "Admin")]
-    public class AdminController(IDbService dbService) :ControllerBase
+    public class AdminController(IDbService dbService, ILogger<AdminController> logger) : ControllerBase
     {
         [HttpPost("dictionaries/{dictionary}")]
         public async Task<IActionResult> CreateItemAsync(string dictionary, [FromBody] DictionaryItemDTO dto)
@@ -19,11 +19,17 @@ namespace HerbRecognition_APIs.Controllers
                 var id = await dbService.CreateDictionaryItemAsync(dictionary, dto);
                 return Ok(new { Id = id });
             }
-            catch(ArgumentException ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError(ex, "Nie udało się dodać wpisu do słownika {Dictionary}", dictionary);
+                return Conflict("Nie udało się dodać wpisu – możliwe, że taka wartość już istnieje.");
+            }
         }
+
         [HttpPut("dictionaries/{dictionary}/{id:int}")]
         public async Task<IActionResult> Update(string dictionary, int id, [FromBody] DictionaryItemDTO dto)
         {
@@ -33,7 +39,15 @@ namespace HerbRecognition_APIs.Controllers
                     ? NoContent()
                     : NotFound("Nie znaleziono wpisu.");
             }
-            catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                logger.LogError(ex, "Nie udało się zmienić wpisu {Id} w słowniku {Dictionary}", id, dictionary);
+                return Conflict("Nie udało się zapisać zmiany – możliwe, że taka wartość już istnieje.");
+            }
         }
 
         [HttpDelete("dictionaries/{dictionary}/{id:int}")]
@@ -45,7 +59,10 @@ namespace HerbRecognition_APIs.Controllers
                     ? NoContent()
                     : NotFound("Nie znaleziono wpisu.");
             }
-            catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (DbUpdateException)
             {
                 return Conflict("Nie można usunąć – ta wartość jest używana przez zapisane rośliny.");

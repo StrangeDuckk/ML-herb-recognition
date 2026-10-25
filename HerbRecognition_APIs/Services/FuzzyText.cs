@@ -17,6 +17,8 @@ namespace HerbRecognition_APIs.Services
         {
             if (string.IsNullOrWhiteSpace(text)) return "";
 
+            if (text.Length > 500) text = text[..500]; //obciecie do 500 znakow
+
             // ł nie rozkłada się w Unicode na l + znak diakrytyczny
             var lower = text.Trim().ToLowerInvariant().Replace('ł', 'l');
             var decomposed = lower.Normalize(NormalizationForm.FormD);
