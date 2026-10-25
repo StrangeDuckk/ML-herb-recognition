@@ -8,7 +8,9 @@
 @*
     Wspólny formularz rośliny.
     - strona użytkownika: pusty formularz, jeden przycisk (OnSubmit),
-    - panel admina: Initial = dane zgłoszenia, dwa przyciski (OnSubmit + OnSecondary).
+    - panel admina: Initial = dane zgłoszenia, dwa przyciski (OnSubmit + OnSecondary),
+    - wyszukiwanie: SearchMode = true, nic nie jest wymagane, pola Tak/Nie mają opcję
+      "Nie wiem", a przycisk wywołuje OnSearch z kryteriami wyszukiwania.
     Błędy rzucone przez OnSubmit/OnSecondary są wyświetlane nad przyciskami.
 *@
 
@@ -42,13 +44,13 @@ else
 
                 <div class="submission-grid">
                     <div class="submission-field">
-                        <label>Nazwa zwyczajowa *</label>
+                        <label>Nazwa zwyczajowa@(Req)</label>
                         <InputText @bind-Value="form.Name" maxlength="50" />
                         <ValidationMessage For="@(() => form.Name)" />
                     </div>
 
                     <div class="submission-field">
-                        <label>Nazwa polska *</label>
+                        <label>Nazwa polska@(Req)</label>
                         <InputText @bind-Value="form.PolishName" maxlength="50" />
                         <ValidationMessage For="@(() => form.PolishName)" />
                     </div>
@@ -66,7 +68,7 @@ else
                     <div class="submission-field">
                         <label>Miesiąc zbioru</label>
                         <InputSelect @bind-Value="form.MonthOfHarvestId">
-                            <option value="">Nie dotyczy / brak informacji</option>
+                            <option value="">@MonthEmptyText</option>
                             @foreach (var m in months)
                             {
                                 <option value="@m.Id">@m.Name</option>
@@ -80,7 +82,7 @@ else
                     </div>
 
                     <div class="submission-field">
-                        <label>Typ rośliny *</label>
+                        <label>Typ rośliny@(Req)</label>
                         <InputSelect @bind-Value="form.PlantTypeID" @bind-Value:after="OnPlantTypeChanged">
                             <option value="0">Wybierz typ</option>
                             @foreach (var item in plantTypes)
@@ -92,7 +94,7 @@ else
                     </div>
 
                     <div class="submission-field">
-                        <label>Występowanie *</label>
+                        <label>Występowanie@(Req)</label>
                         <InputSelect @bind-Value="form.OccuranceId">
                             <option value="0">Wybierz występowanie</option>
                             @foreach (var item in occurances)
@@ -105,13 +107,28 @@ else
 
                     <div class="submission-field">
                         <label>Trujące właściwości</label>
-                        <InputSelect @bind-Value="form.PoisonabilityId">
-                            <option value="">Nie trujące</option>
-                            @foreach (var item in poisonabilities)
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </InputSelect>
+                        @if (SearchMode)
+                        {
+                            @* "" = nie wiem, 0 = nietrująca *@
+                            <InputSelect @bind-Value="poisonabilitySearch">
+                                <option value="">Nie wiem</option>
+                                <option value="0">Nie trujące</option>
+                                @foreach (var item in poisonabilities)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect @bind-Value="form.PoisonabilityId">
+                                <option value="">Nie trujące</option>
+                                @foreach (var item in poisonabilities)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </InputSelect>
+                        }
                     </div>
                 </div>
             </section>
@@ -131,11 +148,14 @@ else
             {
                 <section class="submission-section">
                     <h2>2. @StalkSectionName</h2>
-                    <p class="section-description">Wszystkie pola są wymagane.</p>
+                    @if (!SearchMode)
+                    {
+                        <p class="section-description">Wszystkie pola są wymagane.</p>
+                    }
 
                     <div class="submission-grid">
                         <div class="submission-field">
-                            <label>Kształt *</label>
+                            <label>Kształt@(Req)</label>
                             <InputSelect @bind-Value="form.CreateStalkDTO!.StalkShapeId">
                                 <option value="0">Wybierz kształt</option>
                                 @foreach (var x in shapes)
@@ -146,12 +166,12 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Kolor *</label>
+                            <label>Kolor@(Req)</label>
                             <ColorSelect @bind-Value="form.CreateStalkDTO!.StalkColorId" Colors="colors" />
                         </div>
 
                         <div class="submission-field">
-                            <label>Powierzchnia *</label>
+                            <label>Powierzchnia@(Req)</label>
                             <InputSelect @bind-Value="form.CreateStalkDTO!.StalkSurfaceId">
                                 <option value="0">Wybierz powierzchnię</option>
                                 @foreach (var x in surfaces)
@@ -162,17 +182,13 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy @StalkSectionName.ToLower() jest pusty/pusta w środku?</span>
-                                <InputCheckbox @bind-Value="stalkHollow" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="@($"Czy {StalkSectionName.ToLower()} jest pusty/pusta w środku?")" @bind-Value="stalkHollow" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
                             <label>Miesiąc zbioru</label>
                             <InputSelect @bind-Value="form.CreateStalkDTO!.StalkMonthOfHarvestId">
-                                <option value="">Nie dotyczy / brak informacji</option>
+                                <option value="">@MonthEmptyText</option>
                                 @foreach (var m in months)
                                 {
                                     <option value="@m.Id">@m.Name</option>
@@ -205,30 +221,22 @@ else
                     <h2>3. Sok</h2>
                     <div class="submission-grid">
                         <div class="submission-field">
-                            <label>Kolor soku *</label>
+                            <label>Kolor soku@(Req)</label>
                             <ColorSelect @bind-Value="form.CreateSapDTO!.SapColorId" Colors="colors" />
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy sok pozostawia plamy?</span>
-                                <InputCheckbox @bind-Value="sapLeavesStain" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy sok pozostawia plamy?" @bind-Value="sapLeavesStain" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy sok jest lepki?</span>
-                                <InputCheckbox @bind-Value="sapSticky" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy sok jest lepki?" @bind-Value="sapSticky" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
                             <label>Miesiąc zbioru</label>
                             <InputSelect @bind-Value="form.CreateSapDTO!.SapMonthOfHarvestId">
-                                <option value="">Nie dotyczy / brak informacji</option>
+                                <option value="">@MonthEmptyText</option>
                                 @foreach (var m in months)
                                 {
                                     <option value="@m.Id">@m.Name</option>
@@ -261,12 +269,12 @@ else
                     <h2>4. Korzeń</h2>
                     <div class="submission-grid">
                         <div class="submission-field">
-                            <label>Kolor korzenia *</label>
+                            <label>Kolor korzenia@(Req)</label>
                             <ColorSelect @bind-Value="form.CreateRootDTO!.RootColorId" Colors="colors" />
                         </div>
 
                         <div class="submission-field">
-                            <label>Powierzchnia *</label>
+                            <label>Powierzchnia@(Req)</label>
                             <InputSelect @bind-Value="form.CreateRootDTO!.RootSurfaceId">
                                 <option value="0">Wybierz powierzchnię</option>
                                 @foreach (var x in surfaces)
@@ -277,7 +285,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Grubość *</label>
+                            <label>Grubość@(Req)</label>
                             <InputSelect @bind-Value="form.CreateRootDTO!.RootThicknessId">
                                 <option value="0">Wybierz grubość</option>
                                 @foreach (var x in thicknesses)
@@ -288,17 +296,13 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy jest pusty w środku?</span>
-                                <InputCheckbox @bind-Value="rootIsHollow" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy jest pusty w środku?" @bind-Value="rootIsHollow" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
                             <label>Miesiąc zbioru</label>
                             <InputSelect @bind-Value="form.CreateRootDTO!.RootMonthOfHarvestId">
-                                <option value="">Nie dotyczy / brak informacji</option>
+                                <option value="">@MonthEmptyText</option>
                                 @foreach (var m in months)
                                 {
                                     <option value="@m.Id">@m.Name</option>
@@ -331,12 +335,12 @@ else
                     <h2>5. Kapelusz</h2>
                     <div class="submission-grid">
                         <div class="submission-field">
-                            <label>Kolor kapelusza *</label>
+                            <label>Kolor kapelusza@(Req)</label>
                             <ColorSelect @bind-Value="form.CreateHatDTO!.HatColorId" Colors="colors" />
                         </div>
 
                         <div class="submission-field">
-                            <label>Kształt *</label>
+                            <label>Kształt@(Req)</label>
                             <InputSelect @bind-Value="form.CreateHatDTO!.HatShapeId">
                                 <option value="0">Wybierz kształt</option>
                                 @foreach (var x in shapes)
@@ -347,7 +351,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Grubość *</label>
+                            <label>Grubość@(Req)</label>
                             <InputSelect @bind-Value="form.CreateHatDTO!.HatThicknessId">
                                 <option value="0">Wybierz grubość</option>
                                 @foreach (var x in thicknesses)
@@ -358,7 +362,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Powierzchnia *</label>
+                            <label>Powierzchnia@(Req)</label>
                             <InputSelect @bind-Value="form.CreateHatDTO!.HatSurfaceId">
                                 <option value="0">Wybierz powierzchnię</option>
                                 @foreach (var x in surfaces)
@@ -369,33 +373,21 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy ma plamy na kapeluszu?</span>
-                                <InputCheckbox @bind-Value="hatHasSpots" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy ma plamy na kapeluszu?" @bind-Value="hatHasSpots" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy ma blaszki?</span>
-                                <InputCheckbox @bind-Value="hatHasGills" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy ma blaszki?" @bind-Value="hatHasGills" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy ma pierścień?</span>
-                                <InputCheckbox @bind-Value="hatHasRing" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy ma pierścień?" @bind-Value="hatHasRing" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
                             <label>Miesiąc zbioru</label>
                             <InputSelect @bind-Value="form.CreateHatDTO!.HatMonthOfHarvestId">
-                                <option value="">Nie dotyczy / brak informacji</option>
+                                <option value="">@MonthEmptyText</option>
                                 @foreach (var m in months)
                                 {
                                     <option value="@m.Id">@m.Name</option>
@@ -428,7 +420,7 @@ else
                     <h2>6. Liście</h2>
                     <div class="submission-grid">
                         <div class="submission-field">
-                            <label>Kształt *</label>
+                            <label>Kształt@(Req)</label>
                             <InputSelect @bind-Value="form.CreateLeafDTO!.LeafShapeId">
                                 <option value="0">Wybierz kształt</option>
                                 @foreach (var x in shapes)
@@ -439,12 +431,12 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Kolor liścia *</label>
+                            <label>Kolor liścia@(Req)</label>
                             <ColorSelect @bind-Value="form.CreateLeafDTO!.LeafColorId" Colors="colors" />
                         </div>
 
                         <div class="submission-field">
-                            <label>Powierzchnia *</label>
+                            <label>Powierzchnia@(Req)</label>
                             <InputSelect @bind-Value="form.CreateLeafDTO!.LeafSurfaceId">
                                 <option value="0">Wybierz powierzchnię</option>
                                 @foreach (var x in surfaces)
@@ -455,7 +447,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Grubość *</label>
+                            <label>Grubość@(Req)</label>
                             <InputSelect @bind-Value="form.CreateLeafDTO!.LeafThicknessId">
                                 <option value="0">Wybierz grubość</option>
                                 @foreach (var x in thicknesses)
@@ -466,7 +458,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Smak *</label>
+                            <label>Smak@(Req)</label>
                             <InputSelect @bind-Value="form.CreateLeafDTO!.LeafFlavourId">
                                 <option value="">Wybierz smak</option>
                                 @foreach (var x in flavours)
@@ -477,38 +469,26 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Długość liścia (cm) *</label>
+                            <label>Długość liścia (cm)@(Req)</label>
                             <InputNumber @bind-Value="form.CreateLeafDTO!.LeafLength" min="0.1" />
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy ma paski?</span>
-                                <InputCheckbox @bind-Value="leafStripes" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy ma paski?" @bind-Value="leafStripes" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy ma plamy?</span>
-                                <InputCheckbox @bind-Value="leafSpots" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy ma plamy?" @bind-Value="leafSpots" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
-                            <label class="switch-label">
-                                <span>Czy ma otwory?</span>
-                                <InputCheckbox @bind-Value="leafHoles" class="switch-input" />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <YesNoField Label="Czy ma otwory?" @bind-Value="leafHoles" SearchMode="SearchMode" />
                         </div>
 
                         <div class="submission-field">
                             <label>Miesiąc zbioru</label>
                             <InputSelect @bind-Value="form.CreateLeafDTO!.LeafMonthOfHarvestId">
-                                <option value="">Nie dotyczy / brak informacji</option>
+                                <option value="">@MonthEmptyText</option>
                                 @foreach (var m in months)
                                 {
                                     <option value="@m.Id">@m.Name</option>
@@ -541,17 +521,17 @@ else
                     <h2>7. Kwiaty</h2>
                     <div class="submission-grid">
                         <div class="submission-field">
-                            <label>Rozmiar kwiatu (cm) *</label>
+                            <label>Rozmiar kwiatu (cm)@(Req)</label>
                             <InputNumber @bind-Value="form.CreateFlowerDTO!.FlowerSizeInCm" min="0.1" />
                         </div>
 
                         <div class="submission-field">
-                            <label>Kolor główny kwiatu *</label>
+                            <label>Kolor główny kwiatu@(Req)</label>
                             <ColorSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId" Colors="colors" />
                         </div>
 
                         <div class="submission-field">
-                            <label>Kształt *</label>
+                            <label>Kształt@(Req)</label>
                             <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerShapeId">
                                 <option value="0">Wybierz kształt</option>
                                 @foreach (var x in shapes)
@@ -562,7 +542,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Smak *</label>
+                            <label>Smak@(Req)</label>
                             <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerFlavourId">
                                 <option value="">Wybierz smak</option>
                                 @foreach (var x in flavours)
@@ -573,19 +553,32 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Siła zapachu (0–5) *</label>
-                            <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerScentPower">
-                                @for (var i = 0; i <= 5; i++)
-                                {
-                                    <option value="@i">@i</option>
-                                }
-                            </InputSelect>
+                            <label>Siła zapachu (0–5)@(Req)</label>
+                            @if (SearchMode)
+                            {
+                                <InputSelect @bind-Value="flowerScentSearch">
+                                    <option value="">Nie wiem</option>
+                                    @for (var i = 0; i <= 5; i++)
+                                    {
+                                        <option value="@i">@i</option>
+                                    }
+                                </InputSelect>
+                            }
+                            else
+                            {
+                                <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerScentPower">
+                                    @for (var i = 0; i <= 5; i++)
+                                    {
+                                        <option value="@i">@i</option>
+                                    }
+                                </InputSelect>
+                            }
                         </div>
 
                         <div class="submission-field">
                             <label>Miesiąc zbioru</label>
                             <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerMonthOfHarvestId">
-                                <option value="">Nie dotyczy / brak informacji</option>
+                                <option value="">@MonthEmptyText</option>
                                 @foreach (var m in months)
                                 {
                                     <option value="@m.Id">@m.Name</option>
@@ -618,7 +611,7 @@ else
                     <h2>8. Owoce</h2>
                     <div class="submission-grid">
                         <div class="submission-field">
-                            <label>Smak *</label>
+                            <label>Smak@(Req)</label>
                             <InputSelect @bind-Value="form.CreateFruitDTO!.FruitFlavourId">
                                 <option value="">Wybierz smak</option>
                                 @foreach (var x in flavours)
@@ -629,7 +622,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Kształt *</label>
+                            <label>Kształt@(Req)</label>
                             <InputSelect @bind-Value="form.CreateFruitDTO!.FruitShapeId">
                                 <option value="0">Wybierz kształt</option>
                                 @foreach (var x in shapes)
@@ -640,12 +633,12 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Kolor główny owocu *</label>
+                            <label>Kolor główny owocu@(Req)</label>
                             <ColorSelect @bind-Value="form.CreateFruitDTO!.FruitColorId" Colors="colors" />
                         </div>
 
                         <div class="submission-field">
-                            <label>Powierzchnia *</label>
+                            <label>Powierzchnia@(Req)</label>
                             <InputSelect @bind-Value="form.CreateFruitDTO!.FruitSurfaceId">
                                 <option value="0">Wybierz powierzchnię</option>
                                 @foreach (var x in surfaces)
@@ -656,7 +649,7 @@ else
                         </div>
 
                         <div class="submission-field">
-                            <label>Grubość *</label>
+                            <label>Grubość@(Req)</label>
                             <InputSelect @bind-Value="form.CreateFruitDTO!.FruitThicknessId">
                                 <option value="0">Wybierz grubość</option>
                                 @foreach (var x in thicknesses)
@@ -669,7 +662,7 @@ else
                         <div class="submission-field">
                             <label>Miesiąc zbioru</label>
                             <InputSelect @bind-Value="form.CreateFruitDTO!.FruitMonthOfHarvestId">
-                                <option value="">Nie dotyczy / brak informacji</option>
+                                <option value="">@MonthEmptyText</option>
                                 @foreach (var m in months)
                                 {
                                     <option value="@m.Id">@m.Name</option>
@@ -685,6 +678,8 @@ else
                 </section>
             }
 
+            @if (!SearchMode)
+            {
             @* ================= 9. Podobne rośliny ================= *@
             <section class="submission-section">
                 <h2>9. Podobne rośliny</h2>
@@ -697,6 +692,10 @@ else
                                     ExcludeUserInputId="ExcludeUserInputId"
                                     ExcludePlantId="ExcludePlantId" />
             </section>
+            }
+
+            @* miejsce na dodatkowe pola strony (np. ustawienia wyszukiwania) *@
+            @ExtraContent
 
             @if (!string.IsNullOrWhiteSpace(submitError))
             {
@@ -704,21 +703,21 @@ else
             }
 
             <div class="submission-actions">
-                @if (OnSecondary.HasDelegate)
+                @if (!SearchMode && OnSecondary.HasDelegate)
                 {
                     <button type="button"
                             class="submission-button secondary"
                             disabled="@IsBusy"
                             @onclick="() => RunAsync(OnSecondary, SecondaryText)">
-                        @(busyAction == SecondaryText ? "Zapisywanie..." : SecondaryText)
+                        @(busyAction == SecondaryText ? BusyText : SecondaryText)
                     </button>
                 }
 
                 <button type="button"
                         class="submission-button"
                         disabled="@IsBusy"
-                        @onclick="() => RunAsync(OnSubmit, SubmitText)">
-                    @(busyAction == SubmitText ? "Zapisywanie..." : SubmitText)
+                        @onclick="PrimaryAsync">
+                    @(busyAction == SubmitText ? BusyText : SubmitText)
                 </button>
             </div>
 
@@ -731,7 +730,7 @@ else
     //  Parametry
     // ------------------------------------------------------------------
 
-    /// <summary>Dane do wczytania (edycja zgłoszenia). Null = pusty formularz.</summary>
+    /// <summary>Dane do wczytania (edycja zgłoszenia / rośliny). Null = pusty formularz.</summary>
     [Parameter] public CreatePlantDTO? Initial { get; set; }
 
     /// <summary>Id edytowanego zgłoszenia – nie pokazujemy go w wynikach "podobnych".</summary>
@@ -746,7 +745,15 @@ else
     [Parameter] public string SecondaryText { get; set; } = "Zapisz zmiany";
     [Parameter] public EventCallback<CreatePlantDTO> OnSecondary { get; set; }
 
+    [Parameter] public string BusyText { get; set; } = "Zapisywanie...";
     [Parameter] public string FormName { get; set; } = "PlantSubmission";
+
+    /// <summary>Tryb wyszukiwania: nic nie jest wymagane, przycisk wywołuje OnSearch.</summary>
+    [Parameter] public bool SearchMode { get; set; }
+    [Parameter] public EventCallback<PlantSearchCriteriaDTO> OnSearch { get; set; }
+
+    /// <summary>Dodatkowa zawartość nad przyciskami (np. ustawienia wyszukiwania).</summary>
+    [Parameter] public RenderFragment? ExtraContent { get; set; }
 
     // ------------------------------------------------------------------
     //  Stan formularza
@@ -755,9 +762,15 @@ else
     private CreatePlantDTO form = new();
     private EditContext editContext = default!;
 
+    private string Req => SearchMode ? "" : " *";
+    private string MonthEmptyText => SearchMode ? "Nie wiem" : "Nie dotyczy / brak informacji";
+
     private bool IsTree => form.PlantTypeID == 1;
     private bool IsHerb => form.PlantTypeID == 2;
     private bool IsFungus => form.PlantTypeID == 3;
+
+    /// <summary>W wyszukiwaniu bez wybranego typu wszystkie sekcje są dostępne.</summary>
+    private bool AnyType => SearchMode && form.PlantTypeID <= 0;
 
     private string StalkSectionName => IsTree ? "Pień" : IsFungus ? "Trzon" : "Łodyga";
 
@@ -771,13 +784,13 @@ else
     private bool HasFruit;
 
     // które sekcje są możliwe dla typu rośliny
-    private bool CanHaveStalk => IsTree || IsHerb || IsFungus;
-    private bool CanHaveSap => IsTree || IsHerb || IsFungus;
-    private bool CanHaveRoot => IsTree || IsHerb;
-    private bool CanHaveHat => IsFungus;
-    private bool CanHaveLeaf => IsTree || IsHerb;
-    private bool CanHaveFlower => IsTree || IsHerb;
-    private bool CanHaveFruit => IsTree || IsHerb;
+    private bool CanHaveStalk => AnyType || IsTree || IsHerb || IsFungus;
+    private bool CanHaveSap => AnyType || IsTree || IsHerb || IsFungus;
+    private bool CanHaveRoot => AnyType || IsTree || IsHerb;
+    private bool CanHaveHat => AnyType || IsFungus;
+    private bool CanHaveLeaf => AnyType || IsTree || IsHerb;
+    private bool CanHaveFlower => AnyType || IsTree || IsHerb;
+    private bool CanHaveFruit => AnyType || IsTree || IsHerb;
 
     // rzeczywista widoczność sekcji
     private bool ShowStalkSection => CanHaveStalk && HasStalk;
@@ -799,17 +812,21 @@ else
     private List<DictionaryOption> months = new();
     private List<ColorOption> colors = new();
 
-    // pola Tak/Nie
-    private bool stalkHollow;
-    private bool sapLeavesStain;
-    private bool sapSticky;
-    private bool rootIsHollow;
-    private bool hatHasSpots;
-    private bool hatHasGills;
-    private bool hatHasRing;
-    private bool leafStripes;
-    private bool leafSpots;
-    private bool leafHoles;
+    // pola Tak/Nie – null = "nie wiem" (tylko w wyszukiwaniu), w zgłoszeniu null = Nie
+    private bool? stalkHollow;
+    private bool? sapLeavesStain;
+    private bool? sapSticky;
+    private bool? rootIsHollow;
+    private bool? hatHasSpots;
+    private bool? hatHasGills;
+    private bool? hatHasRing;
+    private bool? leafStripes;
+    private bool? leafSpots;
+    private bool? leafHoles;
+
+    // pola tylko dla wyszukiwania ("nie wiem" musi być osobną wartością)
+    private int? poisonabilitySearch;   // null = nie wiem, 0 = nietrująca
+    private int? flowerScentSearch;     // null = nie wiem
 
     // podobne rośliny
     private List<SimilarPlantCandidateDTO> similarPlants = new();
@@ -857,7 +874,7 @@ else
         form.CreateFruitDTO = new();
     }
 
-    /// <summary>Wczytuje zapisane zgłoszenie do formularza (edycja w panelu admina).</summary>
+    /// <summary>Wczytuje zapisane zgłoszenie / roślinę do formularza (panel admina).</summary>
     private async Task LoadFromAsync(CreatePlantDTO dto)
     {
         form.Name = dto.Name ?? "";
@@ -1027,8 +1044,11 @@ else
     }
 
     // ------------------------------------------------------------------
-    //  Wysyłanie
+    //  Przyciski
     // ------------------------------------------------------------------
+
+    private Task PrimaryAsync() =>
+        SearchMode ? RunSearchAsync() : RunAsync(OnSubmit, SubmitText);
 
     private async Task RunAsync(EventCallback<CreatePlantDTO> action, string label)
     {
@@ -1053,6 +1073,27 @@ else
         {
             Console.Error.WriteLine($"Błąd zapisu formularza: {ex}");
             submitError = $"Nie udało się zapisać: {ex.Message}";
+        }
+        finally
+        {
+            busyAction = null;
+        }
+    }
+
+    // wyszukiwanie: bez walidacji wymaganych pól – liczy się to, co użytkownik wie
+    private async Task RunSearchAsync()
+    {
+        submitError = null;
+        busyAction = SubmitText;
+
+        try
+        {
+            await OnSearch.InvokeAsync(BuildSearchCriteria());
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd wyszukiwania: {ex}");
+            submitError = $"Nie udało się wyszukać: {ex.Message}";
         }
         finally
         {
@@ -1117,6 +1158,10 @@ else
         return true;
     }
 
+    // ------------------------------------------------------------------
+    //  Zgłoszenie / edycja -> CreatePlantDTO
+    // ------------------------------------------------------------------
+
     private CreatePlantDTO BuildPayload() => new()
     {
         Name = form.Name.Trim(),
@@ -1136,7 +1181,7 @@ else
             StalkShapeId = form.CreateStalkDTO!.StalkShapeId,
             StalkColorId = form.CreateStalkDTO.StalkColorId,
             StalkSurfaceId = form.CreateStalkDTO.StalkSurfaceId,
-            StalkIsHollow = stalkHollow,
+            StalkIsHollow = stalkHollow ?? false,
             StalkMoreInfo = NullIfEmpty(form.CreateStalkDTO.StalkMoreInfo),
             StalkMonthOfHarvestId = form.CreateStalkDTO.StalkMonthOfHarvestId
         } : null,
@@ -1144,8 +1189,8 @@ else
         CreateSapDTO = ShowSapSection ? new HerbRecognition_Web.DTOs.CreateSapDTO
         {
             SapColorId = form.CreateSapDTO!.SapColorId,
-            SapLeavesStain = sapLeavesStain,
-            SapSticky = sapSticky,
+            SapLeavesStain = sapLeavesStain ?? false,
+            SapSticky = sapSticky ?? false,
             SapMoreInfo = NullIfEmpty(form.CreateSapDTO.SapMoreInfo),
             SapMonthOfHarvestId = form.CreateSapDTO.SapMonthOfHarvestId
         } : null,
@@ -1155,7 +1200,7 @@ else
             RootColorId = form.CreateRootDTO!.RootColorId,
             RootSurfaceId = form.CreateRootDTO.RootSurfaceId,
             RootThicknessId = form.CreateRootDTO.RootThicknessId,
-            RootIsHollow = rootIsHollow,
+            RootIsHollow = rootIsHollow ?? false,
             RootMoreInfo = NullIfEmpty(form.CreateRootDTO.RootMoreInfo),
             RootMonthOfHarvestId = form.CreateRootDTO.RootMonthOfHarvestId
         } : null,
@@ -1166,18 +1211,18 @@ else
             HatShapeId = form.CreateHatDTO.HatShapeId,
             HatThicknessId = form.CreateHatDTO.HatThicknessId,
             HatSurfaceId = form.CreateHatDTO.HatSurfaceId,
-            HatHasSpots = hatHasSpots,
-            HatHasGills = hatHasGills,
-            HatHasRing = hatHasRing,
+            HatHasSpots = hatHasSpots ?? false,
+            HatHasGills = hatHasGills ?? false,
+            HatHasRing = hatHasRing ?? false,
             HatMoreInfo = NullIfEmpty(form.CreateHatDTO.HatMoreInfo),
             HatMonthOfHarvestId = form.CreateHatDTO.HatMonthOfHarvestId
         } : null,
 
         CreateLeafDTO = ShowLeafSection ? new HerbRecognition_Web.DTOs.CreateLeafDTO
         {
-            LeafStripes = leafStripes,
-            LeafSpots = leafSpots,
-            LeafHoles = leafHoles,
+            LeafStripes = leafStripes ?? false,
+            LeafSpots = leafSpots ?? false,
+            LeafHoles = leafHoles ?? false,
             LeafShapeId = form.CreateLeafDTO!.LeafShapeId,
             LeafColorId = form.CreateLeafDTO.LeafColorId,
             LeafSurfaceId = form.CreateLeafDTO.LeafSurfaceId,
@@ -1210,6 +1255,105 @@ else
             FruitMonthOfHarvestId = form.CreateFruitDTO.FruitMonthOfHarvestId
         } : null
     };
+
+    // ------------------------------------------------------------------
+    //  Wyszukiwanie -> PlantSearchCriteriaDTO (tylko wypełnione pola)
+    // ------------------------------------------------------------------
+
+    private PlantSearchCriteriaDTO BuildSearchCriteria() => new()
+    {
+        Name = NullIfEmpty(form.Name),
+        PolishName = NullIfEmpty(form.PolishName),
+        LatinName = NullIfEmpty(form.LatinName),
+        Subriquet = NullIfEmpty(form.Subriquet),
+        MoreInfo = NullIfEmpty(form.MoreInfo),
+        PlantTypeId = Positive(form.PlantTypeID),
+        OccuranceId = Positive(form.OccuranceId),
+        PoisonabilityId = poisonabilitySearch,
+        MonthOfHarvestId = form.MonthOfHarvestId,
+
+        Stalk = ShowStalkSection ? new PartCriteriaDTO
+        {
+            ShapeId = Positive(form.CreateStalkDTO!.StalkShapeId),
+            ColorId = Positive(form.CreateStalkDTO.StalkColorId),
+            SurfaceId = Positive(form.CreateStalkDTO.StalkSurfaceId),
+            MonthOfHarvestId = form.CreateStalkDTO.StalkMonthOfHarvestId,
+            IsHollow = stalkHollow,
+            MoreInfo = NullIfEmpty(form.CreateStalkDTO.StalkMoreInfo)
+        } : null,
+
+        Sap = ShowSapSection ? new PartCriteriaDTO
+        {
+            ColorId = Positive(form.CreateSapDTO!.SapColorId),
+            MonthOfHarvestId = form.CreateSapDTO.SapMonthOfHarvestId,
+            LeavesStain = sapLeavesStain,
+            Sticky = sapSticky,
+            MoreInfo = NullIfEmpty(form.CreateSapDTO.SapMoreInfo)
+        } : null,
+
+        Root = ShowRootSection ? new PartCriteriaDTO
+        {
+            ColorId = Positive(form.CreateRootDTO!.RootColorId),
+            SurfaceId = Positive(form.CreateRootDTO.RootSurfaceId),
+            ThicknessId = Positive(form.CreateRootDTO.RootThicknessId),
+            MonthOfHarvestId = form.CreateRootDTO.RootMonthOfHarvestId,
+            IsHollow = rootIsHollow,
+            MoreInfo = NullIfEmpty(form.CreateRootDTO.RootMoreInfo)
+        } : null,
+
+        Hat = ShowHatSection ? new PartCriteriaDTO
+        {
+            ColorId = Positive(form.CreateHatDTO!.HatColorId),
+            ShapeId = Positive(form.CreateHatDTO.HatShapeId),
+            ThicknessId = Positive(form.CreateHatDTO.HatThicknessId),
+            SurfaceId = Positive(form.CreateHatDTO.HatSurfaceId),
+            MonthOfHarvestId = form.CreateHatDTO.HatMonthOfHarvestId,
+            HasSpots = hatHasSpots,
+            HasGills = hatHasGills,
+            HasRing = hatHasRing,
+            MoreInfo = NullIfEmpty(form.CreateHatDTO.HatMoreInfo)
+        } : null,
+
+        Leaf = ShowLeafSection ? new PartCriteriaDTO
+        {
+            ShapeId = Positive(form.CreateLeafDTO!.LeafShapeId),
+            ColorId = Positive(form.CreateLeafDTO.LeafColorId),
+            SurfaceId = Positive(form.CreateLeafDTO.LeafSurfaceId),
+            ThicknessId = Positive(form.CreateLeafDTO.LeafThicknessId),
+            FlavourId = form.CreateLeafDTO.LeafFlavourId,
+            MonthOfHarvestId = form.CreateLeafDTO.LeafMonthOfHarvestId,
+            HasStripes = leafStripes,
+            HasSpots = leafSpots,
+            HasHoles = leafHoles,
+            Size = PositiveDecimal(form.CreateLeafDTO.LeafLength),
+            MoreInfo = NullIfEmpty(form.CreateLeafDTO.LeafMoreInfo)
+        } : null,
+
+        Flower = ShowFlowerSection ? new PartCriteriaDTO
+        {
+            ColorId = Positive(form.CreateFlowerDTO!.FlowerColorId),
+            ShapeId = Positive(form.CreateFlowerDTO.FlowerShapeId),
+            FlavourId = form.CreateFlowerDTO.FlowerFlavourId,
+            MonthOfHarvestId = form.CreateFlowerDTO.FlowerMonthOfHarvestId,
+            Size = PositiveDecimal(form.CreateFlowerDTO.FlowerSizeInCm),
+            ScentPower = flowerScentSearch,
+            MoreInfo = NullIfEmpty(form.CreateFlowerDTO.FlowerMoreInfo)
+        } : null,
+
+        Fruit = ShowFruitSection ? new PartCriteriaDTO
+        {
+            FlavourId = form.CreateFruitDTO!.FruitFlavourId,
+            ShapeId = Positive(form.CreateFruitDTO.FruitShapeId),
+            ColorId = Positive(form.CreateFruitDTO.FruitColorId),
+            SurfaceId = Positive(form.CreateFruitDTO.FruitSurfaceId),
+            ThicknessId = Positive(form.CreateFruitDTO.FruitThicknessId),
+            MonthOfHarvestId = form.CreateFruitDTO.FruitMonthOfHarvestId,
+            MoreInfo = NullIfEmpty(form.CreateFruitDTO.FruitMoreInfo)
+        } : null
+    };
+
+    private static int? Positive(int value) => value > 0 ? value : null;
+    private static decimal? PositiveDecimal(decimal value) => value > 0 ? value : null;
 
     private static List<int>? IdsOrNull(IEnumerable<SimilarPlantCandidateDTO> items)
     {

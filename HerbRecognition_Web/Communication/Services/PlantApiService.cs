@@ -1,5 +1,4 @@
 ﻿using HerbRecognition_Web.Communication.DTOs;
-using HerbRecognition_Web.Components.Pages;
 
 namespace HerbRecognition_Web.Communication.Services
 {
@@ -68,6 +67,20 @@ namespace HerbRecognition_Web.Communication.Services
         {
             var result = await _httpClient.GetFromJsonAsync<List<PendingPlantPreviewDTO>>("api/plants/pending");
             return result ?? new List<PendingPlantPreviewDTO>();
+        }
+
+        public async Task<PlantSearchResponseDTO> SearchByFormAsync(PlantSearchCriteriaDTO criteria)
+        {
+            using var response = await _httpClient.PostAsJsonAsync("api/search/form", criteria);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"API zwróciło {(int)response.StatusCode}: {body}");
+            }
+
+            return await response.Content.ReadFromJsonAsync<PlantSearchResponseDTO>()
+                   ?? new PlantSearchResponseDTO();
         }
     }
 }

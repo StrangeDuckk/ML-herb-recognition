@@ -1,7 +1,6 @@
 - zabezpieczenie przed sql injection
 
-
-- zrobic wyszukiwanie po formularzu dodawania
+- przeniesienie na hosting
 
 - zajac sie zdjeciami kwiatkow
 

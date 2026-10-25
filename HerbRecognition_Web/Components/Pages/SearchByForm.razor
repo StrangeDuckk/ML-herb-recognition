@@ -1,0 +1,208 @@
+﻿@page "/search/form"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject PlantApiService PlantApiService
+
+<PageTitle>Wyszukiwanie przez formularz</PageTitle>
+
+<div class="plants-page submission-page">
+
+    <section class="plants-header">
+        <div>
+            <span class="section-label">HERB RECOGNITION</span>
+            <h1>Wyszukaj przez formularz</h1>
+            <p>
+                Nie znasz nazwy rośliny? Opisz to, co widzisz – wypełnij tylko te pola,
+                których jesteś pewien. Puste pola i odpowiedzi „Nie wiem” nie wpływają na wynik.
+            </p>
+            <a href="/search" class="back-link">← Wróć do wyszukiwania po nazwie</a>
+        </div>
+    </section>
+
+    <PlantSubmissionForm SearchMode="true"
+                         SubmitText="Wyszukaj"
+                         BusyText="Wyszukiwanie..."
+                         OnSearch="SearchAsync"
+                         FormName="PlantSearchForm">
+        <ExtraContent>
+            <section class="submission-section search-options">
+                <h2>Ustawienia wyszukiwania</h2>
+
+                <div class="match-slider">
+                    <label for="min-match">
+                        Minimalne dopasowanie: <strong>@minMatch%</strong>
+                    </label>
+
+                    <input id="min-match"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="minMatch"
+                           @bind:event="oninput" />
+
+                    <div class="match-scale">
+                        <span>0% – wszystkie rośliny</span>
+                        <span>50%</span>
+                        <span>100% – wszystko się zgadza</span>
+                    </div>
+
+                    <p class="section-description">
+                        Kolory, kształty i inne cechy wybierane z listy liczą się najbardziej,
+                        odpowiedzi Tak/Nie trochę mniej, a nazwy, opisy i wymiary najmniej.
+                    </p>
+                </div>
+
+                <label class="switch-label">
+                    <span>Uwzględnij rośliny czekające na weryfikację</span>
+                    <input type="checkbox" class="switch-input" @bind="includePending" />
+                    <span class="switch-slider"></span>
+                </label>
+            </section>
+        </ExtraContent>
+    </PlantSubmissionForm>
+
+    @if (response is not null)
+    {
+        <section class="search-results" aria-live="polite">
+
+            <h2 class="search-results-title" tabindex="-1" @ref="resultsHeading">
+                Wyniki
+            </h2>
+
+            <p class="search-results-meta">
+                Wyszukano o @searchedAt.ToString("HH:mm:ss") ·
+                porównano @response.CheckedCount @(response.CheckedCount == 1 ? "roślinę" : "roślin")
+                pod kątem @response.CriteriaCount @(response.CriteriaCount == 1 ? "cechy" : "cech") ·
+                próg @response.MinMatchPercent%
+            </p>
+
+            @if (response.CriteriaCount == 0)
+            {
+                <div class="plants-status">
+                    <h2>Formularz jest pusty</h2>
+                    <p>Uzupełnij co najmniej jedno pole, np. typ rośliny albo kolor liści, i wyszukaj ponownie.</p>
+                </div>
+            }
+            else if (response.Results.Count == 0)
+            {
+                <div class="plants-status">
+                    <h2>Brak roślin z takim dopasowaniem</h2>
+                    <p>
+                        Żadna roślina nie zgadza się w co najmniej @response.MinMatchPercent%.
+                        Obniż próg dopasowania albo usuń część cech, których nie jesteś pewien.
+                    </p>
+                    <a href="/plant-form" class="plant-form-button">Zgłoś nową roślinę <span>→</span></a>
+                </div>
+            }
+            else
+            {
+                <section class="plants-grid">
+                    @foreach (var result in response.Results)
+                    {
+                        <article class="plant-card @(result.IsPending ? "pending" : "")">
+                            <div class="plant-card-content">
+
+                                <div class="plant-card-top">
+                                    <div class="plant-pills">
+                                        <span class="match-badge @MatchClass(result.MatchPercent)">
+                                            @result.MatchPercent%
+                                        </span>
+
+                                        <span class="plant-type">@(result.PlantTypeName ?? "Unknown")</span>
+
+                                        @if (result.IsPending)
+                                        {
+                                            <span class="plant-type plant-pending">Niezweryfikowana</span>
+                                        }
+                                    </div>
+
+                                    <span class="plant-id">
+                                        @(result.IsPending ? $"Zgłoszenie #{result.Id}" : $"#{result.Id}")
+                                    </span>
+                                </div>
+
+                                <h2>@result.PolishName</h2>
+                                <p class="plant-name">@result.Name</p>
+                                <p class="plant-latin">@result.LatinName</p>
+
+                                @if (!string.IsNullOrWhiteSpace(result.Subriquet))
+                                {
+                                    <p class="plant-subriquet">„@result.Subriquet”</p>
+                                }
+
+                                <div class="match-bar" aria-hidden="true">
+                                    <span style="width: @(result.MatchPercent)%"></span>
+                                </div>
+                                <p class="match-details">
+                                    Zgodne cechy: @result.MatchedCount z @result.ComparedCount
+                                </p>
+
+                                @if (result.IsPending)
+                                {
+                                    <p class="plant-card-note">
+                                        Szczegóły będą dostępne po zweryfikowaniu zgłoszenia.
+                                    </p>
+                                }
+                                else
+                                {
+                                    <a href="@($"/plants/{result.Id}")" class="plant-card-link">
+                                        Zobacz szczegóły <span>→</span>
+                                    </a>
+                                }
+                            </div>
+                        </article>
+                    }
+                </section>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    private int minMatch = 50;
+    private bool includePending = true;
+
+    private PlantSearchResponseDTO? response;
+    private DateTime searchedAt;
+
+    private ElementReference resultsHeading;
+    private bool scrollToResults;
+
+    // wyjątki stąd pokaże formularz nad przyciskiem "Wyszukaj"
+    private async Task SearchAsync(PlantSearchCriteriaDTO criteria)
+    {
+        criteria.MinMatchPercent = minMatch;
+        criteria.IncludePending = includePending;
+
+        response = await PlantApiService.SearchByFormAsync(criteria);
+        searchedAt = DateTime.Now;
+        scrollToResults = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!scrollToResults) return;
+
+        scrollToResults = false;
+
+        try
+        {
+            await resultsHeading.FocusAsync();   // przewija do wyników
+        }
+        catch (Exception)
+        {
+            // brak przewinięcia nie jest problemem
+        }
+    }
+
+    private static string MatchClass(int percent) => percent switch
+    {
+        >= 80 => "high",
+        >= 50 => "medium",
+        _ => "low"
+    };
+}

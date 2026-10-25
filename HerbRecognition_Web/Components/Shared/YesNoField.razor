@@ -1,0 +1,58 @@
+﻿@*
+    Pole Tak/Nie.
+    - zwykły formularz: przełącznik (brak wyboru = Nie),
+    - wyszukiwanie: lista "Nie wiem / Tak / Nie" (Nie wiem = pole nie jest porównywane).
+    Używać wewnątrz <div class="submission-field">.
+*@
+
+@if (SearchMode)
+{
+    <label>@Label</label>
+    <select value="@SelectValue" @onchange="OnSelectChangedAsync">
+        <option value="">Nie wiem</option>
+        <option value="true">Tak</option>
+        <option value="false">Nie</option>
+    </select>
+}
+else
+{
+    <label class="switch-label">
+        <span>@Label</span>
+        <input type="checkbox"
+               class="switch-input"
+               checked="@(Value == true)"
+               @onchange="OnToggleChangedAsync" />
+        <span class="switch-slider"></span>
+    </label>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public bool? Value { get; set; }
+    [Parameter] public EventCallback<bool?> ValueChanged { get; set; }
+    [Parameter] public bool SearchMode { get; set; }
+
+    private string SelectValue => Value switch
+    {
+        true => "true",
+        false => "false",
+        null => ""
+    };
+
+    private Task OnToggleChangedAsync(ChangeEventArgs e) =>
+        SetAsync(e.Value is bool b && b);
+
+    private Task OnSelectChangedAsync(ChangeEventArgs e) =>
+        SetAsync(e.Value?.ToString() switch
+        {
+            "true" => true,
+            "false" => false,
+            _ => null
+        });
+
+    private async Task SetAsync(bool? value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+    }
+}

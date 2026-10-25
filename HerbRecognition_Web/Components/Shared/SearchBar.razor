@@ -3,19 +3,27 @@
 
 @rendermode InteractiveServer
 
-<div class="search-bar">
+<div class="search-bar-wrap">
 
-    <input @bind="searchText"
-           @bind:event="oninput"
-           @onkeydown="HandleKeyDown"
-           type="text"
-           placeholder="Wyszukaj roślinę..."
-           aria-label="Wyszukaj roślinę" />
+    <div class="search-bar">
 
-    <button type="button"
-            @onclick="Search">
-        🔍
-    </button>
+        <input @bind="searchText"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               type="text"
+               placeholder="Wyszukaj roślinę..."
+               aria-label="Wyszukaj roślinę" />
+
+        <button type="button"
+                @onclick="Search">
+            🔍
+        </button>
+
+    </div>
+
+    <a href="/search/form" class="search-form-link">
+        Nie znasz nazwy? Wyszukaj przez formularz →
+    </a>
 
 </div>
 

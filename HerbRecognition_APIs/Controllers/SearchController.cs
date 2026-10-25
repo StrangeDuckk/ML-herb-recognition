@@ -6,9 +6,12 @@ namespace HerbRecognition_APIs.Controllers
 {
     [ApiController]
     [Route("api/search")]
-    public class SearchController(IDbService dbService, ISubmissionService submissions) :ControllerBase
+    public class SearchController(
+        IDbService dbService,
+        ISubmissionService submissions,
+        IPlantSearchService plantSearch) : ControllerBase
     {
-        //get api/search/similarplants?name=...
+        // GET api/search/similarplants?name=...
         [HttpGet("similarplants")]
         public async Task<IActionResult> SearchSimilarPlants([FromQuery] string? name)
         {
@@ -26,6 +29,13 @@ namespace HerbRecognition_APIs.Controllers
             [FromQuery] List<int>? userInputIds)
         {
             return Ok(await submissions.ResolveSimilarAsync(plantIds, userInputIds));
+        }
+
+        // POST api/search/form  – wyszukiwanie przez formularz z procentem dopasowania
+        [HttpPost("form")]
+        public async Task<IActionResult> SearchByForm([FromBody] PlantSearchCriteriaDTO criteria)
+        {
+            return Ok(await plantSearch.SearchAsync(criteria));
         }
     }
 }

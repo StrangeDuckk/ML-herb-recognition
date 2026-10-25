@@ -1,0 +1,278 @@
+﻿
+/* ---------- nagłówek wyników ---------- */
+.search-results {
+    margin-top: 40px;
+}
+
+.search-results-title {
+    margin: 0;
+    color: #1b2a21;
+    font-size: 1.75rem;
+    outline: none;
+    scroll-margin-top: 24px;
+}
+
+.search-results-meta {
+    margin: 6px 0 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #dfe5e1;
+    color: #7a857f;
+    font-size: 0.9rem;
+}
+
+/* ---------- siatka kart ---------- */
+.plants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    align-items: stretch;
+}
+
+/* ---------- karta ---------- */
+.plant-card {
+    position: relative;
+    display: flex;
+    background: #fff;
+    border: 1px solid #dfe5e1;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(27, 42, 33, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+    .plant-card:hover {
+        transform: translateY(-2px);
+        border-color: #b9d3c3;
+        box-shadow: 0 10px 24px rgba(27, 42, 33, 0.08);
+    }
+
+    /* najlepsze dopasowanie wyróżnione zielonym paskiem z lewej */
+    .plant-card:first-child {
+        border-color: #9cc5ab;
+        box-shadow: inset 4px 0 0 #39815c, 0 2px 8px rgba(27, 42, 33, 0.04);
+    }
+
+        .plant-card:first-child:hover {
+            box-shadow: inset 4px 0 0 #39815c, 0 10px 24px rgba(27, 42, 33, 0.08);
+        }
+
+    /* zgłoszenie czekające na weryfikację */
+    .plant-card.pending {
+        background: #fffaf0;
+        border-style: dashed;
+        border-color: #f1dcb0;
+    }
+
+.plant-card-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 20px 22px;
+}
+
+/* ---------- górny rząd: procent, typ, numer ---------- */
+.plant-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.plant-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.plant-type {
+    padding: 3px 10px;
+    border: 1px solid #dfe5e1;
+    border-radius: 999px;
+    background: #f6faf8;
+    color: #3d4a43;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+    .plant-type.plant-pending {
+        border-color: #f1dcb0;
+        background: #fdf3e1;
+        color: #9a6a12;
+    }
+
+.plant-id {
+    flex: 0 0 auto;
+    color: #9aa39e;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ---------- procent dopasowania ---------- */
+.match-badge {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+    .match-badge.high {
+        background: #e3f0e8;
+        color: #2f6c4d;
+    }
+
+    .match-badge.medium {
+        background: #fdf3e1;
+        color: #9a6a12;
+    }
+
+    .match-badge.low {
+        background: #eef1ef;
+        color: #5f6b65;
+    }
+
+/* ---------- nazwy ---------- */
+.plant-card h2 {
+    margin: 0;
+    color: #1b2a21;
+    font-size: 1.3rem;
+    line-height: 1.25;
+}
+
+.plant-name {
+    margin: 4px 0 0;
+    color: #3d4a43;
+    font-size: 0.95rem;
+}
+
+.plant-latin {
+    margin: 2px 0 0;
+    color: #7a857f;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.plant-subriquet {
+    margin: 8px 0 0;
+    color: #7a857f;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* ---------- pasek dopasowania ---------- */
+.match-bar {
+    height: 6px;
+    margin-top: 18px;
+    border-radius: 999px;
+    background: #eef1ef;
+    overflow: hidden;
+}
+
+    .match-bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #5aa57d, #2f6c4d);
+        transition: width 0.4s ease;
+    }
+
+.plant-card.pending .match-bar span {
+    background: linear-gradient(90deg, #e2b25c, #c08a2b);
+}
+
+.match-details {
+    margin: 6px 0 0;
+    color: #7a857f;
+    font-size: 0.8rem;
+}
+
+/* ---------- stopka karty ---------- */
+.plant-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    margin-top: 16px;
+    padding: 8px 14px;
+    border: 1px solid #2f6243;
+    border-radius: 8px;
+    color: #2f6243;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+    .plant-card-link:hover {
+        background: #2f6243;
+        color: #fff;
+    }
+
+    .plant-card-link span {
+        transition: transform 0.2s ease;
+    }
+
+    .plant-card-link:hover span {
+        transform: translateX(3px);
+    }
+
+.plant-card-note {
+    margin: 16px 0 0;
+    color: #9a6a12;
+    font-size: 0.85rem;
+}
+
+/* ---------- brak wyników / pusty formularz ---------- */
+.plants-status {
+    padding: 32px;
+    border: 1px dashed #c9d6ce;
+    border-radius: 14px;
+    background: #fff;
+    text-align: center;
+}
+
+    .plants-status h2 {
+        margin: 0 0 8px;
+        color: #1b2a21;
+        font-size: 1.25rem;
+    }
+
+    .plants-status p {
+        margin: 0 auto 16px;
+        max-width: 520px;
+        color: #5f6b65;
+    }
+
+.plant-form-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: #2f6243;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+    .plant-form-button:hover {
+        background: #244e35;
+    }
+
+/* ---------- telefon ---------- */
+@media (max-width: 600px) {
+    .plants-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .plant-card-content {
+        padding: 18px;
+    }
+
+    .search-results-title {
+        font-size: 1.5rem;
+    }
+}
