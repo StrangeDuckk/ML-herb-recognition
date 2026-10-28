@@ -90,6 +90,7 @@ namespace HerbRecognition_APIs.Services
 
             PlantTypeDTO = new GetPlantTypeDTO
             {
+                PlantTypeId = p.Planttypeid,
                 Name = p.Planttype.Name
             },
 
@@ -110,7 +111,7 @@ namespace HerbRecognition_APIs.Services
                 RootMoreInfo = p.Root.moreInfo,
                 RootMonthOfHarvestName = p.Root.MonthOfHarvest != null ? p.Root.MonthOfHarvest.MonthName : null,
             },
-            GetStalkDTO = new GetStalkDTO
+            GetStalkDTO = p.Stalk == null ? null : new GetStalkDTO
             {
                 StalkColorName = p.Stalk.Color.ColorName,
                 StalkShapeName = p.Stalk.Shape.ShapeName,

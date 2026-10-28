@@ -10,7 +10,31 @@
 
 <div class="plants-page submission-page">
 
-    <section class="plants-header">
+    <section class="search-hero">
+        <div class="search-hero-text">
+            <span class="search-hero-label">WYSZUKIWANIE PO CECHACH</span>
+            <h1>Wyszukaj przez formularz</h1>
+            <p class="search-hero-lead">
+                Nie znasz nazwy rośliny? Opisz to, co widzisz – kolor liści, kształt kwiatu,
+                miesiąc zbioru – a pokażemy rośliny, które najbardziej pasują.
+            </p>
+
+            <ul class="search-hero-steps">
+                <li><span>1</span> Opisz roślinę</li>
+                <li><span>2</span> Ustaw próg dopasowania</li>
+                <li><span>3</span> Porównaj wyniki</li>
+            </ul>
+        </div>
+
+        <div class="search-hero-side">
+            <div class="search-hero-hint">
+                <strong>Wypełnij tylko to, czego jesteś pewien.</strong>
+                Puste pola i odpowiedzi „Nie wiem” nie obniżają wyniku.
+            </div>
+            <a href="/search" class="search-hero-back">← Szukaj po nazwie</a>
+        </div>
+    </section>
+    @* <section class="plants-header">
         <div>
             <span class="section-label">HERB RECOGNITION</span>
             <h1>Wyszukaj przez formularz</h1>
@@ -20,7 +44,7 @@
             </p>
             <a href="/search" class="back-link">← Wróć do wyszukiwania po nazwie</a>
         </div>
-    </section>
+    </section> *@
 
     <PlantSubmissionForm SearchMode="true"
                          SubmitText="Wyszukaj"

@@ -11,6 +11,7 @@
 <PageTitle>Zgłoszenie #@Id – panel administratora</PageTitle>
 
 <div class="plants-page submission-page admin-page">
+    <AdminNav />
 
     <section class="plants-header admin-header">
         <div>
@@ -21,10 +22,8 @@
                 zapisz zmiany – zgłoszenie zostanie na liście.
             </p>
         </div>
-        <button type="button" class="admin-btn secondary" @onclick="RedirectToLogin">Wyloguj</button>
+        @* <button type="button" class="admin-btn secondary" @onclick="RedirectToLogin">Wyloguj</button> *@
     </section>
-
-    <AdminNav />
 
     <a href="/admin/submissions" class="back-link">← Wszystkie zgłoszenia</a>
 

@@ -273,7 +273,7 @@
 
                     <div class="section-heading">
                         <span class="section-label">CECHA ROŚLINY</span>
-                        <h2>Łodyga</h2>
+                        <h2>@StalkSectionName</h2>
                     </div>
 
                     <div class="plant-info-grid">
@@ -300,7 +300,7 @@
                         </div>
 
                         <div class="info-item">
-                            <span class="info-label">Pusty w środku</span>
+                            <span class="info-label">@StalkHollowLabel</span>
                             <span class="info-value">
                                 @(plant.GetStalkDTO.StalkIsHollow ? "Tak" : "Nie")
                             </span>
@@ -675,6 +675,15 @@
     public int Id { get; set; }
 
     private GetPlantDTO? plant;
+    private int PlantTypeId => plant?.PlantTypeDTO.PlantTypeId ?? 0;
+
+    private string StalkSectionName => PlantTypeId switch
+    {
+        1 => "Pień",
+        2 => "Łodyga",
+        3 => "Trzon"
+    };
+    private string StalkHollowLabel => PlantTypeId is 1 or 3 ? "Pusty w środku" : "Pusta w środku";
 
     private bool isLoading = true;
     private string? errorMessage;

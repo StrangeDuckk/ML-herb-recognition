@@ -11,6 +11,7 @@
 <PageTitle>Roślina #@Id – panel administratora</PageTitle>
 
 <div class="plants-page submission-page admin-page">
+    <AdminNav />
 
     <section class="plants-header admin-header">
         <div>
@@ -21,10 +22,8 @@
                 Wyłączenie sekcji (np. owoców) usuwa jej dane z bazy.
             </p>
         </div>
-        <button type="button" class="admin-btn secondary" @onclick="RedirectToLogin">Wyloguj</button>
+        @* <button type="button" class="admin-btn secondary" @onclick="RedirectToLogin">Wyloguj</button> *@
     </section>
-
-    <AdminNav />
 
     <div class="admin-edit-links">
         <a href="/admin/plants" class="back-link">← Wszystkie rośliny</a>

@@ -1,0 +1,53 @@
+@using Microsoft.AspNetCore.Components.Routing
+@using HerbRecognition_Web.Communication.Services
+
+@inject AdminAuthService Auth
+@inject NavigationManager Nav
+
+@*
+    Górny pasek panelu admina – zawsze widoczny (przyklejony do góry ekranu).
+    Now¹ sekcjê dodajesz jedn¹ linijk¹ w tablicy Sections.
+*@
+
+<nav class="admin-topbar" aria-label="Sekcje panelu administratora">
+    <div class="admin-topbar-inner">
+
+        <span class="admin-topbar-title">Panel admina</span>
+
+        <div class="admin-sections">
+            @foreach (var item in Sections)
+            {
+                <NavLink href="@item.Href" Match="@item.Match" class="admin-section-link">
+                    @item.Title
+                </NavLink>
+            }
+        </div>
+
+        <button type="button" class="admin-btn small secondary admin-topbar-logout" @onclick="Logout">
+            Wyloguj
+        </button>
+
+    </div>
+</nav>
+
+@code {
+    private sealed record Section(string Href, string Title, NavLinkMatch Match = NavLinkMatch.Prefix);
+
+    private static readonly Section[] Sections =
+    {
+        new("/admin", "S³owniki", NavLinkMatch.All),
+        new("/admin/plants", "Roœliny"),
+        new("/admin/submissions", "Zg³oszenia"),
+
+        // kolejne sekcje – wystarczy odkomentowaæ, gdy powstan¹ strony:
+        // new("/admin/diseases", "Choroby"),
+        // new("/admin/active-substances", "Substancje czynne"),
+        // new("/admin/recipes", "Przepisy"),
+    };
+
+    private void Logout()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}
