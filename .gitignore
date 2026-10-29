@@ -417,7 +417,16 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-
-#ignore appsettings.json dla zachowania hasla :3
-appsettings.json
+# priwatne 
+HerbRecognition_APIs/appsettings.Development.json
+HerbRecognition_Web/appsettings.Development.json
+*.appsettings.Development.json
 LABY
+
+# zmienne środowiskowe dla docker compose
+.env
+
+# eksporty bazy i kopie zapasowe
+*.dump
+*.backup
+backups/
