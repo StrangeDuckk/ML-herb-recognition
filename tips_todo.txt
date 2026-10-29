@@ -1,7 +1,5 @@
 - przeniesienie na hosting
 
-- w bibliotece po wyszukiwaniu brakuje przelacznika do niezweryfikowanych
-
 - zajac sie zdjeciami kwiatkow
 
 - zajac sie przepisami, dodawaniem substancji czynnych itp

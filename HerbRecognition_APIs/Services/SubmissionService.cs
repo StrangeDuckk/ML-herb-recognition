@@ -15,7 +15,7 @@ namespace HerbRecognition_APIs.Services
 
         /// <summary>Zgłoszenie -> roślina w bazie. Zwraca Id nowej rośliny.</summary>
         Task<int> ApproveAsync(int id, CreatePlantDTO dto);
-        Task<List<PendingPlantPreviewDTO>> GetPendingPreviewsAsync();
+        Task<List<PendingPlantPreviewDTO>> GetPendingPreviewsAsync(string? name = null);
 
         // ----- rośliny w bazie (plant) -----
         Task<List<UserInputSummaryDTO>> GetPlantSummariesAsync();
@@ -144,7 +144,7 @@ namespace HerbRecognition_APIs.Services
             await transaction.CommitAsync();
             return true;
         }
-        public async Task<List<PendingPlantPreviewDTO>> GetPendingPreviewsAsync()
+        public async Task<List<PendingPlantPreviewDTO>> GetPendingPreviewsAsync(string? name = null)
         {
             var submissions = await data.UserInputs.AsNoTracking().ToListAsync();
             var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
@@ -156,6 +156,14 @@ namespace HerbRecognition_APIs.Services
             {
                 var dto = TryDeserialize(submission.Inputdata);
                 if (dto is null) continue;   // nieczytelnych zgłoszeń nie pokazujemy
+
+                if (!string.IsNullOrWhiteSpace(name) &&
+                    !(FuzzyText.IsSimilar(dto.Name, name) ||
+                      FuzzyText.IsSimilar(dto.PolishName, name) ||
+                      FuzzyText.IsSimilar(dto.LatinName, name) ||
+                      FuzzyText.IsSimilar(dto.Subriquet, name))
+                    )
+                { continue; }
 
                 result.Add(new PendingPlantPreviewDTO
                 {

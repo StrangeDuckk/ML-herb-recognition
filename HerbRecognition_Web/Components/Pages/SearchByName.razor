@@ -1,5 +1,292 @@
 ﻿@page "/search"
 
+@using System.Globalization
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject PlantApiService PlantApiService
+
+<PageTitle>Wyniki wyszukiwania</PageTitle>
+
+<div class="plants-page">
+
+    <section class="plants-header">
+        <div>
+            <span class="section-label">HERB RECOGNITION</span>
+
+            <h1>Wyniki wyszukiwania</h1>
+
+            @if (!string.IsNullOrWhiteSpace(SearchName))
+            {
+                <p>Wyniki dla: <strong>@SearchName</strong></p>
+            }
+
+            <HerbRecognition_Web.Components.Shared.SearchBar />
+
+            <div class="library-filter">
+                <label class="switch-label">
+                    <input type="checkbox"
+                           class="switch-input"
+                           @bind="showPending"
+                           @bind:after="OnShowPendingChangedAsync" />
+                    <span class="switch-slider"></span>
+                    <span>Pokaż też rośliny czekające na weryfikację</span>
+                </label>
+
+                @if (showPending && isLoadingPending)
+                {
+                    <span class="library-filter-note">Szukam w zgłoszeniach...</span>
+                }
+                else if (showPending && pendingError is not null)
+                {
+                    <span class="library-filter-note error">@pendingError</span>
+                }
+                else if (showPending && !string.IsNullOrWhiteSpace(SearchName))
+                {
+                    <span class="library-filter-note">Pasujące zgłoszenia: @pendingPlants.Count</span>
+                }
+            </div>
+        </div>
+    </section>
+
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Wyszukiwanie roślin...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się wyszukać roślin</h2>
+            <p>@errorMessage</p>
+        </div>
+    }
+    else if (string.IsNullOrWhiteSpace(SearchName))
+    {
+        <div class="plants-status">
+            <h2>Wpisz nazwę rośliny</h2>
+            <p>Skorzystaj z wyszukiwarki powyżej albo wyszukaj roślinę przez formularz.</p>
+        </div>
+    }
+    else if (!Cards.Any())
+    {
+        <div class="plants-status">
+            <h2>Brak wyników</h2>
+
+            <p>
+                Nie znaleziono rośliny pasującej do:
+                <strong>@SearchName</strong>
+            </p>
+
+            @if (!showPending)
+            {
+                <p>Możesz też włączyć wyszukiwanie wśród roślin czekających na weryfikację.</p>
+            }
+
+            <p>Nie ma rośliny, której szukasz? Możesz zgłosić ją za pomocą formularza.</p>
+            <a href="/plant-form" class="plant-form-button">Przejdź do formularza <span>→</span></a>
+        </div>
+    }
+    else
+    {
+        <section class="plants-grid">
+
+            @foreach (var card in Cards)
+            {
+                <article class="plant-card @(card.IsPending ? "pending" : "")">
+
+                    <div class="plant-card-content">
+
+                        <div class="plant-card-top">
+
+                            <div class="plant-pills">
+                                <span class="plant-type">
+                                    @(card.PlantTypeName ?? "Unknown")
+                                </span>
+
+                                @if (!string.IsNullOrEmpty(card.MonthOfHarvestName))
+                                {
+                                    <span class="plant-type plant-month">
+                                        Zbiór: @card.MonthOfHarvestName
+                                    </span>
+                                }
+
+                                @if (card.IsPending)
+                                {
+                                    <span class="plant-type plant-pending">Niezweryfikowana</span>
+                                }
+                            </div>
+
+                            <span class="plant-id">
+                                @(card.IsPending ? $"Zgłoszenie #{card.Id}" : $"#{card.Id}")
+                            </span>
+
+                        </div>
+
+                        <h2>@card.PolishName</h2>
+
+                        <p class="plant-name">@card.Name</p>
+
+                        <p class="plant-latin">@card.LatinName</p>
+
+                        @if (!string.IsNullOrWhiteSpace(card.Subriquet))
+                        {
+                            <p class="plant-subriquet">„@card.Subriquet”</p>
+                        }
+
+                        @if (card.IsPending)
+                        {
+                            <p class="plant-card-note">
+                                Szczegóły będą dostępne po zweryfikowaniu zgłoszenia.
+                            </p>
+                        }
+                        else
+                        {
+                            <a href="@($"/plants/{card.Id}")" class="plant-card-link">
+                                Zobacz szczegóły
+                                <span>→</span>
+                            </a>
+                        }
+
+                    </div>
+
+                </article>
+            }
+
+            <div class="plant-card-content">
+                <p>Nie ma rośliny, której szukasz? Możesz zgłosić ją za pomocą formularza.</p>
+                <a href="/plant-form" class="plant-form-button">Przejdź do formularza <span>→</span></a>
+            </div>
+
+        </section>
+    }
+
+</div>
+
+
+@code {
+
+    [SupplyParameterFromQuery(Name = "name")]
+    private string? SearchName { get; set; }
+
+    private List<GetPlantDTO> plants = new();
+    private List<PendingPlantPreviewDTO> pendingPlants = new();
+
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    private bool showPending;
+    private bool isLoadingPending;
+    private string? pendingError;
+
+    // dla jakiej frazy pobrano zgłoszenia – przy nowej frazie trzeba pobrać je ponownie
+    private string? pendingLoadedFor;
+
+    private static readonly StringComparer PolishOrder =
+        StringComparer.Create(new CultureInfo("pl-PL"), ignoreCase: true);
+
+    // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie posortowane po nazwie polskiej
+    private IEnumerable<SearchCard> Cards =>
+        plants.Select(p => new SearchCard(
+                p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
+                p.PlantTypeDTO?.Name, p.MonthOfHarvestName, IsPending: false))
+            .Concat(showPending
+                ? pendingPlants.Select(p => new SearchCard(
+                    p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
+                    p.PlantTypeName, p.MonthOfHarvestName, IsPending: true))
+                : Enumerable.Empty<SearchCard>())
+            .OrderBy(c => c.PolishName, PolishOrder);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await SearchPlantsAsync();
+
+        // nowa fraza przy włączonym przełączniku – od razu szukamy też w zgłoszeniach
+        if (showPending)
+            await LoadPendingAsync();
+    }
+
+    private async Task SearchPlantsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        plants = new();
+
+        if (string.IsNullOrWhiteSpace(SearchName))
+        {
+            isLoading = false;
+            return;
+        }
+
+        try
+        {
+            plants = await PlantApiService.GetPlantsByNameAsync(SearchName);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd wyszukiwania roślin: {ex}");
+            errorMessage = "Wystąpił problem podczas komunikacji z API.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnShowPendingChangedAsync()
+    {
+        if (showPending)
+            await LoadPendingAsync();
+    }
+
+    private async Task LoadPendingAsync()
+    {
+        if (string.IsNullOrWhiteSpace(SearchName))
+        {
+            pendingPlants = new();
+            return;
+        }
+
+        if (pendingLoadedFor == SearchName)
+            return;   // już pobrane dla tej frazy
+
+        isLoadingPending = true;
+        pendingError = null;
+
+        try
+        {
+            pendingPlants = await PlantApiService.GetPendingPlantsAsync(SearchName);
+            pendingLoadedFor = SearchName;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd wyszukiwania zgłoszeń: {ex}");
+            pendingPlants = new();
+            pendingError = "Nie udało się przeszukać zgłoszeń.";
+        }
+        finally
+        {
+            isLoadingPending = false;
+        }
+    }
+
+    private sealed record SearchCard(
+        int Id,
+        string Name,
+        string PolishName,
+        string? LatinName,
+        string? Subriquet,
+        string? PlantTypeName,
+        string? MonthOfHarvestName,
+        bool IsPending);
+}
+
+
+@* @page "/search"
+
 @using HerbRecognition_Web.Communication.DTOs
 @using HerbRecognition_Web.Communication.Services
 
@@ -177,4 +464,4 @@
             isLoading = false;
         }
     }
-}
+} *@

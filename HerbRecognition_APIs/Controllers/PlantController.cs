@@ -35,11 +35,16 @@ namespace HerbRecognition_APIs.Controllers
             return Ok(await dbService.GetPendingSimilarToPlantAsync(id));
         }
 
-        // GET api/plants/pending
+        // GET api/plants/pending - wszstkie zgloszenia
+        // GET api/plants/pending?name=mięta – zgłoszenia pasujące do nazwy (wyszukiwarka)
         [HttpGet("pending")]
-        public async Task<IActionResult> GetPendingPlants()
+        [EnableRateLimiting("search")]
+        public async Task<IActionResult> GetPendingPlants([FromQuery] string? name)
         {
-            return Ok(await submissions.GetPendingPreviewsAsync());
+            if (name is not null && name.Length > LikePattern.MaxSearchLength)
+                return BadRequest($"Nazwa może mieć maksymalnie {LikePattern.MaxSearchLength} znaków.");
+
+            return Ok(await submissions.GetPendingPreviewsAsync(name));
         }
 
         [HttpGet("{name}")]

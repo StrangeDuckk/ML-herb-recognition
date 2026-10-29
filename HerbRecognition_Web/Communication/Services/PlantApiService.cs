@@ -27,11 +27,15 @@ namespace HerbRecognition_Web.Communication.Services
 
         public async Task<List<GetPlantDTO>> GetPlantsByNameAsync(string name)
         {
-            var plants = await _httpClient.GetFromJsonAsync<List<GetPlantDTO>>(
-                    $"api/plants/{Uri.EscapeDataString(name)}"//dzieki uri moga byc spacje
-                );
+            using var plants = await _httpClient.GetAsync($"api/plants/{Uri.EscapeDataString(name)}");//dzieki uri moga byc spacje
+                                                                                                      // 404 = brak zatwierdzonych roślin o tej nazwie, a nie awaria
+            if (plants.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return new List<GetPlantDTO>();
 
-            return plants ?? new List<GetPlantDTO>();
+            plants.EnsureSuccessStatusCode();
+
+            return await plants.Content.ReadFromJsonAsync<List<GetPlantDTO>>() ?? new List<GetPlantDTO>();
+
         }
 
         public async Task<List<SimilarPlantCandidateDTO>> SearchSimilarCandidatesAsync(string name, CancellationToken cancellation = default)
@@ -63,9 +67,13 @@ namespace HerbRecognition_Web.Communication.Services
                        $"api/search/similarplants/resolve?{string.Join("&", parts)}")
                    ?? new List<SimilarPlantCandidateDTO>();
         }
-        public async Task<List<PendingPlantPreviewDTO>> GetPendingPlantsAsync()
+        public async Task<List<PendingPlantPreviewDTO>> GetPendingPlantsAsync(string? name = null)
         {
-            var result = await _httpClient.GetFromJsonAsync<List<PendingPlantPreviewDTO>>("api/plants/pending");
+            var url = string.IsNullOrWhiteSpace(name)
+                ? "api/plants/pending"
+                : $"api/plants/pending?name={Uri.EscapeDataString(name)}";
+
+            var result = await _httpClient.GetFromJsonAsync<List<PendingPlantPreviewDTO>>(url);
             return result ?? new List<PendingPlantPreviewDTO>();
         }
 
