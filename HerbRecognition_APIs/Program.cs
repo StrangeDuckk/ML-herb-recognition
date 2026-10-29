@@ -8,12 +8,24 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -- logowanie ----
+// =====================================================================
+//  Konfiguracja
+//  Lokalnie:   appsettings.Development.json (nie trafia do repozytorium)
+//  Serwer:     zmienne Å›rodowiskowe, np. AdminAuth__Password, Jwt__Key,
+//              ConnectionStrings__DefaultConnection (ustawiane w docker-compose / Coolify)
+// =====================================================================
+
 if (string.IsNullOrWhiteSpace(builder.Configuration["AdminAuth:Username"]) ||
     string.IsNullOrWhiteSpace(builder.Configuration["AdminAuth:Password"]))
 {
     throw new InvalidOperationException(
         "Brak AdminAuth:Username lub AdminAuth:Password w konfiguracji.");
+}
+
+if (string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("DefaultConnection")))
+{
+    throw new InvalidOperationException(
+        "Brak ConnectionStrings:DefaultConnection w konfiguracji.");
 }
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -25,14 +37,14 @@ if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
         "Brak klucza Jwt:Key (minimum 32 znaki) w konfiguracji.");
 }
 
-// -- limit rozmiaru rzadania ----
+// -- limit rozmiaru Å¼Ä…dania ----
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.Limits.MaxRequestBodySize = 1 * 1024 * 1024;   // 1 MB (domyœlnie 30 MB)
+    options.Limits.MaxRequestBodySize = 1 * 1024 * 1024;   // 1 MB (domyÅ›lnie 30 MB)
     options.AddServerHeader = false;                       // nie zdradzamy nazwy serwera
 });
 
-// -- jwt ----
+// -- JWT ----
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -47,15 +59,21 @@ builder.Services
 
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
 
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1) // domyœlnie 5 min tolerancji po wygaœniêciu
+            RequireExpirationTime = true,
+            RequireSignedTokens = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
         };
     });
 
 builder.Services.AddAuthorization();
 
-// -- ograniczenie liczby rzadan -----
+// -- ograniczenie liczby Å¼Ä…daÅ„ ----
+// Na serwerze API jest dostÄ™pne tylko z wewnÄ…trz (z kontenera strony), wiÄ™c dla API
+// wszyscy uÅ¼ytkownicy majÄ… ten sam adres. Limity sÄ… ustawione tak, Å¼eby nie blokowaÅ‚y
+// normalnego ruchu caÅ‚ej strony, a nadal hamowaÅ‚y naduÅ¼ycia (np. zgadywanie hasÅ‚a).
 static string ClientKey(HttpContext context) =>
     context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
@@ -67,19 +85,19 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
         await context.HttpContext.Response.WriteAsync(
-            "Zbyt wiele ¿¹dañ. Spróbuj ponownie za chwilê.", token);
+            "Zbyt wiele Å¼Ä…daÅ„. SprÃ³buj ponownie za chwilÄ™.", token);
     };
 
-    // ka¿de ¿¹danie: 600 na minutê z jednego adresu
+    // wszystkie Å¼Ä…dania: 3000 na minutÄ™
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 600,
+            PermitLimit = 3000,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
 
-    // logowanie: 5 prób na 5 minut – zgadywanie has³a staje siê niepraktyczne
+    // logowanie admina: 5 prÃ³b na 5 minut
     options.AddPolicy("login", context =>
         RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
         {
@@ -88,50 +106,47 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0
         }));
 
-    // nowe zg³oszenia: 30 na 10 minut
+    // nowe zgÅ‚oszenia: 60 na 10 minut (dla caÅ‚ej strony)
     options.AddPolicy("submit", context =>
         RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 30,
+            PermitLimit = 60,
             Window = TimeSpan.FromMinutes(10),
             QueueLimit = 0
         }));
 
-    // wyszukiwanie (porównuje wszystkie roœliny): 120 na minutê
+    // wyszukiwanie: 600 na minutÄ™ (dla caÅ‚ej strony)
     options.AddPolicy("search", context =>
         RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 120,
+            PermitLimit = 600,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
 });
 
-
-// --- uslugi w tym api i dbcontext ------
-// Add services to the container.
-
+// -- usÅ‚ugi ----
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();   // bÅ‚Ä™dy 500 bez szczegÃ³Å‚Ã³w technicznych
 
 builder.Services.AddDbContext<HerbRecognitionDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IDbService, DbService>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IPlantSearchService, PlantSearchService>();
 
-// --- CORS -----
+// -- CORS: adresy z konfiguracji (Cors:AllowedOrigins) ----
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                     ?? new[] { "https://localhost:7092" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("BlazorPolicy", policy =>
     {
         policy
-            .WithOrigins("https://localhost:7092")
+            .WithOrigins(allowedOrigins)
             .WithMethods("GET", "POST", "PUT", "DELETE")
             .WithHeaders("Content-Type", "Authorization");
     });
@@ -139,15 +154,21 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// --- pipeline aplikacji ----------------------
-// Configure the HTTP request pipeline.
+// =====================================================================
+//  Pipeline
+// =====================================================================
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseHttpsRedirection();   // lokalnie HTTPS; na serwerze API dziaÅ‚a po HTTP w sieci wewnÄ™trznej
+}
+else
+{
+    app.UseExceptionHandler();   // ogÃ³lny ProblemDetails zamiast stack trace
 }
 
-
-// nag³ówki bezpieczeñstwa dla ka¿dej odpowiedzi
+// nagÅ‚Ã³wki bezpieczeÅ„stwa dla kaÅ¼dej odpowiedzi
 app.Use(async (context, next) =>
 {
     var headers = context.Response.Headers;
@@ -160,12 +181,10 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseHttpsRedirection();
-
 app.UseCors("BlazorPolicy");
 app.UseRateLimiter();
-app.UseAuthentication(); // token odczyt
-app.UseAuthorization();  // czy ma dostep do zawartosci
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

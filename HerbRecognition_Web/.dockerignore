@@ -1,0 +1,13 @@
+# nie kopiujemy do obrazu wyników kompilacji, plików IDE ani lokalnych sekretów
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln
+*.http
+Dockerfile
+.dockerignore
+appsettings.Development.json
+**/secrets.json

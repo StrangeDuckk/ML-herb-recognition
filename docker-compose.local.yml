@@ -1,0 +1,7 @@
+# Tylko do testów na własnym komputerze – otwiera stronę na http://localhost:8080
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+# Na serwerze ruch z domeny kieruje do strony Coolify (Traefik), ten plik nie jest używany.
+services:
+  web:
+    ports:
+      - "8080:8080"

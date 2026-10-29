@@ -1,0 +1,72 @@
+# =====================================================================
+#  HerbRecognition – baza + API + strona
+#
+#  Serwer (Coolify): zasób "Docker Compose" z tego repozytorium, plik /docker-compose.yml
+#  Lokalnie:        docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+#  Zmienne ${...} uzupełniasz w pliku .env (lokalnie) albo w panelu Coolify.
+# =====================================================================
+
+services:
+
+  # ---------- baza danych (niedostępna z internetu) ----------
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-herb-recognition-db}
+      POSTGRES_USER: ${POSTGRES_USER:-herb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ustaw POSTGRES_PASSWORD}
+    volumes:
+      # od PostgreSQL 18 wolumen montuje się w /var/lib/postgresql (nie .../data)
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---------- API (tylko w sieci wewnętrznej, bez domeny) ----------
+  api:
+    build:
+      context: ./HerbRecognition_APIs
+      dockerfile: Dockerfile
+      args:
+        DOTNET_VERSION: "9.0"
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB:-herb-recognition-db};Username=${POSTGRES_USER:-herb};Password=${POSTGRES_PASSWORD}"
+      AdminAuth__Username: ${ADMIN_USERNAME:?Ustaw ADMIN_USERNAME}
+      AdminAuth__Password: ${ADMIN_PASSWORD:?Ustaw ADMIN_PASSWORD}
+      Jwt__Key: ${JWT_KEY:?Ustaw JWT_KEY (min. 32 znaki)}
+      Cors__AllowedOrigins__0: ${PUBLIC_URL:-http://localhost:8080}
+      Images__Path: /data/images
+    volumes:
+      - images:/data/images                    # API zapisuje zdjęcia
+
+  # ---------- strona (jedyny element widoczny z internetu) ----------
+  web:
+    build:
+      context: ./HerbRecognition_Web
+      dockerfile: Dockerfile
+      args:
+        DOTNET_VERSION: "9.0"
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      ApiBaseUrl: http://api:8080/             # adres API w sieci wewnętrznej Dockera
+      AllowedHosts: ${ALLOWED_HOSTS:-*}
+      Images__Path: /data/images
+      DataProtection__KeysPath: /data/keys
+    volumes:
+      - images:/data/images:ro                 # strona tylko wyświetla zdjęcia
+      - web-keys:/data/keys
+
+volumes:
+  db-data:
+  images:
+  web-keys:
