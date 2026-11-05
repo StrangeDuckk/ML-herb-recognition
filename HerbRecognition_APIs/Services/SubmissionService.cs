@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using HerbRecognition_APIs.DTOs;
 using HerbRecognition_APIs.Models;
+using HerbRecognition_APIs.Pictures;
 using Microsoft.EntityFrameworkCore;
 
 namespace HerbRecognition_APIs.Services
@@ -31,7 +32,7 @@ namespace HerbRecognition_APIs.Services
             IEnumerable<int>? plantIds, IEnumerable<int>? userInputIds);
     }
 
-    public class SubmissionService(HerbRecognitionDbContext data) : ISubmissionService
+    public class SubmissionService(HerbRecognitionDbContext data, IPictureFileStore pictureFiles) : ISubmissionService
     {
         // =====================================================================
         //  JSON zgłoszeń – ten sam format co w PostUserInputPlantAsync
@@ -196,6 +197,7 @@ namespace HerbRecognition_APIs.Services
         /// 2. tworzy powiązania z zatwierdzonymi roślinami (w obie strony),
         /// 3. zgłoszenia wskazujące na zatwierdzane zgłoszenie dostają Id nowej rośliny,
         /// 4. zgłoszenia wskazane przez zatwierdzane dostają Id nowej rośliny,
+        /// 4b. zdjęcia zgłoszenia przechodzą na nową roślinę
         /// 5. usuwa zatwierdzane zgłoszenie z userinput.
         /// </summary>
         private async Task<int> CreateAndRelinkAsync(int? submissionId, CreatePlantDTO dto)
@@ -243,12 +245,32 @@ namespace HerbRecognition_APIs.Services
                 // 4. zgłoszenia wskazane przez zatwierdzane
                 await SyncPendingLinksAsync(plant.Id, dto.SimilarUserInputIds);
 
+                // 4b. zdjęcia zgłoszenia przechodzą na nową roślinę
+                if (submissionId is int sid)
+                {
+                    await data.Pictures
+                        .Where(p => p.UserInputId == sid)
+                        .ExecuteUpdateAsync(s => s
+                            .SetProperty(p => p.Plantid, (int?)plant.Id)
+                            .SetProperty(p => p.UserInputId, (int?)null));
+                }
+
+                var pictureLinks = await data.Pictures
+                    .Where(p => p.UserInputId == submissionId)
+                    .Select(p => p.Picturelink)
+                    .ToListAsync();
+
+                await data.Pictures.Where(p => p.UserInputId == submissionId).ExecuteDeleteAsync();
+
                 // 5. zgłoszenie znika z kwarantanny
                 if (submission is not null)
                     data.UserInputs.Remove(submission);
 
                 await data.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                foreach (var link in pictureLinks)
+                    pictureFiles.Delete(link);
 
                 return plant.Id;
             }
@@ -467,10 +489,21 @@ namespace HerbRecognition_APIs.Services
                 if (plant.Flower is not null) data.Flowers.Remove(plant.Flower);
                 if (plant.Fruit is not null) data.Fruits.Remove(plant.Fruit);
 
+                var pictureLinks = await data.Pictures //usuniecie zdjec powiazanych do rosliny
+                    .Where(p => p.Plantid == plantId)
+                    .Select(p => p.Picturelink)
+                    .ToListAsync();
+
+                await data.Pictures.Where(p => p.Plantid == plantId).ExecuteDeleteAsync();
+
                 data.Plants.Remove(plant);
 
                 await data.SaveChangesAsync();   // DbUpdateException, jeśli roślina ma zdjęcia lub produkty
                 await transaction.CommitAsync();
+
+                foreach (var link in pictureLinks)
+                    pictureFiles.Delete(link);
+
                 return true;
             }
             catch

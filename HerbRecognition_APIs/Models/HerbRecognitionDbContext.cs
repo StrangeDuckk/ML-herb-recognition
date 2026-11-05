@@ -461,17 +461,31 @@ public partial class HerbRecognitionDbContext : DbContext
                 .IsRequired();
 
             entity.Property(e => e.Plantid)
-                .HasColumnName("plantid")
-                .IsRequired();
+                .HasColumnName("plantid");
 
             entity.Property(e => e.Picturelink)
                 .HasColumnName("picturelink")
                 .IsRequired();
 
+            entity.Property(e => e.Zrodlo)
+                .HasColumnName("zrodlo");
+
+            entity.Property(e => e.CzyGlowneZdjecie)
+                .HasColumnName("czyglownezdjecie")
+                .IsRequired();
+
+            entity.Property(e => e.UserInputId)
+                .HasColumnName("userinputid");
+
             entity.HasOne(d => d.Plant).WithMany(p => p.Pictures)
                 .HasForeignKey(d => d.Plantid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("pictures_plants");
+
+            entity.HasOne<UserInput>().WithMany()
+                .HasForeignKey(d => d.UserInputId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("picture_userinput");
         });
 
         modelBuilder.Entity<Plant>(entity =>

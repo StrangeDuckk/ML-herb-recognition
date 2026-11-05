@@ -430,3 +430,6 @@ LABY
 *.dump
 *.backup
 backups/
+
+#folder ze zdjeciami
+pictures/

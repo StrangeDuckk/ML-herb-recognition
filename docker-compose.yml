@@ -4,7 +4,6 @@
 #  Serwer (Coolify): zasób "Docker Compose" z tego repozytorium, plik /docker-compose.yml
 #  Lokalnie:        docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 #
-#  Zmienne ${...} uzupełniasz w pliku .env (lokalnie) albo w panelu Coolify.
 # =====================================================================
 
 services:
@@ -43,9 +42,9 @@ services:
       AdminAuth__Password: ${ADMIN_PASSWORD:?Ustaw ADMIN_PASSWORD}
       Jwt__Key: ${JWT_KEY:?Ustaw JWT_KEY (min. 32 znaki)}
       Cors__AllowedOrigins__0: ${PUBLIC_URL:-http://localhost:8080}
-      Images__Path: /data/images
+      PictureStorage__RootPath: /app/data/pictures
     volumes:
-      - images:/data/images                    # API zapisuje zdjęcia
+      - pictures:/app/data/pictures
 
   # ---------- strona (jedyny element widoczny z internetu) ----------
   web:
@@ -60,13 +59,11 @@ services:
     environment:
       ApiBaseUrl: http://api:8080/             # adres API w sieci wewnętrznej Dockera
       AllowedHosts: ${ALLOWED_HOSTS:-*}
-      Images__Path: /data/images
       DataProtection__KeysPath: /data/keys
     volumes:
-      - images:/data/images:ro                 # strona tylko wyświetla zdjęcia
       - web-keys:/data/keys
 
 volumes:
   db-data:
-  images:
+  pictures:
   web-keys:

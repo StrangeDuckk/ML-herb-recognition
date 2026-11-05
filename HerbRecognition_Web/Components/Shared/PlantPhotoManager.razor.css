@@ -1,0 +1,51 @@
+.photo-grid {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.9rem;
+    max-width: 40rem;
+}
+
+.photo-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.photo-tile img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    outline: 3px solid transparent;
+    outline-offset: 2px;
+}
+
+.photo-tile.is-main img {
+    outline-color: currentColor;
+}
+
+.photo-badge {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.3rem 0;
+}
+
+.photo-action {
+    font: inherit;
+    font-size: 0.875rem;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+}
+
+.photo-action.is-danger {
+    color: #b42318;
+    border-color: #b42318;
+}
+
+.photo-empty {
+    opacity: 0.75;
+}

@@ -2,7 +2,6 @@ using HerbRecognition_Web.Components;
 using HerbRecognition_Web.Communication.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +34,10 @@ builder.Services.AddScoped<UserInputApiService>();
 // autoryzacja panelu admina
 builder.Services.AddScoped<AdminAuthService>();
 builder.Services.AddScoped<AdminApiService>();
+
+// zdjecia
+builder.Services.AddScoped<PictureApiService>();
+builder.Services.AddScoped<AdminPictureApiService>();
 
 // =====================================================================
 //  Klucze Data Protection w trwałym folderze
@@ -79,24 +82,23 @@ else
     app.UseHsts();
 }
 
-// =====================================================================
-//  Zdjęcia roślin: https://twojadomena.pl/images/nazwa-pliku.webp
-// =====================================================================
-
-var imagesPath = builder.Configuration["Images:Path"];
-
-if (!string.IsNullOrWhiteSpace(imagesPath) && Directory.Exists(imagesPath))
-{
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new PhysicalFileProvider(imagesPath),
-        RequestPath = "/images"
-    });
-}
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+// pliki zdjęć z API -> przeglądarka (API nie jest dostępne z internetu)
+app.MapGet("/media/pictures/{fileName}", async (
+    string fileName, PictureApiService api, HttpContext ctx, CancellationToken ct) =>
+{
+    var response = await api.GetFileAsync(fileName, ct);
+    if (response is null) return Results.NotFound();
+
+    ctx.Response.RegisterForDispose(response);
+    ctx.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+    return Results.Stream(await response.Content.ReadAsStreamAsync(ct), "image/webp");
+});
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

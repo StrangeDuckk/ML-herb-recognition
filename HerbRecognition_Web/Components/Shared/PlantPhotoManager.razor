@@ -1,0 +1,165 @@
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject AdminPictureApiService PictureApi
+
+@*
+    Zdjęcia rośliny lub zgłoszenia w panelu admina.
+    Każda zmiana zapisuje się od razu – niezależnie od przycisku formularza.
+*@
+
+<section class="submission-section photo-manager">
+    <h2>Zdjęcia</h2>
+    <p class="section-description">
+        Zmiany zdjęć zapisują się od razu. Zdjęcie główne jest pokazywane jako pierwsze.
+    </p>
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie zdjęć...</p>
+        </div>
+    }
+    else
+    {
+        @if (pictures.Count == 0)
+        {
+            <p class="photo-empty">Brak zdjęć. Dodaj od 1 do @MaxPictures.</p>
+        }
+        else
+        {
+            <ul class="photo-grid">
+                @foreach (var picture in pictures)
+                {
+                    <li class="photo-tile @(picture.IsMain ? "is-main" : "")">
+                        <a href="@picture.Url" target="_blank" rel="noopener">
+                            <img src="@picture.ThumbnailUrl" alt="Zdjęcie #@picture.Id" loading="lazy" />
+                        </a>
+
+                        @if (picture.IsMain)
+                        {
+                            <span class="photo-badge">Zdjęcie główne</span>
+                        }
+                        else
+                        {
+                            <button type="button" class="photo-action"
+                                    disabled="@IsBusy"
+                                    @onclick="() => SetMainAsync(picture.Id)">
+                                Ustaw jako główne
+                            </button>
+                        }
+
+                        <button type="button"
+                                class="photo-action @(confirmDeleteId == picture.Id ? "is-danger" : "")"
+                                disabled="@IsBusy"
+                                @onclick="() => DeleteAsync(picture.Id)">
+                            @(confirmDeleteId == picture.Id ? "Kliknij ponownie, aby usunąć" : "Usuń")
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+
+        @if (pictures.Count < MaxPictures)
+        {
+            <PhotoPicker @bind-Photos="pending"
+                         MaxCount="@(MaxPictures - pictures.Count)"
+                         Disabled="IsBusy" />
+
+            @if (pending.Count > 0)
+            {
+                <button type="button" class="submission-button" disabled="@IsBusy" @onclick="UploadAsync">
+                    @(busy == "upload" ? "Przesyłanie..." : $"Prześlij zdjęcia ({pending.Count})")
+                </button>
+            }
+        }
+
+        @if (error is not null)
+        {
+            <div class="plants-error" role="alert">@error</div>
+        }
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public PictureOwnerKind Owner { get; set; }
+    [Parameter, EditorRequired] public int OwnerId { get; set; }
+    [Parameter] public EventCallback OnUnauthorized { get; set; }
+
+    private const int MaxPictures = 3;
+
+    private List<PictureDTO> pictures = [];
+    private List<PhotoUpload> pending = [];
+    private bool isLoading = true;
+    private string? busy;
+    private string? error;
+    private int? confirmDeleteId;
+
+    private bool IsBusy => busy is not null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        await RunAsync("load", async () => pictures = await PictureApi.GetAsync(Owner, OwnerId));
+        isLoading = false;
+    }
+
+    private Task UploadAsync() => RunAsync("upload", async () =>
+    {
+        pictures = await PictureApi.UploadAsync(Owner, OwnerId, pending);
+        pending = [];
+    });
+
+    private Task SetMainAsync(int pictureId) => RunAsync("main", async () =>
+    {
+        await PictureApi.SetMainAsync(pictureId);
+        pictures = await PictureApi.GetAsync(Owner, OwnerId);
+    });
+
+    private async Task DeleteAsync(int pictureId)
+    {
+        // pierwsze kliknięcie tylko pyta o potwierdzenie
+        if (confirmDeleteId != pictureId)
+        {
+            confirmDeleteId = pictureId;
+            return;
+        }
+
+        await RunAsync("delete", async () =>
+        {
+            await PictureApi.DeleteAsync(pictureId);
+            pictures = await PictureApi.GetAsync(Owner, OwnerId);
+        });
+    }
+
+    private async Task RunAsync(string action, Func<Task> work)
+    {
+        busy = action;
+        error = null;
+        confirmDeleteId = action == "delete" ? confirmDeleteId : null;
+
+        try
+        {
+            await work();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            await OnUnauthorized.InvokeAsync();
+        }
+        catch (PictureApiException ex)
+        {
+            error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd zdjęć ({action}): {ex}");
+            error = "Nie udało się połączyć z API. Odśwież stronę i spróbuj ponownie.";
+        }
+        finally
+        {
+            busy = null;
+            if (action == "delete") confirmDeleteId = null;
+        }
+    }
+}

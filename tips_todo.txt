@@ -1,6 +1,6 @@
-- przeniesienie na hosting
-
 - zajac sie zdjeciami kwiatkow
+
+- edycja rekordu z biblioteki dodatkowy przycisk jesli jest sie zalogowanym adminem + zabezpieczenie przed js hackiem flagą
 
 - zajac sie przepisami, dodawaniem substancji czynnych itp
 

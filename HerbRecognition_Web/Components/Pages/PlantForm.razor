@@ -5,6 +5,7 @@
 @using HerbRecognition_Web.Components.Shared
 
 @inject UserInputApiService UserInputApiService
+@inject PictureApiService PictureApi
 
 <PageTitle>Formularz zgłoszenia rośliny</PageTitle>
 
@@ -27,6 +28,14 @@
             <h2>Zgłoszenie zapisane!</h2>
             <p>Dziękujemy. Zgłoszenie oczekuje na weryfikację.</p>
             <p>Numer zgłoszenia: <strong>@submissionId</strong></p>
+
+            @if (photoError is not null)
+            {
+                <div class="plants-error">
+                    Zgłoszenie zapisano, ale bez zdjęć: @photoError
+                </div>
+            }
+
             <a href="/search" class="submission-button">Wróć do wyszukiwania</a>
         </div>
     }
@@ -34,18 +43,53 @@
     {
         <PlantSubmissionForm SubmitText="Wyślij zgłoszenie"
                              OnSubmit="SubmitAsync"
-                             FormName="PlantSubmitAsync" />
+                             FormName="PlantSubmitAsync">
+            <ExtraContent>
+                <section class="submission-section">
+                    <h2>10. Zdjęcia</h2>
+                    <p class="section-description">
+                        Dodaj od 1 do 3 zdjęć. Najlepiej sprawdzają się ostre ujęcia w dziennym
+                        świetle: cała roślina oraz zbliżenia liści, kwiatów lub kapelusza.
+                    </p>
+
+                    <PhotoPicker @bind-Photos="photos" MaxCount="MaxPhotos" />
+                </section>
+            </ExtraContent>
+        </PlantSubmissionForm>
     }
 </div>
 
 @code {
+    private const int MaxPhotos = 3;
+
     private bool submitted;
     private int submissionId;
+    private string? photoError;
+    private List<PhotoUpload> photos = [];
 
     // wyjątki stąd pokaże formularz nad przyciskiem
     private async Task SubmitAsync(CreatePlantDTO payload)
     {
+        if (photos.Count == 0)
+            throw new InvalidOperationException("dodaj przynajmniej jedno zdjęcie rośliny (sekcja 10).");
+
         submissionId = await UserInputApiService.PostUserInputPlantAsync(payload);
+
+        // zgłoszenie już jest – błąd zdjęć nie może go "cofnąć", tylko informujemy
+        try
+        {
+            await PictureApi.UploadForSubmissionAsync(submissionId, photos);
+        }
+        catch (PictureApiException ex)
+        {
+            photoError = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd wysyłania zdjęć zgłoszenia #{submissionId}: {ex}");
+            photoError = "nie udało się połączyć z serwerem.";
+        }
+
         submitted = true;
     }
 }

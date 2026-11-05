@@ -52,6 +52,12 @@
             <div class="admin-message success">@savedMessage</div>
         }
 
+        @* zdjęcia zapisują się od razu, osobno od formularza *@
+        <PlantPhotoManager @key="Id"
+                           Owner="PictureOwnerKind.Plant"
+                           OwnerId="Id"
+                           OnUnauthorized="RedirectToLogin" />
+
         <PlantSubmissionForm @key="Id"
                              Initial="plant"
                              ExcludePlantId="Id"

@@ -27,7 +27,7 @@ ENV ASPNETCORE_HTTP_PORTS=8080 \
 
 # folder na zdjęcia roślin (trwały wolumen w docker-compose); właścicielem jest
 # użytkownik "app", żeby aplikacja mogła zapisywać pliki
-RUN mkdir -p /data/images && chown -R $APP_UID /data
+RUN mkdir -p /app/data/pictures && chown -R $APP_UID /app/data
 
 COPY --from=build /app/publish .
 

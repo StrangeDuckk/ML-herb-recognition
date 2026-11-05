@@ -1,8 +1,10 @@
 using HerbRecognition_APIs.Models;
+using HerbRecognition_APIs.Pictures;
 using HerbRecognition_APIs.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SixLabors.ImageSharp.Processing.Processors;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -124,6 +126,12 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0
         }));
 });
+//sprawdzenie rootpath dla zdjec
+if (string.IsNullOrWhiteSpace(builder.Configuration["PictureStorage:RootPath"]))
+{
+    throw new InvalidOperationException(
+        "Brak PictureStorage:RootPath w konfiguracji.");
+}
 
 // -- usługi ----
 builder.Services.AddControllers();
@@ -136,6 +144,12 @@ builder.Services.AddDbContext<HerbRecognitionDbContext>(options =>
 builder.Services.AddScoped<IDbService, DbService>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IPlantSearchService, PlantSearchService>();
+
+// pictures:
+builder.Services.Configure<PictureStorageOptions>(builder.Configuration.GetSection("PictureStorage"));
+builder.Services.AddSingleton<IPictureFileStore, PictureFileStore>();
+builder.Services.AddSingleton<ImageProcessor>();
+builder.Services.AddScoped<IPictureService, PictureService>();
 
 // -- CORS: adresy z konfiguracji (Cors:AllowedOrigins) ----
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
