@@ -5,6 +5,7 @@
 @using HerbRecognition_Web.Communication.Services
 
 @inject PlantApiService PlantApiService
+@inject AdminAuthService Auth
 
 <PageTitle>Wszystkie rośliny</PageTitle>
 
@@ -77,6 +78,14 @@
             {
                 <article class="plant-card @(card.IsPending ? "pending" : "")">
 
+                    @if (card.ThumbnailUrl is not null)
+                    {
+                        @* obrazek powtarza link "Zobacz szczegóły" – czytniki ekranu go pomijają *@
+                        <a href="@($"/plants/{card.Id}")" class="plant-card-image" tabindex="-1" aria-hidden="true">
+                            <img src="@card.ThumbnailUrl" alt="" loading="lazy" />
+                        </a>
+                    }
+
                     <div class="plant-card-content">
 
                         <div class="plant-card-top">
@@ -122,13 +131,25 @@
                                 Szczegóły będą dostępne po zweryfikowaniu zgłoszenia.
                             </p>
                         }
-                        else
-                        {
-                            <a href="@($"/plants/{card.Id}")" class="plant-card-link">
-                                Zobacz szczegóły
-                                <span>→</span>
-                            </a>
-                        }
+
+                        <div class="plant-card-actions">
+                            @if (!card.IsPending)
+                            {
+                                <a href="@($"/plants/{card.Id}")" class="plant-card-link">
+                                    Zobacz szczegóły
+                                    <span>→</span>
+                                </a>
+                            }
+
+                            @* tylko wygoda – prawdziwą ochroną są strony admina i API (JWT z rolą Admin) *@
+                            @if (Auth.IsLoggedIn)
+                            {
+                                <a href="@(card.IsPending ? $"/admin/submissions/{card.Id}" : $"/admin/plants/{card.Id}")"
+                                   class="plant-card-edit">
+                                    Edytuj
+                                </a>
+                            }
+                        </div>
 
                     </div>
 
@@ -162,15 +183,18 @@
     private static readonly StringComparer PolishOrder =
         StringComparer.Create(new CultureInfo("pl-PL"), ignoreCase: true);
 
-    // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie posortowane po nazwie polskiej
+    // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie posortowane po nazwie polskiej.
+    // Zgłoszenia celowo bez zdjęć – nie były jeszcze sprawdzone przez admina.
     private IEnumerable<LibraryCard> Cards =>
         plants.Select(p => new LibraryCard(
                 p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
-                p.PlantTypeDTO?.Name, p.MonthOfHarvestName, IsPending: false))
+                p.PlantTypeDTO?.Name, p.MonthOfHarvestName,
+                SafeUrl.Image(p.MainThumbnailUrl), IsPending: false))
             .Concat(showPending
                 ? pendingPlants.Select(p => new LibraryCard(
                     p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
-                    p.PlantTypeName, p.MonthOfHarvestName, IsPending: true))
+                    p.PlantTypeName, p.MonthOfHarvestName,
+                    ThumbnailUrl: null, IsPending: true))
                 : Enumerable.Empty<LibraryCard>())
             .OrderBy(c => c.PolishName, PolishOrder);
 
@@ -231,5 +255,6 @@
         string? Subriquet,
         string? PlantTypeName,
         string? MonthOfHarvestName,
+        string? ThumbnailUrl,
         bool IsPending);
 }

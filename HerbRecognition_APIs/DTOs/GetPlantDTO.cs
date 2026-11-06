@@ -45,5 +45,7 @@
 
         // ----- MonthOfHarvest -----
         public string? MonthOfHarvestName { get; set; }
+        // ----- MonthOfHarvest -----
+        public string? MainThumbnailUrl { get; set; } 
     }
 }

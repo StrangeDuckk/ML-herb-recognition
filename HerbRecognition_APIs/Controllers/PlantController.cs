@@ -6,12 +6,18 @@ namespace HerbRecognition_APIs.Controllers
 {
     [ApiController]
     [Route("api/plants")]
-    public class PlantController(IDbService dbService, ISubmissionService submissions) : ControllerBase
+    public class PlantController(IDbService dbService, ISubmissionService submissions, IPictureService pictures) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetPlants()
         {
-            return Ok(await dbService.GetPlantsAsync());
+            var plants = (await dbService.GetPlantsAsync()).ToList();
+            var thumbnails = await pictures.GetPlantMainThumbnailsAsync();
+
+            foreach (var plant in plants)
+                plant.MainThumbnailUrl = thumbnails.GetValueOrDefault(plant.Id);
+
+            return Ok(plants);
         }
 
         // było "/all" – ukośnik na początku robił z tego adres https://host/all, poza api/plants

@@ -13,5 +13,6 @@
 
         public string? PoisonabilityDescription { get; set; }
         public string? MonthOfHarvestName { get; set; }
+        public string? MainThumbnailUrl { get; set; }
     }
 }

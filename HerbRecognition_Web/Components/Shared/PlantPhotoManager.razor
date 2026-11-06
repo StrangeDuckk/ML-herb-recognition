@@ -34,7 +34,7 @@
                     {
                         <li class="photo-tile @(picture.IsMain ? "is-main" : "")">
                             <a href="@picture.Url" target="_blank" rel="noopener">
-                                <img src="@picture.ThumbnailUrl" alt="Zdjęcie #@picture.Id" loading="lazy" />
+                                <img src="@SafeUrl.Image(picture.ThumbnailUrl)" alt="Zdjęcie #@picture.Id" loading="lazy" /> @*ubezpieczenie linku do edycji rosliny*@
                             </a>
 
                             @if (picture.IsMain)

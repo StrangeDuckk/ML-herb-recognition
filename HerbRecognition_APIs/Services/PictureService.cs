@@ -10,6 +10,7 @@ namespace HerbRecognition_APIs.Services
 
     public readonly record struct PictureOwner(PictureOwnerType Type, int Id);
 
+
     /// <summary>Błąd, który można pokazać użytkownikowi (400).</summary>
     public class PictureValidationException(string message) : Exception(message);
 
@@ -19,12 +20,10 @@ namespace HerbRecognition_APIs.Services
         Task<List<PictureDTO>> AddAsync(PictureOwner owner, IReadOnlyList<IFormFile> uploads, CancellationToken ct);
         Task<bool> DeleteAsync(int pictureId);
         Task<bool> SetMainAsync(int pictureId);
+        Task<Dictionary<int, string>> GetPlantMainThumbnailsAsync();//Miniatura zdjęcia głównego każdej rośliny
     }
 
-    public class PictureService(
-        HerbRecognitionDbContext data,
-        IPictureFileStore fileStore,
-        ImageProcessor imageProcessor) : IPictureService
+    public class PictureService( HerbRecognitionDbContext data, IPictureFileStore fileStore, ImageProcessor imageProcessor) : IPictureService
     {
         public const int MaxPictures = 3;
         public const long MaxFileBytes = 8 * 1024 * 1024;
@@ -159,6 +158,25 @@ namespace HerbRecognition_APIs.Services
 
             await transaction.CommitAsync();
             return true;
+        }
+
+        public async Task<Dictionary<int, string>> GetPlantMainThumbnailsAsync()
+        {
+            var rows = await data.Pictures
+                .AsNoTracking()
+                .Where(p => p.Plantid != null)
+                .Select(p => new { PlantId = p.Plantid!.Value, p.Id, p.Picturelink, p.CzyGlowneZdjecie })
+                .ToListAsync();
+
+            return rows
+                .GroupBy(r => r.PlantId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => fileStore.ThumbnailLink(g
+                        .OrderByDescending(r => r.CzyGlowneZdjecie)
+                        .ThenBy(r => r.Id)
+                        .First()
+                        .Picturelink));
         }
 
         // ------------------------------------------------------------------
