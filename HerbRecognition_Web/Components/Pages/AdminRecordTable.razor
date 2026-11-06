@@ -24,30 +24,43 @@
                     <td class="admin-id">#@item.Id</td>
 
                     <td>
-                        <div class="admin-plant-names">
-                            @if (ViewUrl is not null && !item.IsCorrupted)
-                            {
-                                <a href="@ViewUrl(item.Id)" class="admin-plant-link"><strong>@item.PolishName</strong></a>
-                            }
-                            else
-                            {
-                                <strong>@item.PolishName</strong>
-                            }
+                        <div class="admin-plant-cell">
+                            <div class="summary-thumb">
+                                @if (item.MainThumbnailUrl is not null)
+                                {
+                                    <img src="@item.MainThumbnailUrl" alt="" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span>brak<br />zdjęć</span>
+                                }
+                            </div>
 
-                            @if (!item.IsCorrupted)
-                            {
-                                <span>
-                                    @item.Name
-                                    @if (!string.IsNullOrEmpty(item.LatinName))
-                                    {
-                                        <em>(@item.LatinName)</em>
-                                    }
-                                </span>
-                            }
-                            else
-                            {
-                                <span>Dane nie dają się odczytać – możesz je tylko usunąć.</span>
-                            }
+                            <div class="admin-plant-names">
+                                @if (ViewUrl is not null && !item.IsCorrupted)
+                                {
+                                    <a href="@ViewUrl(item.Id)" class="admin-plant-link"><strong>@item.PolishName</strong></a>
+                                }
+                                else
+                                {
+                                    <strong>@item.PolishName</strong>
+                                }
+
+                                @if (!item.IsCorrupted)
+                                {
+                                    <span>
+                                        @item.Name
+                                        @if (!string.IsNullOrEmpty(item.LatinName))
+                                        {
+                                            <em>(@item.LatinName)</em>
+                                        }
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>Dane nie dają się odczytać – możesz je tylko usunąć.</span>
+                                }
+                            </div>
                         </div>
                     </td>
 
@@ -60,12 +73,25 @@
                         }
                         else
                         {
+                        <td>
                             <div class="admin-parts">
-                                @foreach (var part in item.Parts)
+                                <span class="admin-part admin-part-photos @(item.PictureCount == 0 ? "is-empty" : "")">
+                                    Zdjęcia @item.PictureCount/3
+                                </span>
+
+                                @if (item.Parts.Count == 0)
                                 {
-                                    <span class="admin-part">@part</span>
+                                    <span class="admin-muted">tylko dane podstawowe</span>
+                                }
+                                else
+                                {
+                                    @foreach (var part in item.Parts)
+                                    {
+                                        <span class="admin-part">@part</span>
+                                    }
                                 }
                             </div>
+                        </td>
                         }
                     </td>
 

@@ -22,7 +22,6 @@
                 Wyłączenie sekcji (np. owoców) usuwa jej dane z bazy.
             </p>
         </div>
-        @* <button type="button" class="admin-btn secondary" @onclick="RedirectToLogin">Wyloguj</button> *@
     </section>
 
     <div class="admin-edit-links">
@@ -52,18 +51,19 @@
             <div class="admin-message success">@savedMessage</div>
         }
 
-        @* zdjęcia zapisują się od razu, osobno od formularza *@
-        <PlantPhotoManager @key="Id"
-                           Owner="PictureOwnerKind.Plant"
-                           OwnerId="Id"
-                           OnUnauthorized="RedirectToLogin" />
-
         <PlantSubmissionForm @key="Id"
                              Initial="plant"
                              ExcludePlantId="Id"
                              SubmitText="Zapisz zmiany"
                              OnSubmit="SaveAsync"
-                             FormName="AdminPlantEdit" />
+                             FormName="AdminPlantEdit">
+            <ExtraContent>
+                <PlantPhotoManager Owner="PictureOwnerKind.Plant"
+                                   OwnerId="Id"
+                                   Title="10. Zdjęcia"
+                                   OnUnauthorized="RedirectToLogin" />
+            </ExtraContent>
+        </PlantSubmissionForm>
     }
 </div>
 

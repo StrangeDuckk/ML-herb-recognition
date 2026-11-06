@@ -9,6 +9,8 @@
         public string? PlantTypeName { get; set; }
         public List<string> Parts { get; set; } = new();
         public int SimilarCount { get; set; }
+        public int PictureCount { get; set; }
+        public string? MainThumbnailUrl { get; set; }
         public bool IsCorrupted { get; set; }   // JSON nie dał się odczytać – można tylko usunąć
     }
 }

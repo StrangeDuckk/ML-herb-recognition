@@ -97,6 +97,8 @@ namespace HerbRecognition_APIs.Services
                 });
             }
 
+            ApplyPictures(result, await PictureSummariesAsync(forPlants: false));
+
             return result;
         }
 
@@ -309,7 +311,7 @@ namespace HerbRecognition_APIs.Services
                 })
                 .ToListAsync();
 
-            return rows.Select(r => new UserInputSummaryDTO
+            var result = rows.Select(r => new UserInputSummaryDTO
             {
                 Id = r.Id,
                 Name = r.Name,
@@ -320,6 +322,9 @@ namespace HerbRecognition_APIs.Services
                     r.HasStalk, r.HasSap, r.HasRoot, r.HasHat, r.HasLeaf, r.HasFlower, r.HasFruit),
                 SimilarCount = r.SimilarCount
             }).ToList();
+
+            ApplyPictures(result, await PictureSummariesAsync(forPlants: true));
+            return result;
         }
 
         /// <summary>Roślina z bazy w postaci CreatePlantDTO – do wczytania w formularz.</summary>
@@ -959,6 +964,46 @@ namespace HerbRecognition_APIs.Services
             if (fruit) parts.Add("Owoce");
 
             return parts;
+        }
+
+        // =====================================================================
+        //  Zdjecia
+        // =====================================================================
+
+        private sealed record PictureRow(int OwnerId, int Id, string Link, bool IsMain);
+
+        /// <summary>Liczba zdjęć i miniatura zdjęcia głównego, pogrupowane po właścicielu.</summary>
+        private async Task<Dictionary<int, (int Count, string MainThumbnailUrl)>> PictureSummariesAsync(bool forPlants)
+        {
+            var query = data.Pictures.AsNoTracking();
+
+            var rows = forPlants
+                ? await query.Where(p => p.Plantid != null)
+                    .Select(p => new PictureRow(p.Plantid!.Value, p.Id, p.Picturelink, p.CzyGlowneZdjecie))
+                    .ToListAsync()
+                : await query.Where(p => p.UserInputId != null)
+                    .Select(p => new PictureRow(p.UserInputId!.Value, p.Id, p.Picturelink, p.CzyGlowneZdjecie))
+                    .ToListAsync();
+
+            return rows
+                .GroupBy(r => r.OwnerId)
+                .ToDictionary(g => g.Key, g =>
+                {
+                    var main = g.OrderByDescending(r => r.IsMain).ThenBy(r => r.Id).First();
+                    return (g.Count(), pictureFiles.ThumbnailLink(main.Link));
+                });
+        }
+
+        private static void ApplyPictures(
+            List<UserInputSummaryDTO> items, Dictionary<int, (int Count, string MainThumbnailUrl)> pictures)
+        {
+            foreach (var item in items)
+            {
+                if (!pictures.TryGetValue(item.Id, out var info)) continue;
+
+                item.PictureCount = info.Count;
+                item.MainThumbnailUrl = info.MainThumbnailUrl;
+            }
         }
     }
 }

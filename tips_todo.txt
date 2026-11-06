@@ -1,6 +1,9 @@
-- zajac sie zdjeciami kwiatkow
+- zajac sie zdjeciami kwiatkow:
+	- zmiana widoku pojedynczej rosliny i reorganizacja tego widoku.
+	- biblioteka dodanie miniatury rosliny przy rekordzie
+		- edycja rekordu z biblioteki dodatkowy przycisk jesli jest sie zalogowanym adminem + zabezpieczenie przed js hackiem flagą
 
-- edycja rekordu z biblioteki dodatkowy przycisk jesli jest sie zalogowanym adminem + zabezpieczenie przed js hackiem flagą
+
 
 - zajac sie przepisami, dodawaniem substancji czynnych itp
 

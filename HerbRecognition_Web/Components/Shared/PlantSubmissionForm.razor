@@ -7,8 +7,8 @@
 
 @*
     Wspólny formularz rośliny.
-    - strona użytkownika: pusty formularz, jeden przycisk (OnSubmit),
-    - panel admina: Initial = dane zgłoszenia, dwa przyciski (OnSubmit + OnSecondary),
+    - strona użytkownika: pusty formularz, jeden przycisk (OnSubmit) + dodanie zdjec,
+    - panel admina: Initial = dane zgłoszenia, dwa przyciski (OnSubmit + OnSecondary) + dodanie/ustawienie kolejnosci zdjec,
     - wyszukiwanie: SearchMode = true, nic nie jest wymagane, pola Tak/Nie mają opcję
       "Nie wiem", a przycisk wywołuje OnSearch z kryteriami wyszukiwania.
     Błędy rzucone przez OnSubmit/OnSecondary są wyświetlane nad przyciskami.
@@ -694,7 +694,6 @@ else
             </section>
             }
 
-            @* miejsce na dodatkowe pola strony (np. ustawienia wyszukiwania) *@
             @ExtraContent
 
             @if (!string.IsNullOrWhiteSpace(submitError))

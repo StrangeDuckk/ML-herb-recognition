@@ -4,7 +4,6 @@ using HerbRecognition_APIs.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SixLabors.ImageSharp.Processing.Processors;
 using System.Text;
 using System.Threading.RateLimiting;
 

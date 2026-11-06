@@ -70,7 +70,15 @@
                              OnSubmit="ApproveAsync"
                              SecondaryText="Zapisz zmiany"
                              OnSecondary="SaveAsync"
-                             FormName="AdminSubmissionEdit" />
+                             FormName="AdminSubmissionEdit">
+
+            <ExtraContent>
+                <PlantPhotoManager Owner="PictureOwnerKind.Submission"
+                                   OwnerId="Id"
+                                   Title="10. Zdjęcia"
+                                   OnUnauthorized="RedirectToLogin" />
+            </ExtraContent>
+        </PlantSubmissionForm>
     }
 </div>
 

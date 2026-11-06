@@ -4,14 +4,17 @@
 @inject AdminPictureApiService PictureApi
 
 @*
-    Zdjęcia rośliny lub zgłoszenia w panelu admina.
-    Każda zmiana zapisuje się od razu – niezależnie od przycisku formularza.
+    Zdjęcia rośliny lub zgłoszenia w panelu admina – wygląd jak przy dodawaniu (PhotoPicker),
+    plus wybór zdjęcia pierwszego. Każda zmiana zapisuje się od razu.
+    Wstawiaj przez ExtraContent formularza – PlantSubmissionForm zostaje bez zdjęć
+    (jest też używany w wyszukiwarce).
 *@
 
-<section class="submission-section photo-manager">
-    <h2>Zdjęcia</h2>
+<section class="submission-section">
+    <h2>@Title</h2>
     <p class="section-description">
-        Zmiany zdjęć zapisują się od razu. Zdjęcie główne jest pokazywane jako pierwsze.
+        Od 1 do @MaxPictures zdjęć. Pierwsze zdjęcie pokazuje się na liście i na stronie rośliny.
+        Zmiany zdjęć zapisują się od razu, bez przycisku zapisu formularza.
     </p>
 
     @if (isLoading)
@@ -23,56 +26,58 @@
     }
     else
     {
-        @if (pictures.Count == 0)
-        {
-            <p class="photo-empty">Brak zdjęć. Dodaj od 1 do @MaxPictures.</p>
-        }
-        else
-        {
-            <ul class="photo-grid">
-                @foreach (var picture in pictures)
-                {
-                    <li class="photo-tile @(picture.IsMain ? "is-main" : "")">
-                        <a href="@picture.Url" target="_blank" rel="noopener">
-                            <img src="@picture.ThumbnailUrl" alt="Zdjęcie #@picture.Id" loading="lazy" />
-                        </a>
+        <div class="photo-picker">
+            @if (pictures.Count > 0)
+            {
+                <ul class="photo-grid">
+                    @foreach (var picture in pictures)
+                    {
+                        <li class="photo-tile @(picture.IsMain ? "is-main" : "")">
+                            <a href="@picture.Url" target="_blank" rel="noopener">
+                                <img src="@picture.ThumbnailUrl" alt="Zdjęcie #@picture.Id" loading="lazy" />
+                            </a>
 
-                        @if (picture.IsMain)
-                        {
-                            <span class="photo-badge">Zdjęcie główne</span>
-                        }
-                        else
-                        {
-                            <button type="button" class="photo-action"
+                            @if (picture.IsMain)
+                            {
+                                <span class="photo-badge">Pierwsze zdjęcie</span>
+                            }
+                            else
+                            {
+                                <button type="button" class="photo-action"
+                                        disabled="@IsBusy"
+                                        @onclick="() => SetMainAsync(picture.Id)">
+                                    Ustaw jako pierwsze
+                                </button>
+                            }
+
+                            <button type="button"
+                                    class="photo-action @(confirmDeleteId == picture.Id ? "is-danger" : "")"
                                     disabled="@IsBusy"
-                                    @onclick="() => SetMainAsync(picture.Id)">
-                                Ustaw jako główne
+                                    @onclick="() => DeleteAsync(picture.Id)">
+                                @(confirmDeleteId == picture.Id ? "Na pewno usunąć?" : "Usuń")
                             </button>
-                        }
-
-                        <button type="button"
-                                class="photo-action @(confirmDeleteId == picture.Id ? "is-danger" : "")"
-                                disabled="@IsBusy"
-                                @onclick="() => DeleteAsync(picture.Id)">
-                            @(confirmDeleteId == picture.Id ? "Kliknij ponownie, aby usunąć" : "Usuń")
-                        </button>
-                    </li>
-                }
-            </ul>
-        }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="photo-hint">Brak zdjęć.</p>
+            }
+        </div>
 
         @if (pictures.Count < MaxPictures)
         {
-            <PhotoPicker @bind-Photos="pending"
+            @* wybrane zdjęcia od razu trafiają do API i pojawiają się w siatce wyżej *@
+            <PhotoPicker Photos="pending"
+                         PhotosChanged="OnPhotosPickedAsync"
                          MaxCount="@(MaxPictures - pictures.Count)"
                          Disabled="IsBusy" />
+        }
 
-            @if (pending.Count > 0)
-            {
-                <button type="button" class="submission-button" disabled="@IsBusy" @onclick="UploadAsync">
-                    @(busy == "upload" ? "Przesyłanie..." : $"Prześlij zdjęcia ({pending.Count})")
-                </button>
-            }
+        @if (busy == "upload")
+        {
+            <p class="photo-hint">Przesyłanie zdjęć...</p>
         }
 
         @if (error is not null)
@@ -85,6 +90,7 @@
 @code {
     [Parameter, EditorRequired] public PictureOwnerKind Owner { get; set; }
     [Parameter, EditorRequired] public int OwnerId { get; set; }
+    [Parameter] public string Title { get; set; } = "Zdjęcia";
     [Parameter] public EventCallback OnUnauthorized { get; set; }
 
     private const int MaxPictures = 3;
@@ -95,21 +101,32 @@
     private string? busy;
     private string? error;
     private int? confirmDeleteId;
+    private (PictureOwnerKind, int)? loadedFor;
 
     private bool IsBusy => busy is not null;
 
     protected override async Task OnParametersSetAsync()
     {
+        // formularz-rodzic odświeża się przy każdej zmianie pola – zdjęcia wczytujemy
+        // tylko wtedy, gdy zmieniła się roślina / zgłoszenie
+        if (loadedFor == (Owner, OwnerId)) return;
+        loadedFor = (Owner, OwnerId);
+
         isLoading = true;
         await RunAsync("load", async () => pictures = await PictureApi.GetAsync(Owner, OwnerId));
         isLoading = false;
     }
 
-    private Task UploadAsync() => RunAsync("upload", async () =>
+    private async Task OnPhotosPickedAsync(List<PhotoUpload> picked)
     {
-        pictures = await PictureApi.UploadAsync(Owner, OwnerId, pending);
+        pending = picked;
+        if (picked.Count == 0) return;
+
+        await RunAsync("upload", async () =>
+            pictures = await PictureApi.UploadAsync(Owner, OwnerId, picked));
+
         pending = [];
-    });
+    }
 
     private Task SetMainAsync(int pictureId) => RunAsync("main", async () =>
     {
@@ -137,7 +154,7 @@
     {
         busy = action;
         error = null;
-        confirmDeleteId = action == "delete" ? confirmDeleteId : null;
+        if (action != "delete") confirmDeleteId = null;
 
         try
         {
