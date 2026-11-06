@@ -76,81 +76,69 @@
 
             @foreach (var card in Cards)
             {
+                var icon = TypeIcon(card.PlantTypeName);
+
                 <article class="plant-card @(card.IsPending ? "pending" : "")">
 
-                    @if (card.ThumbnailUrl is not null)
-                    {
-                        @* obrazek powtarza link "Zobacz szczegóły" – czytniki ekranu go pomijają *@
-                        <a href="@($"/plants/{card.Id}")" class="plant-card-image" tabindex="-1" aria-hidden="true">
+                    @* zdjęcie zawsze w całości (contain), bez przycinania *@
+                    <div class="plant-card-image">
+                        @if (card.ThumbnailUrl is not null)
+                        {
                             <img src="@card.ThumbnailUrl" alt="" loading="lazy" />
-                        </a>
-                    }
+                        }
+                        else
+                        {
+                            <span class="plant-card-placeholder" aria-hidden="true">@icon</span>
+                        }
 
-                    <div class="plant-card-content">
-
-                        <div class="plant-card-top">
-
-                            <div class="plant-pills">
-                                <span class="plant-type">
-                                    @(card.PlantTypeName ?? "Unknown")
-                                </span>
-
-                                @if (!string.IsNullOrEmpty(card.MonthOfHarvestName))
-                                {
-                                    <span class="plant-type plant-month">
-                                        Zbiór: @card.MonthOfHarvestName
-                                    </span>
-                                }
-
-                                @if (card.IsPending)
-                                {
-                                    <span class="plant-type plant-pending">Niezweryfikowana</span>
-                                }
-                            </div>
-
-                            <span class="plant-id">
-                                @(card.IsPending ? $"Zgłoszenie #{card.Id}" : $"#{card.Id}")
+                        <div class="plant-card-pills">
+                            <span class="plant-type">
+                                <span class="plant-type-icon" aria-hidden="true">@icon</span>
+                                @(card.PlantTypeName ?? "Nieznany")
                             </span>
 
-                        </div>
-
-                        <h2>@card.PolishName</h2>
-
-                        <p class="plant-name">@card.Name</p>
-
-                        <p class="plant-latin">@card.LatinName</p>
-
-                        @if (!string.IsNullOrWhiteSpace(card.Subriquet))
-                        {
-                            <p class="plant-subriquet">„@card.Subriquet”</p>
-                        }
-
-                        @if (card.IsPending)
-                        {
-                            <p class="plant-card-note">
-                                Szczegóły będą dostępne po zweryfikowaniu zgłoszenia.
-                            </p>
-                        }
-
-                        <div class="plant-card-actions">
-                            @if (!card.IsPending)
+                            @if (!string.IsNullOrEmpty(card.MonthOfHarvestName))
                             {
-                                <a href="@($"/plants/{card.Id}")" class="plant-card-link">
-                                    Zobacz szczegóły
-                                    <span>→</span>
-                                </a>
+                                <span class="plant-type plant-month">Zbiór: @card.MonthOfHarvestName</span>
                             }
 
-                            @* tylko wygoda – prawdziwą ochroną są strony admina i API (JWT z rolą Admin) *@
-                            @if (Auth.IsLoggedIn)
+                            @if (card.IsPending)
                             {
-                                <a href="@(card.IsPending ? $"/admin/submissions/{card.Id}" : $"/admin/plants/{card.Id}")"
-                                   class="plant-card-edit">
-                                    Edytuj
-                                </a>
+                                <span class="plant-type plant-pending">Niezweryfikowana</span>
                             }
                         </div>
 
+                        @* tylko wygoda – prawdziwą ochroną są strony admina i API (JWT z rolą Admin) *@
+                        @if (Auth.IsLoggedIn)
+                        {
+                            <a href="@(card.IsPending ? $"/admin/submissions/{card.Id}" : $"/admin/plants/{card.Id}")"
+                               class="plant-card-edit">
+                                <span aria-hidden="true">✎</span> Edytuj
+                            </a>
+                        }
+                    </div>
+
+                    <div class="plant-card-info">
+                        <h2 title="@card.PolishName">
+                            @if (card.IsPending)
+                            {
+                                @card.PolishName
+                            }
+                            else
+                            {
+                                @* link rozciągnięty na cały kafelek (CSS ::after) *@
+                                <a href="@($"/plants/{card.Id}")" class="plant-card-stretched">@card.PolishName</a>
+                            }
+                        </h2>
+
+                        <p class="plant-card-meta">
+                            @if (!string.IsNullOrEmpty(card.LatinName))
+                            {
+                                <em>@card.LatinName</em>
+                                <span aria-hidden="true"> · </span>
+                            }
+                            <span>@(card.IsPending ? $"Zgłoszenie #{card.Id}" : $"#{card.Id}")</span>
+                        </p>
                     </div>
 
                 </article>
@@ -180,23 +168,37 @@
     private bool isLoadingPending;
     private string? pendingError;
 
+    private static readonly CultureInfo Polish = new("pl-PL");
+
     private static readonly StringComparer PolishOrder =
-        StringComparer.Create(new CultureInfo("pl-PL"), ignoreCase: true);
+        StringComparer.Create(Polish, ignoreCase: true);
 
     // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie posortowane po nazwie polskiej.
     // Zgłoszenia celowo bez zdjęć – nie były jeszcze sprawdzone przez admina.
     private IEnumerable<LibraryCard> Cards =>
         plants.Select(p => new LibraryCard(
-                p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
+                p.Id, p.PolishName, p.LatinName,
                 p.PlantTypeDTO?.Name, p.MonthOfHarvestName,
                 SafeUrl.Image(p.MainThumbnailUrl), IsPending: false))
             .Concat(showPending
                 ? pendingPlants.Select(p => new LibraryCard(
-                    p.Id, p.Name, p.PolishName, p.LatinName, p.Subriquet,
+                    p.Id, p.PolishName, p.LatinName,
                     p.PlantTypeName, p.MonthOfHarvestName,
                     ThumbnailUrl: null, IsPending: true))
                 : Enumerable.Empty<LibraryCard>())
             .OrderBy(c => c.PolishName, PolishOrder);
+
+    /// <summary>Piktogram typu rośliny – po nazwie typu ze słownika.</summary>
+    private static string TypeIcon(string? typeName)
+    {
+        var name = typeName?.ToLower(Polish) ?? "";
+
+        if (name.Contains("grzyb")) return "🍄";
+        if (name.Contains("drzew")) return "🌳";
+        if (name.Contains("zioł") || name.Contains("ziel")) return "🌿";
+
+        return "🌱";
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -249,10 +251,8 @@
 
     private sealed record LibraryCard(
         int Id,
-        string Name,
         string PolishName,
         string? LatinName,
-        string? Subriquet,
         string? PlantTypeName,
         string? MonthOfHarvestName,
         string? ThumbnailUrl,
