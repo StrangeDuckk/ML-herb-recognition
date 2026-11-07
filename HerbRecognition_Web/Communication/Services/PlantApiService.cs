@@ -1,4 +1,5 @@
 ﻿using HerbRecognition_Web.Communication.DTOs;
+using static System.Net.WebRequestMethods;
 
 namespace HerbRecognition_Web.Communication.Services
 {
@@ -89,6 +90,14 @@ namespace HerbRecognition_Web.Communication.Services
 
             return await response.Content.ReadFromJsonAsync<PlantSearchResponseDTO>()
                    ?? new PlantSearchResponseDTO();
+        }
+
+        public async Task<List<PictureDTO>> GetPlantPicturesAsync(int plantId)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<PictureDTO>>(
+                $"api/plants/{plantId}/pictures");
+
+            return result ?? new List<PictureDTO>();
         }
     }
 }

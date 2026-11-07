@@ -3,6 +3,7 @@
 @using System.Globalization
 @using HerbRecognition_Web.Communication.DTOs
 @using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
 
 @inject PlantApiService PlantApiService
 @inject AdminAuthService Auth
@@ -76,7 +77,7 @@
 
             @foreach (var card in Cards)
             {
-                var icon = TypeIcon(card.PlantTypeName);
+                var icon = PlantTypeIcon.For(card.PlantTypeName);
 
                 <article class="plant-card @(card.IsPending ? "pending" : "")">
 

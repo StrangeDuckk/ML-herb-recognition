@@ -1,8 +1,4 @@
-﻿/* =========================================================
-   PLANT DETAILS
-   ========================================================= */
-
-.plant-details-page {
+﻿.plant-details-page {
     min-height: 100vh;
     background: #f6f7f2;
     color: #26352b;
@@ -38,46 +34,47 @@
 
 
 /* =========================================================
-   HERO
+   UKŁAD (telefon: jedna kolumna w kolejności z HTML)
    ========================================================= */
 
-.plant-hero {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    min-height: 310px;
-    padding: 52px 56px;
-    margin-bottom: 48px;
-    overflow: hidden;
-    background: radial-gradient( circle at 90% 10%, rgba(130, 164, 135, 0.22), transparent 35% ), linear-gradient( 135deg, #e7eee5 0%, #f2f4ed 100% );
-    border: 1px solid #dce5da;
-    border-radius: 28px;
-    box-shadow: 0 18px 45px rgba(46, 66, 51, 0.08);
+.pd-anatomy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
 }
 
-    .plant-hero::after {
-        content: "🌿";
-        position: absolute;
-        right: 55px;
-        top: 35px;
-        font-size: 8rem;
-        opacity: 0.08;
-        transform: rotate(15deg);
-        pointer-events: none;
+    .pd-anatomy > * {
+        min-width: 0; /* długie wartości nie rozpychają kolumn */
     }
 
-.plant-hero-main {
-    position: relative;
-    z-index: 1;
-    max-width: 760px;
+.pd-parts {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+
+/* =========================================================
+   NAGŁÓWEK + PODSTAWOWE INFORMACJE
+   ========================================================= */
+
+.pd-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 30px 26px;
+    background: radial-gradient(circle at 90% 10%, rgba(130, 164, 135, 0.18), transparent 40%), linear-gradient(135deg, #e7eee5 0%, #f2f4ed 100%);
+    border: 1px solid #dce5da;
+    border-radius: 24px;
+    box-shadow: 0 18px 45px rgba(46, 66, 51, 0.08);
 }
 
 .plant-type-badge {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     padding: 7px 14px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     border-radius: 999px;
     background: #d4e3d2;
     color: #36563d;
@@ -87,24 +84,30 @@
     text-transform: uppercase;
 }
 
-.plant-hero h1 {
+.pd-type-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.pd-head h1 {
     margin: 0;
     color: #24372a;
-    font-size: clamp(2.5rem, 5vw, 4.5rem);
-    line-height: 0.98;
-    letter-spacing: -0.045em;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
     font-weight: 750;
+    overflow-wrap: anywhere;
 }
 
 .plant-common-name {
-    margin: 16px 0 0;
+    margin: 14px 0 0;
     color: #53675a;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 500;
 }
 
 .plant-latin-name {
-    margin: 7px 0 0;
+    margin: 6px 0 0;
     color: #718074;
     font-size: 1.05rem;
     font-style: italic;
@@ -112,7 +115,7 @@
 
 .plant-subriquet {
     display: inline-block;
-    margin: 22px 0 0;
+    margin: 18px 0 0;
     padding: 8px 15px;
     background: rgba(255, 255, 255, 0.65);
     border-radius: 10px;
@@ -120,26 +123,73 @@
     font-size: 0.95rem;
 }
 
-.plant-hero > .plant-id {
-    position: relative;
-    z-index: 1;
+.pd-head-side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.pd-head-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pd-id {
     color: #849287;
     font-size: 0.85rem;
     font-weight: 700;
 }
 
+/* "Edytuj" – w bibliotece jest pozycjonowany na zdjęciu, tu zwykły */
+.pd-head .plant-card-edit {
+    position: static;
+}
+
+.pd-facts {
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid #dce5da;
+    border-radius: 16px;
+}
+
 
 /* =========================================================
-   SECTIONS
+   TOKSYCZNOŚĆ – pasek ostrzegawczy
    ========================================================= */
 
-.plant-section {
-    margin-bottom: 48px;
+.pd-toxic {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 22px;
+    background: #fdf6ea;
+    border: 1px solid #f1dcb0;
+    border-radius: 16px;
 }
 
-.section-heading {
-    margin-bottom: 22px;
+.pd-toxic-icon {
+    font-size: 1.4rem;
+    line-height: 1.2;
 }
+
+.pd-toxic h2 {
+    margin: 0 0 4px;
+    color: #9a6a12;
+    font-size: 1rem;
+}
+
+.pd-toxic p {
+    margin: 0;
+    color: #6b4a0d;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   KARTY CZĘŚCI ROŚLINY
+   ========================================================= */
 
 .section-label {
     display: block;
@@ -150,93 +200,322 @@
     letter-spacing: 0.15em;
 }
 
-.section-heading h2 {
-    margin: 0;
-    color: #2c3d31;
-    font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-}
-
-
-/* =========================================================
-   INFORMATION GRID
-   ========================================================= */
-
-.plant-info-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.info-item {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 92px;
-    padding: 20px 22px;
-    background: #ffffff;
-    border: 1px solid #e5e9e3;
-    border-radius: 16px;
-    box-shadow: 0 5px 18px rgba(42, 61, 47, 0.035);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-    .info-item:hover {
-        transform: translateY(-2px);
-        border-color: #d2ddd0;
-        box-shadow: 0 9px 24px rgba(42, 61, 47, 0.07);
-    }
-
-.info-label {
-    margin-bottom: 7px;
-    color: #879389;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.info-value {
-    color: #334438;
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.45;
-}
-
-
-/* =========================================================
-   SAFETY / POISONABILITY
-   ========================================================= */
-
-.poisonability-card {
+.pd-card {
     position: relative;
-    padding: 24px 28px 24px 64px;
-    background: #fffdf8;
-    border: 1px solid #ebe3d1;
-    border-radius: 18px;
-    box-shadow: 0 5px 18px rgba(80, 67, 43, 0.04);
+    background: #ffffff;
+    border: 1px solid #e0e6df;
+    border-radius: 16px;
+    padding: 18px 20px;
 }
 
-    .poisonability-card::before {
-        content: "⚠";
-        position: absolute;
-        left: 24px;
-        top: 22px;
+    .pd-card h2 {
+        margin: 2px 0 12px;
+        color: #1d2b21;
         font-size: 1.25rem;
+        letter-spacing: -0.02em;
     }
 
-    .poisonability-card p {
-        margin: 0;
-        color: #665c48;
-        font-size: 0.98rem;
-        line-height: 1.7;
+.pd-fields {
+    margin: 0;
+}
+
+.pd-field {
+    display: grid;
+    grid-template-columns: minmax(110px, 42%) minmax(0, 1fr);
+    gap: 12px;
+    padding: 9px 0;
+    border-top: 1px solid #eef2ed;
+}
+
+    .pd-field:first-child {
+        border-top: 0;
+        padding-top: 0;
     }
+
+    .pd-field:last-child {
+        padding-bottom: 0;
+    }
+
+    .pd-field dt {
+        color: #7a857c;
+        font-size: 0.82rem;
+    }
+
+    .pd-field dd {
+        margin: 0;
+        color: #1d2b21;
+        font-size: 0.92rem;
+        font-weight: 600;
+        overflow-wrap: anywhere; /* nic nie wychodzi poza ekran */
+    }
+
+        .pd-field dd.is-empty {
+            color: #a0aaa2;
+            font-weight: 400;
+        }
 
 
 /* =========================================================
-   SIMILAR PLANTS
+   KARUZELA ZDJĘĆ
+   Stała wysokość (--pd-photo-h) – dzięki niej da się ją
+   wyśrodkować w pionie na komputerze.
    ========================================================= */
+
+.pd-gallery {
+    --pd-photo-h: min(85vw, 60vh);
+    position: relative;
+    height: var(--pd-photo-h);
+    overflow: hidden;
+    background: #f3f6f2;
+    border: 1px solid #e0e6df;
+    border-radius: 20px;
+    outline: none;
+    touch-action: pan-y; /* pionowe przewijanie strony zostaje, poziome przejmuje karuzela */
+}
+
+    .pd-gallery:focus-visible {
+        outline: 2px solid #315c3e;
+        outline-offset: 3px;
+    }
+
+.pd-gallery-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.pd-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    margin: 0;
+    padding: 16px 16px 40px; /* miejsce na kropki */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pd-gallery.is-single .pd-slide {
+    padding-bottom: 16px;
+}
+
+/* zdjęcie zawsze w całości, bez przycinania */
+.pd-slide img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    user-select: none;
+}
+
+.pd-gallery-counter {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #536158;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.pd-gallery-nav {
+    position: absolute;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: -32px;
+    border: 1px solid #e0e6df;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: #315c3e;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+    .pd-gallery-nav:hover:not(:disabled) {
+        background: #eaf0e8;
+    }
+
+    .pd-gallery-nav.prev {
+        left: 12px;
+    }
+
+    .pd-gallery-nav.next {
+        right: 12px;
+    }
+
+    .pd-gallery-nav:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+/* ekrany dotykowe: przesuwa się palcem, strzałki zasłaniałyby zdjęcie */
+@media (hover: none) {
+    .pd-gallery-nav {
+        display: none;
+    }
+}
+
+.pd-gallery-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+}
+
+    /* przycisk 24 px – wygodny dla palca, sama kropka 8 px */
+    .pd-gallery-dots button {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .pd-gallery-dots button::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #c8d3c8;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .pd-gallery-dots button[aria-current="true"]::before {
+            background: #315c3e;
+            transform: scale(1.3);
+        }
+
+/* pusta ramka z piktogramem – tylko ozdoba na komputerze */
+.pd-gallery--empty {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pd-gallery-track {
+        transition: none;
+    }
+}
+
+
+/* =========================================================
+   KOMPUTER: zdjęcie w środku, części po bokach
+   ========================================================= */
+
+@media (min-width: 960px) {
+
+    .pd-anatomy {
+        --pd-top-offset: 96px; /* wysokość górnego paska nawigacji + margines */
+        grid-template-columns: minmax(0, 1fr) minmax(340px, 1.1fr) minmax(0, 1fr);
+        column-gap: 40px;
+        row-gap: 28px;
+        grid-template-areas:
+            "head  head  head"
+            "upper photo lower";
+        align-items: start;
+    }
+
+        .pd-anatomy.has-toxic {
+            grid-template-areas:
+                "head  head  head"
+                "tox   tox   tox"
+                "upper photo lower";
+        }
+
+    .pd-head {
+        grid-area: head;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        gap: 40px;
+        padding: 40px 44px;
+        align-items: start;
+    }
+
+    .pd-toxic {
+        grid-area: tox;
+    }
+
+    .pd-upper {
+        grid-area: upper;
+    }
+
+    .pd-lower {
+        grid-area: lower;
+    }
+
+    /* zdjęcie zostaje pośrodku widocznej części ekranu podczas przewijania */
+    .pd-gallery {
+        --pd-photo-h: min(70vh, 600px);
+        grid-area: photo;
+        position: sticky;
+        top: calc(var(--pd-top-offset) + (100vh - var(--pd-top-offset) - var(--pd-photo-h)) / 2);
+    }
+
+    .pd-gallery--empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 6rem;
+    }
+
+        .pd-gallery--empty span {
+            opacity: 0.3;
+        }
+
+    /* przerywane linie od kart części do zdjęcia (ozdoba) */
+    .pd-upper .pd-card::after,
+    .pd-lower .pd-card::after {
+        content: "";
+        position: absolute;
+        top: 40px;
+        width: 40px;
+        border-top: 1px dashed #9db59f;
+    }
+
+    .pd-upper .pd-card::after {
+        right: -41px;
+    }
+
+    .pd-lower .pd-card::after {
+        left: -41px;
+    }
+}
+
+
+/* =========================================================
+   SEKCJE / PODOBNE ROŚLINY
+   ========================================================= */
+
+.plant-section {
+    margin: 48px 0;
+}
+
+.section-heading {
+    margin-bottom: 22px;
+}
+
+    .section-heading h2 {
+        margin: 0;
+        color: #2c3d31;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+    }
+
+.section-note {
+    margin: -4px 0 16px;
+    color: #7a857f;
+    font-size: 0.9rem;
+}
 
 .similar-plants {
     display: grid;
@@ -248,6 +527,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     min-height: 105px;
     padding: 20px 22px;
     background: #ffffff;
@@ -278,28 +558,21 @@
         font-style: italic;
     }
 
-    .similar-plant-card > span {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 34px;
-        flex-shrink: 0;
-        border-radius: 50%;
-        background: #edf3eb;
-        color: #55725a;
-        font-size: 1.1rem;
-        transition: background 0.2s ease, transform 0.2s ease;
+    .similar-plant-card.pending {
+        border-style: dashed;
+        border-color: #f1dcb0;
+        background: #fffaf0;
+        cursor: default;
     }
 
-    .similar-plant-card:hover > span {
-        background: #dce9da;
-        transform: translateX(3px);
-    }
+        .similar-plant-card.pending:hover {
+            transform: none;
+            box-shadow: none;
+        }
 
 
 /* =========================================================
-   LOADING
+   LOADING / ERROR
    ========================================================= */
 
 .plants-status {
@@ -328,11 +601,6 @@
     }
 }
 
-
-/* =========================================================
-   ERROR
-   ========================================================= */
-
 .plants-error {
     max-width: 600px;
     margin: 100px auto;
@@ -354,49 +622,16 @@
         color: #788278;
     }
 
-/* =========================================================
-   SIMILAR PLANTS
-   ========================================================= */
-
-
-.section-note {
-    margin: -4px 0 16px;
-    color: #7a857f;
-    font-size: 0.9rem;
-}
-
-.similar-plant-card.pending {
-    border-style: dashed;
-    border-color: #f1dcb0;
-    background: #fffaf0;
-    cursor: default;
-}
-
-    .similar-plant-card.pending:hover {
-        transform: none;
-        box-shadow: none;
-    }
-
 
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 900px) {
-
-    .plant-info-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .similar-plants {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .plant-hero {
-        padding: 42px;
-    }
 }
-
 
 @media (max-width: 650px) {
 
@@ -405,47 +640,24 @@
         padding-top: 24px;
     }
 
-    .plant-hero {
-        min-height: auto;
-        padding: 32px 26px;
-        border-radius: 22px;
-        align-items: flex-start;
+    .pd-head {
+        padding: 26px 22px;
+        border-radius: 20px;
     }
 
-        .plant-hero::after {
-            right: -5px;
-            top: 20px;
-            font-size: 5rem;
-        }
-
-        .plant-hero h1 {
-            font-size: 2.5rem;
-        }
-
-        .plant-hero > .plant-id {
-            position: absolute;
-            right: 25px;
-            bottom: 22px;
-        }
-
-    .plant-info-grid,
     .similar-plants {
         grid-template-columns: 1fr;
-    }
-
-    .plant-section {
-        margin-bottom: 38px;
     }
 
     .section-heading h2 {
         font-size: 1.5rem;
     }
+}
 
-    .info-item {
-        min-height: 80px;
-    }
-
-    .poisonability-card {
-        padding: 22px 22px 22px 56px;
+/* bardzo wąskie telefony: etykieta nad wartością */
+@media (max-width: 420px) {
+    .pd-field {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
     }
 }

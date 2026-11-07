@@ -1,7 +1,8 @@
+using HerbRecognition_Web.Communication.DTOs;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
-using HerbRecognition_Web.Communication.DTOs;
 
 namespace HerbRecognition_Web.Communication.Services
 {
