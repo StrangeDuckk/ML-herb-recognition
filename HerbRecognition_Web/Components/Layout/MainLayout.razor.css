@@ -1,157 +1,111 @@
-.page {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+/* =========================
+   HERO – losowa roœlina
+   ========================= */
+
+.hero-figure {
+    margin: 0;
 }
 
-main {
-    flex: 1;
+/* wrapper jest teraz linkiem do roœliny */
+a.hero-image-wrapper {
+    display: block;
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    a.hero-image-wrapper .hero-image {
+        transition: filter 0.3s ease;
+    }
+
+    a.hero-image-wrapper:hover .hero-image {
+        filter: brightness(1.04) saturate(1.05);
+    }
+
+.hero-caption {
+    margin-top: 40px; /* odstêp od ozdobnej ramki przesuniêtej o 20 px */
+    padding-left: 6px;
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-}
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
+    .hero-caption a {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 4px;
+        color: inherit;
         text-decoration: none;
     }
 
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
+        .hero-caption a:focus-visible {
+            outline: 2px solid #315c3e;
+            outline-offset: 6px;
+            border-radius: 6px;
+        }
+
+.hero-caption-name {
+    color: #1d2b21;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.hero-caption-latin {
+    color: #7a857c;
+    font-family: Georgia, serif;
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+.hero-caption-more {
+    margin-top: 6px;
+    color: #315c3e;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+    .hero-caption-more span {
+        display: inline-block;
+        transition: transform 0.2s ease;
     }
 
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
+.hero-caption a:hover .hero-caption-more {
+    text-decoration: underline;
+}
+
+    .hero-caption a:hover .hero-caption-more span {
+        transform: translateX(4px);
     }
 
-/* ============    search bar    ============*/
-.search-bar {
+
+/* =========================
+   FOOTER – ostrze¿enie i autorka
+   ========================= */
+
+.footer-disclaimer {
+    align-self: center;
+    margin: 0;
+    padding: 12px 18px;
+    border: 1px solid #4a5a4e;
+    border-radius: 12px;
+    color: #e8d9b5;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.footer-bottom {
     display: flex;
-    align-items: stretch;
-    width: 100%;
-    max-width: 560px;
-    height: 58px;
-    margin-top: 28px;
-    background: #ffffff;
-    border: 1px solid #d7ddd6;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 6px 20px rgba(31, 52, 40, 0.06);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
 }
 
-    .search-bar:focus-within {
-        border-color: #376b4b;
-        box-shadow: 0 8px 24px rgba(55, 107, 75, 0.12);
+    .footer-bottom a {
+        color: #dce8dd;
+        font-weight: 600;
+        text-decoration: none;
     }
 
-    .search-bar input {
-        flex: 1;
-        min-width: 0;
-        padding: 0 20px;
-        border: none;
-        outline: none;
-        background: transparent;
-        color: #1c2a22;
-        font-family: inherit;
-        font-size: 16px;
-    }
-
-        .search-bar input::placeholder {
-            color: #89948d;
+        .footer-bottom a:hover {
+            text-decoration: underline;
         }
 
-    .search-bar button {
-        width: 58px;
-        border: none;
-        background: #2f6244;
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-
-        .search-bar button:hover {
-            background: #254f37;
-        }
-
-        .search-bar button:active {
-            transform: scale(0.97);
-        }
-
-    .hero-search {
-        margin-bottom: 22px;
-    }
-/* ========================*/
-
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
-}
-
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
-}
-
-@media (max-width: 600px) {
-    .search-bar {
-        height: 54px;
-        border-radius: 12px;
-    }
-
-        .search-bar input {
-            padding: 0 16px;
-            font-size: 15px;
-        }
-
-        .search-bar button {
-            width: 54px;
-        }
-}
-
+/* pasek b³êdu Blazora – ukryty do momenti bledu */
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;
@@ -173,3 +127,12 @@ main {
         top: 0.5rem;
     }
 
+@media (max-width: 800px) {
+    .footer-disclaimer {
+        align-self: flex-start;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+    }
+}

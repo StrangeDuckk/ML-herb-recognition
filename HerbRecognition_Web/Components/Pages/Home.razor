@@ -1,4 +1,11 @@
 ﻿@page "/"
+@implements IDisposable
+
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject PlantApiService PlantApi
+@inject PersistentComponentState AppState
 
 <PageTitle>Herb Recognition</PageTitle>
 
@@ -41,7 +48,7 @@
                 </a>
 
                 <a href="#about" class="secondary-button">
-                    Dowiedz się więcej
+                    O projekcie
                 </a>
 
             </div>
@@ -49,15 +56,44 @@
         </div>
 
 
-        <div class="hero-image-wrapper">
+        @if (hero is not null)
+        {
+            @* losowa zatwierdzona roślina ze zdjęciem *@
+            <figure class="hero-figure">
+                <a href="@($"/plants/{hero.PlantId}")" class="hero-image-wrapper" tabindex="-1" aria-hidden="true">
+                    <img src="@hero.ImageUrl" alt="" class="hero-image" />
+                    <div class="image-decoration"></div>
+                </a>
 
-            <img src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6"
-                 alt="Zielone rośliny"
-                 class="hero-image" />
+                <figcaption class="hero-caption">
+                    <a href="@($"/plants/{hero.PlantId}")">
+                        <span class="hero-caption-name">
+                            <span aria-hidden="true">@hero.TypeIcon</span>
+                            @hero.PolishName
+                        </span>
 
-            <div class="image-decoration"></div>
+                        @if (!string.IsNullOrWhiteSpace(hero.LatinName))
+                        {
+                            <span class="hero-caption-latin">@hero.LatinName</span>
+                        }
 
-        </div>
+                        <span class="hero-caption-more">
+                            Dowiedz się więcej... <span aria-hidden="true">→</span>
+                        </span>
+                    </a>
+                </figcaption>
+            </figure>
+        }
+        else
+        {
+            @* brak roślin ze zdjęciem albo błąd API – dotychczasowe zdjęcie *@
+            <div class="hero-image-wrapper">
+                <img src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6"
+                     alt="Zielone rośliny"
+                     class="hero-image" />
+                <div class="image-decoration"></div>
+            </div>
+        }
 
     </div>
 
@@ -87,3 +123,71 @@
     </div>
 
 </section>
+
+
+@code {
+    private const string StateKey = "home-hero";
+
+    private HeroPick? hero;
+    private PersistingComponentStateSubscription persisting;
+
+    public sealed record HeroPick(int PlantId, string PolishName, string? LatinName, string TypeIcon, string ImageUrl);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // pojedyncze losowanie zdjecia na strone home
+        persisting = AppState.RegisterOnPersisting(PersistHero);
+
+        hero = AppState.TryTakeFromJson<HeroPick>(StateKey, out var restored)
+            ? restored
+            : await PickRandomAsync();
+    }
+
+    private Task PersistHero()
+    {
+        AppState.PersistAsJson(StateKey, hero);
+        return Task.CompletedTask;
+    }
+
+    private async Task<HeroPick?> PickRandomAsync()
+    {
+        try
+        {
+            var withPhoto = (await PlantApi.GetAllPlantsAsync())
+                .Where(p => SafeUrl.Image(p.MainThumbnailUrl) is not null)
+                .ToList();
+
+            if (withPhoto.Count == 0) return null;
+
+            var plant = withPhoto[Random.Shared.Next(withPhoto.Count)];
+
+            // pełne zdjęcie główne (1536 px); miniatura 400 px byłaby rozmyta w dużym kadrze
+            string? image = null;
+            try
+            {
+                var pictures = await PlantApi.GetPlantPicturesAsync(plant.Id);
+                image = pictures.Select(p => SafeUrl.Image(p.Url)).FirstOrDefault(url => url is not null);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Nie udało się pobrać zdjęć rośliny {plant.Id}: {ex.Message}");
+            }
+
+            image ??= SafeUrl.Image(plant.MainThumbnailUrl)!;
+
+            return new HeroPick(
+                plant.Id,
+                plant.PolishName,
+                plant.LatinName,
+                PlantTypeIcon.For(plant.PlantTypeDTO?.Name),
+                image);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Nie udało się wylosować rośliny na stronę główną: {ex.Message}");
+            return null;
+        }
+    }
+
+    public void Dispose() => persisting.Dispose();
+}

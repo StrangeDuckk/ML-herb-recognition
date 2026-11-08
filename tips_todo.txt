@@ -1,6 +1,3 @@
-- zajac sie zdjeciami kwiatkow:
-	- zmiana widoku pojedynczej rosliny i reorganizacja tego widoku.
-
 - TRYB CIEMNYYYY
 
 - zajac sie przepisami, dodawaniem substancji czynnych itp
