@@ -17,7 +17,19 @@
                 </NavLink>
             </nav>
 
-            <a href="/admin" class="admin-link">Panel admina</a>
+            <div class="top-bar-actions">
+                @* obsługa kliknięcia trybu ciemnego: z App.razor (data-theme-toggle) *@
+                <button type="button"
+                        class="theme-toggle"
+                        data-theme-toggle
+                        aria-label="Przełącz tryb jasny / ciemny"
+                        title="Przełącz tryb jasny / ciemny">
+                    <span class="icon-moon" aria-hidden="true">🌙</span>
+                    <span class="icon-sun" aria-hidden="true">☀️</span>
+                </button>
+
+                <a href="/admin" class="admin-link">Panel admina</a>
+            </div>
 
         </div>
     </header>

@@ -1,6 +1,61 @@
 ﻿@using static Microsoft.AspNetCore.Components.Web.RenderMode
 
 <!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+
+    @* Ciemny motyw *@
+    <script>
+        (function () {
+            var root = document.documentElement;
+
+            function apply(theme) {
+                root.setAttribute("data-theme", theme);
+                root.setAttribute("data-bs-theme", theme);   // Bootstrap też przechodzi w ciemny
+            }
+
+            var saved = null;
+            try { saved = localStorage.getItem("theme"); } catch (e) { }
+
+            apply(saved === "dark" || saved === "light"
+                ? saved
+                : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+
+            // przycisk z atrybutem data-theme-toggle (MainLayout)
+            document.addEventListener("click", function (e) {
+                if (!e.target.closest("[data-theme-toggle]")) return;
+
+                var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+                apply(next);
+                try { localStorage.setItem("theme", next); } catch (e) { }
+            });
+        })();
+    </script>
+
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["HerbRecognition_Web.styles.css"]" />
+    <link rel="stylesheet" href="@Assets["dark.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+
+@* @using static Microsoft.AspNetCore.Components.Web.RenderMode
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -20,4 +75,4 @@
     <script src="_framework/blazor.web.js"></script>
 </body>
 
-</html>
+</html> *@
