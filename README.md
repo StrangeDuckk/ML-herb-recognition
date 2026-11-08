@@ -1,6 +1,8 @@
 # 🌿 ML-herb-recognition 🌿
 # 🌿 ML-rozpoznawanie-ziół 🌿
 ---
+https://ezielnik.pl
+
 Projekt inżynierski łączący uczenie maszynowe, backend API oraz relacyjną bazę danych, umożliwiający rozpoznawanie roślin na podstawie cech morfologicznych oraz zdjęcia.
 
 ---
