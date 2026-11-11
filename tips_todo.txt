@@ -1,9 +1,7 @@
-- zajac sie przepisami, dodawaniem substancji czynnych itp
-
-
 - zrobic dodawanie przepisow
+	- zajac sie przepisami, dodawaniem substancji czynnych itp
 
-- zrobic widok ladna pierewsza strone (np losowane informacje o x roslince z bazy)
+- zrobic widok ekranu telefonu porzadnie, jak na ick tlumaczyl
 
 
 
