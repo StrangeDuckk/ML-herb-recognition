@@ -1,0 +1,435 @@
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject ProductApiService ProductApi
+@inject PlantApiService PlantApi
+
+@*
+    Wspólny formularz produktu (przepisu) – jak PlantSubmissionForm.
+    - zgłoszenie z widoku rośliny: FixedPlant = ta roślina (nie da się jej usunąć),
+    - panel admina: Initial = dane zgłoszenia / produktu, AdminMode = true
+      (nowe wartości od razu przypisuje się do słownika w oknie dialogowym).
+    Błędy rzucone przez OnSubmit/OnSecondary są wyświetlane nad przyciskami.
+*@
+
+@if (isLoading)
+{
+    <div class="plants-status">
+        <div class="loading-spinner"></div>
+        <p>Ładowanie formularza...</p>
+    </div>
+}
+else if (!string.IsNullOrEmpty(loadError))
+{
+    <div class="plants-error">
+        <h2>Nie udało się załadować formularza</h2>
+        <p>@loadError</p>
+        <button type="button" class="submission-button" @onclick="InitializeAsync">Spróbuj ponownie</button>
+    </div>
+}
+else
+{
+    <EditForm Model="model" FormName="@FormName">
+        <div class="submission-form">
+
+            @* ================= 1. Informacje podstawowe ================= *@
+            <section class="submission-section">
+                <header class="submission-section-head">
+                    <h2>1. Informacje podstawowe</h2>
+                </header>
+                <p class="section-description">Pola oznaczone * są wymagane.</p>
+
+                <div class="submission-grid">
+                    <div class="submission-field">
+                        <label for="product-name">Nazwa produktu *</label>
+                        <InputText id="product-name" @bind-Value="model.Name" maxlength="300"
+                                   placeholder="np. Syrop z kwiatów mniszka" />
+                    </div>
+
+                    <div class="submission-field">
+                        <label for="product-type">Typ produktu *</label>
+                        <InputSelect id="product-type" @bind-Value="model.ProductTypeId">
+                            <option value="0">Wybierz typ</option>
+                            @foreach (var type in productTypes)
+                            {
+                                <option value="@type.ProductTypeId">@type.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+            </section>
+
+            @* ================= 2. Rośliny ================= *@
+            <section class="submission-section">
+                <header class="submission-section-head">
+                    <h2>2. Rośliny *</h2>
+                </header>
+                <p class="section-description">
+                    Z jakich roślin powstaje produkt. Możesz wskazać też rośliny,
+                    które czekają na weryfikację.
+                </p>
+
+                @if (FixedPlant is not null)
+                {
+                    <div class="dict-chips product-fixed-plant">
+                        <span class="dict-chip is-fixed">
+                            🌿 @FixedPlant.Name
+                            <small>roślina, z której dodajesz przepis</small>
+                        </span>
+                    </div>
+                }
+
+                <SimilarPlantPicker @bind-Selected="plants" ExcludePlantId="FixedPlant?.Id" />
+            </section>
+
+            @* ================= 3. Na co działa ================= *@
+            <section class="submission-section">
+                <header class="submission-section-head">
+                    <h2>3. Na co działa</h2>
+                </header>
+                <p class="section-description">
+                    Wpisz kilka liter i wybierz z listy. Jeśli czegoś brakuje, dodaj nową wartość –
+                    @(AdminMode ? "od razu przypiszesz ją do słownika." : "administrator sprawdzi ją przed publikacją.")
+                </p>
+
+                <div class="product-dict-grid">
+                    @DictionaryField(ProductDictionary.Disease, "Choroby *", "np. przeziębienie, kaszel")
+                    @DictionaryField(ProductDictionary.HealthProperty, "Właściwości zdrowotne", "np. przeciwzapalne")
+                    @DictionaryField(ProductDictionary.ActiveSubstance, "Substancje czynne", "np. flawonoidy")
+                </div>
+            </section>
+
+            @* ================= 4. Przeciwwskazania ================= *@
+            <section class="submission-section">
+                <header class="submission-section-head">
+                    <h2>4. Przeciwwskazania</h2>
+                </header>
+                <p class="section-description">Kto nie powinien stosować produktu – np. ciąża, alergie, choroby nerek.</p>
+
+                @DictionaryField(ProductDictionary.Contraindication, "Przeciwwskazania", "np. ciąża")
+            </section>
+
+            @* ================= 5. Przepis ================= *@
+            <section class="submission-section">
+                <header class="submission-section-head">
+                    <h2>5. Przepis *</h2>
+                </header>
+                <p class="section-description">Składniki, kolejne kroki przygotowania i sposób stosowania.</p>
+
+                <div class="submission-field submission-field--wide">
+                    <label for="product-recipe" class="visually-hidden">Przepis</label>
+                    <InputTextArea id="product-recipe" class="product-recipe" rows="10" maxlength="10000"
+                                   @bind-Value="model.Recipe"
+                                   placeholder="1. Zbierz kwiaty… 2. Zalej wodą… 3. Gotuj 15 minut…" />
+                    <p class="photo-hint">@model.Recipe.Length / 10 000 znaków</p>
+                </div>
+            </section>
+
+            @ExtraContent
+
+            @if (AdminMode && ProposalCount > 0)
+            {
+                <div class="admin-message error" role="status">
+                    Do przypisania w słownikach: @ProposalCount
+                    (pomarańczowe wpisy – przycisk „Przypisz”).
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(submitError))
+            {
+                <div class="plants-error" role="alert">@submitError</div>
+            }
+
+            <div class="submission-actions">
+                @if (OnSecondary.HasDelegate)
+                {
+                    <button type="button" class="submission-button secondary"
+                            disabled="@IsBusy"
+                            @onclick="() => RunAsync(OnSecondary, SecondaryText, RequireResolvedForSecondary)">
+                        @(busyAction == SecondaryText ? BusyText : SecondaryText)
+                    </button>
+                }
+
+                <button type="button" class="submission-button"
+                        disabled="@IsBusy"
+                        @onclick="() => RunAsync(OnSubmit, SubmitText, RequireResolvedForSubmit)">
+                    @(busyAction == SubmitText ? BusyText : SubmitText)
+                </button>
+            </div>
+        </div>
+    </EditForm>
+
+    @if (resolving is { } r)
+    {
+        <DictionaryResolveDialog @key="r.Proposal"
+                                 Kind="r.Kind"
+                                 Proposal="r.Proposal"
+                                 Entries="entries[r.Kind]"
+                                 OnResolved="ResolveWith"
+                                 OnCreated="ResolveWithNewAsync"
+                                 OnCancel="() => resolving = null"
+                                 OnUnauthorized="OnUnauthorized" />
+    }
+}
+
+@code {
+    // ------------------------------------------------------------------
+    //  Parametry
+    // ------------------------------------------------------------------
+
+    [Parameter] public CreateProductDTO? Initial { get; set; }
+
+    /// <summary>Roślina, z której otwarto formularz – zawsze w produkcie.</summary>
+    [Parameter] public PlantRefDTO? FixedPlant { get; set; }
+
+    /// <summary>Admin: nowe wartości od razu przypisuje do słownika.</summary>
+    [Parameter] public bool AdminMode { get; set; }
+
+    [Parameter] public string SubmitText { get; set; } = "Wyślij zgłoszenie";
+    [Parameter] public EventCallback<CreateProductDTO> OnSubmit { get; set; }
+    [Parameter] public bool RequireResolvedForSubmit { get; set; }
+
+    [Parameter] public string SecondaryText { get; set; } = "Zapisz zmiany";
+    [Parameter] public EventCallback<CreateProductDTO> OnSecondary { get; set; }
+    [Parameter] public bool RequireResolvedForSecondary { get; set; }
+
+    [Parameter] public string BusyText { get; set; } = "Zapisywanie...";
+    [Parameter] public string FormName { get; set; } = "ProductSubmission";
+
+    /// <summary>Dodatkowa zawartość nad przyciskami (np. zdjęcia).</summary>
+    [Parameter] public RenderFragment? ExtraContent { get; set; }
+
+    /// <summary>Sesja admina wygasła (okno słownika).</summary>
+    [Parameter] public EventCallback OnUnauthorized { get; set; }
+
+    // ------------------------------------------------------------------
+    //  Stan
+    // ------------------------------------------------------------------
+
+    private sealed class FormModel
+    {
+        public string Name { get; set; } = "";
+        public string Recipe { get; set; } = "";
+        public int ProductTypeId { get; set; }
+    }
+
+    private FormModel model = new();
+    private List<ProductTypeOption> productTypes = new();
+    private List<SimilarPlantCandidateDTO> plants = new();
+
+    private readonly Dictionary<ProductDictionary, List<DictionaryEntry>> entries = new();
+    private readonly Dictionary<ProductDictionary, List<int>> selected = new();
+    private readonly Dictionary<ProductDictionary, List<DictionaryProposal>> proposals = new();
+
+    private (ProductDictionary Kind, DictionaryProposal Proposal)? resolving;
+
+    private bool isLoading = true;
+    private string? loadError;
+    private string? submitError;
+    private string? busyAction;
+    private bool IsBusy => busyAction is not null;
+
+    private int ProposalCount => proposals.Values.Sum(p => p.Count);
+
+    // ------------------------------------------------------------------
+    //  Inicjalizacja
+    // ------------------------------------------------------------------
+
+    protected override async Task OnInitializedAsync() => await InitializeAsync();
+
+    private async Task InitializeAsync()
+    {
+        isLoading = true;
+        loadError = null;
+
+        try
+        {
+            productTypes = await ProductApi.GetProductTypesAsync();
+
+            foreach (var kind in ProductDictionaries.All)
+            {
+                entries[kind] = await ProductApi.GetDictionaryAsync(kind);
+                selected[kind] = new List<int>();
+                proposals[kind] = new List<DictionaryProposal>();
+            }
+
+            model = new FormModel();
+            plants = new List<SimilarPlantCandidateDTO>();
+
+            if (Initial is not null)
+                await LoadFromAsync(Initial);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd ładowania formularza produktu: {ex}");
+            loadError = "Nie udało się pobrać słowników z API.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadFromAsync(CreateProductDTO dto)
+    {
+        model.Name = dto.Name ?? "";
+        model.Recipe = dto.Recipe ?? "";
+        model.ProductTypeId = dto.ProductTypeId;
+
+        selected[ProductDictionary.HealthProperty] = dto.HealthPropertyIds?.ToList() ?? new();
+        selected[ProductDictionary.ActiveSubstance] = dto.ActiveSubstanceIds?.ToList() ?? new();
+        selected[ProductDictionary.Disease] = dto.DiseaseIds?.ToList() ?? new();
+        selected[ProductDictionary.Contraindication] = dto.ContraindicationIds?.ToList() ?? new();
+
+        proposals[ProductDictionary.HealthProperty] = ToProposals(dto.NewHealthProperties);
+        proposals[ProductDictionary.ActiveSubstance] = ToProposals(dto.NewActiveSubstances);
+        proposals[ProductDictionary.Contraindication] = ToProposals(dto.NewContraindications);
+        proposals[ProductDictionary.Disease] = dto.NewDiseases?
+            .Select(d => new DictionaryProposal { Name = d.Name, Description = d.Symptoms })
+            .ToList() ?? new();
+
+        var plantIds = dto.PlantIds?.Where(id => id != FixedPlant?.Id).ToList();
+        var userInputIds = dto.PlantUserInputIds;
+
+        if ((plantIds?.Count ?? 0) + (userInputIds?.Count ?? 0) == 0) return;
+
+        try
+        {
+            plants = await PlantApi.ResolveSimilarAsync(plantIds, userInputIds);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Nie udało się wczytać roślin produktu: {ex}");
+            submitError = "Nie udało się wczytać roślin produktu. Odśwież stronę, zanim zapiszesz.";
+        }
+    }
+
+    private static List<DictionaryProposal> ToProposals(IEnumerable<string>? names) =>
+        names?.Select(n => new DictionaryProposal { Name = n }).ToList() ?? new();
+
+    // ------------------------------------------------------------------
+    //  Słowniki
+    // ------------------------------------------------------------------
+
+    private RenderFragment DictionaryField(ProductDictionary kind, string label, string placeholder) =>
+        @<div class="submission-field submission-field--wide">
+            <label>@label</label>
+            <DictionaryMultiPicker Kind="kind"
+                                   Entries="entries[kind]"
+                                   SelectedIds="selected[kind]"
+                                   Proposals="proposals[kind]"
+                                   Label="@label"
+                                   Placeholder="@placeholder"
+                                   AdminMode="AdminMode"
+                                   Disabled="IsBusy"
+                                   OnChanged="() => submitError = null"
+                                   OnResolve="p => resolving = (kind, p)" />
+        </div>;
+
+    private void ResolveWith(int id)
+    {
+        if (resolving is not { } r) return;
+
+        proposals[r.Kind].Remove(r.Proposal);      // nowo wpisana propozycja admina nie jest na liście – nic się nie dzieje
+        if (!selected[r.Kind].Contains(id))
+            selected[r.Kind].Add(id);
+
+        resolving = null;
+        submitError = null;
+    }
+
+    private async Task ResolveWithNewAsync(int id)
+    {
+        if (resolving is not { } r) return;
+
+        // nowy wpis w słowniku – odświeżamy listę, żeby było widać jego nazwę
+        entries[r.Kind] = await ProductApi.GetDictionaryAsync(r.Kind);
+        ResolveWith(id);
+    }
+
+    // ------------------------------------------------------------------
+    //  Przyciski
+    // ------------------------------------------------------------------
+
+    private async Task RunAsync(EventCallback<CreateProductDTO> action, string label, bool requireResolved)
+    {
+        submitError = Validate(requireResolved);
+        if (submitError is not null) return;
+
+        busyAction = label;
+
+        try
+        {
+            await action.InvokeAsync(BuildPayload());
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd zapisu produktu: {ex}");
+            submitError = $"Nie udało się zapisać: {ex.Message}";
+        }
+        finally
+        {
+            busyAction = null;
+        }
+    }
+
+    private string? Validate(bool requireResolved)
+    {
+        if (model.Name.Trim().Length < 2)
+            return "Podaj nazwę produktu (co najmniej 2 znaki).";
+
+        if (model.ProductTypeId <= 0)
+            return "Wybierz typ produktu.";
+
+        if ((FixedPlant is null ? 0 : 1) + plants.Count == 0)
+            return "Wskaż przynajmniej jedną roślinę.";
+
+        if (selected[ProductDictionary.Disease].Count + proposals[ProductDictionary.Disease].Count == 0)
+            return "Wskaż przynajmniej jedną chorobę, na którą działa produkt.";
+
+        if (model.Recipe.Trim().Length < 10)
+            return "Opisz przepis (co najmniej 10 znaków).";
+
+        if (requireResolved && ProposalCount > 0)
+            return "Najpierw przypisz nowe wpisy do słowników (pomarańczowe – przycisk „Przypisz”).";
+
+        return null;
+    }
+
+    private CreateProductDTO BuildPayload()
+    {
+        var approvedPlants = plants.Where(p => p.IsApproved).Select(p => p.Id).ToList();
+        if (FixedPlant is { IsApproved: true } fixedPlant && !approvedPlants.Contains(fixedPlant.Id))
+            approvedPlants.Insert(0, fixedPlant.Id);
+
+        return new CreateProductDTO
+        {
+            Name = model.Name.Trim(),
+            Recipe = model.Recipe.Trim(),
+            ProductTypeId = model.ProductTypeId,
+
+            PlantIds = OrNull(approvedPlants),
+            PlantUserInputIds = OrNull(plants.Where(p => !p.IsApproved).Select(p => p.Id)),
+
+            HealthPropertyIds = OrNull(selected[ProductDictionary.HealthProperty]),
+            ActiveSubstanceIds = OrNull(selected[ProductDictionary.ActiveSubstance]),
+            DiseaseIds = OrNull(selected[ProductDictionary.Disease]),
+            ContraindicationIds = OrNull(selected[ProductDictionary.Contraindication]),
+
+            NewHealthProperties = OrNull(proposals[ProductDictionary.HealthProperty].Select(p => p.Name)),
+            NewActiveSubstances = OrNull(proposals[ProductDictionary.ActiveSubstance].Select(p => p.Name)),
+            NewContraindications = OrNull(proposals[ProductDictionary.Contraindication].Select(p => p.Name)),
+            NewDiseases = OrNull(proposals[ProductDictionary.Disease].Select(p => new NewDiseaseDTO
+            {
+                Name = p.Name,
+                Symptoms = string.IsNullOrWhiteSpace(p.Description) ? null : p.Description.Trim()
+            }))
+        };
+    }
+
+    private static List<T>? OrNull<T>(IEnumerable<T> items)
+    {
+        var list = items.ToList();
+        return list.Count > 0 ? list : null;
+    }
+}

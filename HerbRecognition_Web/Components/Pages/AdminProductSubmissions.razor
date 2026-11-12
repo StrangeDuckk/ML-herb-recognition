@@ -1,0 +1,133 @@
+@page "/admin/product-submissions"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject AdminAuthService Auth
+@inject AdminProductApiService AdminProductApi
+@inject NavigationManager Nav
+
+<PageTitle>Zgłoszenia przepisów – panel administratora</PageTitle>
+
+<div class="plants-page admin-page">
+    <AdminNav />
+
+    <section class="plants-header admin-header">
+        <div>
+            <span class="section-label">PANEL ADMINISTRATORA</span>
+            <h1>Zgłoszenia przepisów</h1>
+        </div>
+    </section>
+
+    <section class="admin-content">
+        <div class="admin-content-head">
+            <h2>Czekają na weryfikację</h2>
+            @if (!isLoading)
+            {
+                <span class="admin-count">@items.Count</span>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="admin-message @(isError ? "error" : "success")">@message</div>
+        }
+
+        @if (isLoading)
+        {
+            <p class="admin-empty">Ładowanie zgłoszeń...</p>
+        }
+        else if (items.Count == 0)
+        {
+            <p class="admin-empty">Brak zgłoszeń. Nowe przepisy dodane ze stron roślin pojawią się tutaj.</p>
+        }
+        else
+        {
+            <AdminProductTable Items="items"
+                               EditUrl="@(id => $"/admin/product-submissions/{id}")"
+                               OnDelete="DeleteAsync"
+                               IsBusy="isBusy" />
+        }
+    </section>
+</div>
+
+@code {
+    private List<ProductPreviewDTO> items = new();
+
+    private bool isLoading = true;
+    private bool isBusy;
+    private bool isError;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            RedirectToLogin();
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            items = await AdminProductApi.GetSubmissionsAsync();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            items = new();
+            ShowMessage($"Nie udało się wczytać zgłoszeń: {ex.Message}", error: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        isBusy = true;
+        message = null;
+
+        try
+        {
+            await AdminProductApi.DeleteSubmissionAsync(id);
+            await LoadAsync();
+            ShowMessage($"Usunięto zgłoszenie #{id}.", error: false);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Nie udało się usunąć zgłoszenia: {ex.Message}", error: true);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void ShowMessage(string text, bool error)
+    {
+        message = text;
+        isError = error;
+    }
+
+    private void RedirectToLogin()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}

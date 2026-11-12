@@ -39,6 +39,10 @@ builder.Services.AddScoped<AdminApiService>();
 builder.Services.AddScoped<PictureApiService>();
 builder.Services.AddScoped<AdminPictureApiService>();
 
+//produkty
+builder.Services.AddScoped<ProductApiService>();
+builder.Services.AddScoped<AdminProductApiService>();
+
 // =====================================================================
 //  Klucze Data Protection w trwałym folderze
 //  Bez tego każde wdrożenie tworzyłoby nowe klucze, a otwarte formularze

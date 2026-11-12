@@ -21,24 +21,20 @@
         </div>
     </section>
 
-    @* <section class="plants-header admin-header">
-        <div>
-            <span class="section-label">PANEL ADMINISTRATORA</span>
-            <h1>Zarządzanie słownikami</h1>
-        </div>
-        <button type="button" class="admin-btn secondary" @onclick="Logout">Wyloguj</button>
-    </section> *@
-
     <div class="admin-layout">
 
         <nav class="admin-tabs">
-            @foreach (var d in Dictionaries)
+            @foreach (var group in Dictionaries.GroupBy(d => d.Group))
             {
-                <button type="button"
-                        class="admin-tab @(d == current ? "active" : "")"
-                        @onclick="() => SelectAsync(d)">
-                    @d.Title
-                </button>
+                <span class="admin-tabs-group">@group.Key</span>
+                @foreach (var d in group)
+                {
+                    <button type="button"
+                            class="admin-tab @(d == current ? "active" : "")"
+                            @onclick="() => SelectAsync(d)">
+                        @d.Title
+                    </button>
+                }
             }
         </nav>
 
@@ -49,6 +45,7 @@
             {
                 <div class="admin-message @(isError ? "error" : "success")">@message</div>
             }
+
             @if (current.EditOnly)
             {
                 <p class="admin-hint">
@@ -58,27 +55,41 @@
             else
             {
                 <div class="admin-add">
-                    <input class="admin-input" placeholder="Nowa wartość..." maxlength="100"
-                    @bind="newItem.Name" @bind:event="oninput" />
+                    <input class="admin-input" placeholder="Nowa wartość..." maxlength="@current.MaxLength"
+                           @bind="newItem.Name" @bind:event="oninput" />
+
+                    @if (current.HasDescription)
+                    {
+                        <input class="admin-input" placeholder="@($"{current.DescriptionLabel} (opcjonalnie)")" maxlength="4000"
+                               @bind="newItem.Description" @bind:event="oninput" />
+                    }
 
                     @if (current.IsColor)
                     {
                         <input class="admin-input rgb" type="number" min="0" max="255" placeholder="R"
-                        @bind="newItem.R" @bind:event="oninput" />
+                               @bind="newItem.R" @bind:event="oninput" />
                         <input class="admin-input rgb" type="number" min="0" max="255" placeholder="G"
-                        @bind="newItem.G" @bind:event="oninput" />
+                               @bind="newItem.G" @bind:event="oninput" />
                         <input class="admin-input rgb" type="number" min="0" max="255" placeholder="B"
-                        @bind="newItem.B" @bind:event="oninput" />
+                               @bind="newItem.B" @bind:event="oninput" />
                         <span class="admin-swatch" style="@SwatchStyle(newItem)"></span>
                     }
 
-                <button type="button" class="admin-btn"
-                        disabled="@(isBusy || string.IsNullOrWhiteSpace(newItem.Name))"
-                        @onclick="AddAsync">
-                    Dodaj
-                </button>
-            </div>
+                    <button type="button" class="admin-btn"
+                            disabled="@(isBusy || string.IsNullOrWhiteSpace(newItem.Name))"
+                            @onclick="AddAsync">
+                        Dodaj
+                    </button>
+                </div>
             }
+
+            @if (!isLoading && items.Count > 8)
+            {
+                <input class="admin-input admin-filter" type="search" placeholder="Filtruj listę..."
+                       aria-label="Filtruj listę"
+                       @bind="filter" @bind:event="oninput" />
+            }
+
             @if (isLoading)
             {
                 <p class="admin-empty">Ładowanie...</p>
@@ -99,6 +110,10 @@
                                     <th></th>
                                 }
                                 <th>Nazwa</th>
+                                @if (current.HasDescription)
+                                {
+                                    <th>@current.DescriptionLabel</th>
+                                }
                                 @if (current.IsColor)
                                 {
                                     <th>R</th>
@@ -109,7 +124,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in items)
+                            @foreach (var item in Visible)
                             {
                                 var isEditing = editing?.Id == item.Id;
                                 var shown = isEditing ? editing! : item;
@@ -125,9 +140,17 @@
                                     @if (isEditing)
                                     {
                                         <td>
-                                            <input class="admin-input" maxlength="100"
+                                            <input class="admin-input" maxlength="@current.MaxLength"
                                                    @bind="editing!.Name" @bind:event="oninput" />
                                         </td>
+
+                                        @if (current.HasDescription)
+                                        {
+                                            <td>
+                                                <input class="admin-input" maxlength="4000"
+                                                       @bind="editing!.Description" @bind:event="oninput" />
+                                            </td>
+                                        }
 
                                         @if (current.IsColor)
                                         {
@@ -162,6 +185,11 @@
                                     {
                                         <td>@item.Name</td>
 
+                                        @if (current.HasDescription)
+                                        {
+                                            <td class="admin-muted">@item.Description</td>
+                                        }
+
                                         @if (current.IsColor)
                                         {
                                             <td>@item.R</td>
@@ -192,7 +220,7 @@
                                                     @if (!current.EditOnly)
                                                     {
                                                         <button type="button" class="admin-btn small danger"
-                                                        @onclick="() => AskDelete(item.Id)">
+                                                                @onclick="() => AskDelete(item.Id)">
                                                             Usuń
                                                         </button>
                                                     }
@@ -212,19 +240,38 @@
 
 @code {
     private sealed record DictionaryDef(
-        string Endpoint, string Title, string IdProperty, string NameProperty, bool IsColor = false, bool EditOnly = false);
+        string Group,
+        string Endpoint,
+        string Title,
+        string IdProperty,
+        string NameProperty,
+        int MaxLength = 100,
+        bool IsColor = false,
+        bool EditOnly = false,
+        string? DescriptionProperty = null,
+        string? DescriptionLabel = null)
+    {
+        public bool HasDescription => DescriptionProperty is not null;
+    }
 
     // plantType celowo pominięty – formularz zależy od Id 1/2/3
     private static readonly DictionaryDef[] Dictionaries =
     {
-        new("occurance",        "Występowanie",             "occuranceId",          "occurance"),
-        new("shape",            "Kształty",                 "shapeId",              "shapeName"),
-        new("flavour",          "Smaki",                    "flavourId",            "flavourName"),
-        new("poisonability",    "Trujące właściwości",      "poisonabilityId",      "poisonabilityDescription"),
-        new("surface",          "Powierzchnie",             "surfaceId",            "surfaceName"),
-        new("thickness",        "Grubości",                 "thicknessId",          "thicknessName"),
-        new("color",            "Kolory",                   "colorId",              "colorName",    IsColor: true),
-        new("monthOfHarvest",   "Miesiąc zbioru",           "monthOfHarvestId",     "monthName",    EditOnly: true),
+        new("Rośliny", "occurance",      "Występowanie",        "occuranceId",      "occurance"),
+        new("Rośliny", "shape",          "Kształty",            "shapeId",          "shapeName"),
+        new("Rośliny", "flavour",        "Smaki",               "flavourId",        "flavourName"),
+        new("Rośliny", "poisonability",  "Trujące właściwości", "poisonabilityId",  "poisonabilityDescription"),
+        new("Rośliny", "surface",        "Powierzchnie",        "surfaceId",        "surfaceName"),
+        new("Rośliny", "thickness",      "Grubości",            "thicknessId",      "thicknessName"),
+        new("Rośliny", "color",          "Kolory",              "colorId",          "colorName", MaxLength: 50, IsColor: true),
+        new("Rośliny", "monthOfHarvest", "Miesiąc zbioru",      "monthOfHarvestId", "monthName", EditOnly: true),
+
+        new("Przepisy", "productType",      "Typy produktów",        "productTypeId",      "name"),
+        new("Przepisy", "disease",          "Choroby",               "diseaseId",          "name", MaxLength: 300,
+            DescriptionProperty: "symptoms", DescriptionLabel: "Objawy"),
+        new("Przepisy", "healthProperty",   "Właściwości zdrowotne", "healthPropertyId",   "property", MaxLength: 300),
+        new("Przepisy", "activeSubstance",  "Substancje czynne",     "activeSubstanceId",  "activeSubstance", MaxLength: 300),
+        new("Przepisy", "contraindication", "Przeciwwskazania",      "contraindicationId", "name", MaxLength: 1000),
     };
 
     private DictionaryDef current = Dictionaries[0];
@@ -232,11 +279,19 @@
     private DictionaryItemDTO newItem = new();
     private DictionaryItemDTO? editing;
     private int? confirmDeleteId;
+    private string filter = "";
 
     private bool isLoading;
     private bool isBusy;
     private bool isError;
     private string? message;
+
+    private IEnumerable<DictionaryItemDTO> Visible =>
+        string.IsNullOrWhiteSpace(filter)
+            ? items
+            : items.Where(i =>
+                (i.Name ?? "").Contains(filter.Trim(), StringComparison.CurrentCultureIgnoreCase) ||
+                (i.Description ?? "").Contains(filter.Trim(), StringComparison.CurrentCultureIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
@@ -256,6 +311,7 @@
         editing = null;
         confirmDeleteId = null;
         message = null;
+        filter = "";
         await LoadAsync();
     }
 
@@ -276,9 +332,12 @@
                 {
                     Id = Prop(e, current.IdProperty)?.GetInt32() ?? 0,
                     Name = Prop(e, current.NameProperty)?.GetString() ?? "",
-                    R = current.IsColor ? Prop(e, "r")?.GetInt32() : null,
-                    G = current.IsColor ? Prop(e, "g")?.GetInt32() : null,
-                    B = current.IsColor ? Prop(e, "b")?.GetInt32() : null
+                    Description = current.DescriptionProperty is null
+                        ? null
+                        : Prop(e, current.DescriptionProperty)?.GetString(),
+                    R = current.IsColor ? Prop(e, "colorR")?.GetInt32() ?? Prop(e, "r")?.GetInt32() : null,
+                    G = current.IsColor ? Prop(e, "colorG")?.GetInt32() ?? Prop(e, "g")?.GetInt32() : null,
+                    B = current.IsColor ? Prop(e, "colorB")?.GetInt32() ?? Prop(e, "b")?.GetInt32() : null
                 })
                 .OrderBy(i => i.Id)
                 .ToList();
@@ -313,6 +372,7 @@
         {
             Id = item.Id,
             Name = item.Name,
+            Description = item.Description,
             R = item.R,
             G = item.G,
             B = item.B
@@ -382,6 +442,12 @@
             return false;
         }
 
+        if (item.Name.Trim().Length > current.MaxLength)
+        {
+            ShowMessage($"Nazwa może mieć najwyżej {current.MaxLength} znaków.", error: true);
+            return false;
+        }
+
         if (current.IsColor && new[] { item.R, item.G, item.B }
                 .Any(v => v is null or < 0 or > 255))
         {
@@ -396,12 +462,6 @@
     {
         message = text;
         isError = error;
-    }
-
-    private void Logout()
-    {
-        Auth.Logout();
-        Nav.NavigateTo("/admin/login");
     }
 
     private static string SwatchStyle(DictionaryItemDTO item) =>

@@ -1,0 +1,198 @@
+@using System.Globalization
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@inject AdminProductApiService AdminProductApi
+
+@*
+    Okno admina: propozycja użytkownika -> wpis słownika.
+    1) wybierz istniejący wpis (lista z wyszukiwaniem),
+    2) albo dodaj nowy do słownika (nazwę i objawy można poprawić) i od razu go wybierz.
+*@
+
+<div class="hr-modal-backdrop" @onclick="CancelAsync"></div>
+
+<div class="hr-modal" role="dialog" aria-modal="true" aria-labelledby="dict-dialog-title"
+     @onkeydown="OnKeyDownAsync">
+
+    <header class="hr-modal-head">
+        <div>
+            <span class="section-label">@Kind.Title().ToUpper(Polish)</span>
+            <h2 id="dict-dialog-title">„@Proposal.Name”</h2>
+        </div>
+        <button type="button" class="hr-modal-close" aria-label="Zamknij" @onclick="CancelAsync">×</button>
+    </header>
+
+    <p class="hr-modal-note">
+        Sprawdź, czy taki wpis już jest w słowniku – jeśli tak, wybierz go.
+        Jeśli nie, dodaj nowy wpis; od razu trafi do słownika ogólnego.
+    </p>
+
+    <section class="hr-modal-section">
+        <h3>1. Wybierz istniejący wpis</h3>
+
+        <input class="admin-input hr-modal-search" type="text"
+               placeholder="Szukaj w słowniku..."
+               aria-label="Szukaj w słowniku"
+               @ref="searchInput"
+               @bind="filter" @bind:event="oninput" />
+
+        @if (Filtered.Count == 0)
+        {
+            <p class="dict-info">Brak pasujących wpisów – dodaj nowy poniżej.</p>
+        }
+        else
+        {
+            <ul class="hr-modal-list">
+                @foreach (var entry in Filtered)
+                {
+                    <li>
+                        <button type="button" class="dict-option" disabled="@isBusy"
+                                @onclick="() => OnResolved.InvokeAsync(entry.Id)">
+                            <span class="dict-option-names">
+                                <strong>@entry.Name</strong>
+                                @if (!string.IsNullOrWhiteSpace(entry.Description))
+                                {
+                                    <span>@entry.Description</span>
+                                }
+                            </span>
+                            <span class="dict-badge is-existing">wybierz</span>
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <section class="hr-modal-section">
+        <h3>2. Albo dodaj nowy wpis do słownika</h3>
+
+        <div class="hr-modal-fields">
+            <label>
+                <span>Nazwa</span>
+                <input class="admin-input" type="text" maxlength="@Kind.MaxLength()"
+                       @bind="newName" @bind:event="oninput" />
+            </label>
+
+            @if (Kind.HasDescription())
+            {
+                <label>
+                    <span>Objawy</span>
+                    <textarea class="admin-input" rows="3" maxlength="4000"
+                              @bind="newDescription" @bind:event="oninput"></textarea>
+                </label>
+            }
+        </div>
+
+        @if (ExistsAlready)
+        {
+            <p class="dict-info">Wpis o tej nazwie już istnieje – wybierz go z listy powyżej.</p>
+        }
+
+        <button type="button" class="submission-button"
+                disabled="@(isBusy || string.IsNullOrWhiteSpace(newName) || ExistsAlready)"
+                @onclick="CreateAsync">
+            @(isBusy ? "Dodawanie..." : "Dodaj do słownika i wybierz")
+        </button>
+    </section>
+
+    @if (error is not null)
+    {
+        <div class="admin-message error" role="alert">@error</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ProductDictionary Kind { get; set; }
+    [Parameter, EditorRequired] public DictionaryProposal Proposal { get; set; } = new();
+    [Parameter, EditorRequired] public List<DictionaryEntry> Entries { get; set; } = new();
+
+    /// <summary>Wybrano istniejący wpis (Id).</summary>
+    [Parameter] public EventCallback<int> OnResolved { get; set; }
+
+    /// <summary>Dodano nowy wpis do słownika (Id) – rodzic odświeża słownik.</summary>
+    [Parameter] public EventCallback<int> OnCreated { get; set; }
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    /// <summary>Sesja admina wygasła.</summary>
+    [Parameter] public EventCallback OnUnauthorized { get; set; }
+
+    private static readonly CultureInfo Polish = new("pl-PL");
+
+    private ElementReference searchInput;
+    private string filter = "";
+    private string newName = "";
+    private string? newDescription;
+    private bool isBusy;
+    private string? error;
+
+    protected override void OnInitialized()
+    {
+        filter = Proposal.Name;
+        newName = Proposal.Name;
+        newDescription = Proposal.Description;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await searchInput.FocusAsync();
+    }
+
+    private List<DictionaryEntry> Filtered
+    {
+        get
+        {
+            var text = filter.Trim();
+            var list = text.Length == 0
+                ? Entries
+                : Entries.Where(e =>
+                    Polish.CompareInfo.IndexOf(e.Name, text, CompareOptions.IgnoreCase) >= 0 ||
+                    (e.Description is not null &&
+                     Polish.CompareInfo.IndexOf(e.Description, text, CompareOptions.IgnoreCase) >= 0));
+
+            return list.Take(50).ToList();
+        }
+    }
+
+    private bool ExistsAlready =>
+        Entries.Any(e => string.Equals(e.Name.Trim(), newName.Trim(), StringComparison.CurrentCultureIgnoreCase));
+
+    private async Task CreateAsync()
+    {
+        isBusy = true;
+        error = null;
+
+        try
+        {
+            var id = await AdminProductApi.CreateDictionaryEntryAsync(Kind.Endpoint(), new DictionaryItemDTO
+            {
+                Name = newName.Trim(),
+                Description = Kind.HasDescription() ? newDescription?.Trim() : null
+            });
+
+            await OnCreated.InvokeAsync(id);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            await OnUnauthorized.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private Task CancelAsync() => OnCancel.InvokeAsync();
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            await CancelAsync();
+    }
+}

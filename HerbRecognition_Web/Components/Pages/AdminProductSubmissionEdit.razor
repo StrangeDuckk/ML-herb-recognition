@@ -1,0 +1,157 @@
+@page "/admin/product-submissions/{Id:int}"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject AdminAuthService Auth
+@inject AdminProductApiService AdminProductApi
+@inject NavigationManager Nav
+
+<PageTitle>Zgłoszenie przepisu #@Id – panel administratora</PageTitle>
+
+<div class="plants-page submission-page admin-page">
+    <AdminNav />
+
+    <section class="plants-header admin-header">
+        <div>
+            <span class="section-label">PANEL ADMINISTRATORA</span>
+            <h1>Zgłoszenie przepisu #@Id</h1>
+            <p>
+                Przypisz nowe wpisy do słowników, popraw dane i dodaj przepis do bazy.
+                „Zapisz zmiany” zostawia zgłoszenie na liście.
+            </p>
+        </div>
+    </section>
+
+    <a href="/admin/product-submissions" class="back-link">← Wszystkie zgłoszenia przepisów</a>
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie zgłoszenia...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(loadError))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się wczytać zgłoszenia</h2>
+            <p>@loadError</p>
+            <a href="/admin/product-submissions" class="submission-button">Wróć do listy</a>
+        </div>
+    }
+    else if (approvedProductId is int productId)
+    {
+        <div class="submission-success">
+            <h2>Przepis dodany do bazy</h2>
+            <p>Zgłoszenie #@Id zostało usunięte z listy, a jego zdjęcia przeniesione do przepisu #@productId.</p>
+            <a href="@($"/products/{productId}")" class="submission-button secondary">Zobacz przepis</a>
+            <div class="admin-success-actions">
+                <a href="@($"/admin/products/{productId}")" class="submission-button">Zobacz w panelu</a>
+                <a href="/admin/product-submissions" class="submission-button secondary">Wróć do zgłoszeń</a>
+            </div>
+        </div>
+    }
+    else if (submission is not null)
+    {
+        @if (!string.IsNullOrEmpty(savedMessage))
+        {
+            <div class="admin-message success">@savedMessage</div>
+        }
+
+        <ProductSubmissionForm @key="Id"
+                               Initial="submission"
+                               AdminMode="true"
+                               SubmitText="Dodaj do bazy"
+                               OnSubmit="ApproveAsync"
+                               RequireResolvedForSubmit="true"
+                               SecondaryText="Zapisz zmiany"
+                               OnSecondary="SaveAsync"
+                               OnUnauthorized="RedirectToLogin"
+                               FormName="AdminProductSubmissionEdit">
+            <ExtraContent>
+                <PlantPhotoManager Owner="PictureOwnerKind.ProductSubmission"
+                                   OwnerId="Id"
+                                   Title="6. Zdjęcia"
+                                   OnUnauthorized="RedirectToLogin" />
+            </ExtraContent>
+        </ProductSubmissionForm>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private CreateProductDTO? submission;
+    private int? approvedProductId;
+
+    private bool isLoading = true;
+    private string? loadError;
+    private string? savedMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            RedirectToLogin();
+            return;
+        }
+
+        isLoading = true;
+        loadError = null;
+        savedMessage = null;
+        approvedProductId = null;
+        submission = null;
+
+        try
+        {
+            submission = await AdminProductApi.GetSubmissionAsync(Id);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            loadError = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // "Zapisz zmiany" – zgłoszenie zostaje w kwarantannie (propozycje mogą zostać)
+    private async Task SaveAsync(CreateProductDTO dto)
+    {
+        try
+        {
+            await AdminProductApi.UpdateSubmissionAsync(Id, dto);
+            savedMessage = $"Zapisano zmiany w zgłoszeniu ({DateTime.Now:HH:mm}).";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+    }
+
+    // "Dodaj do bazy" – wszystkie propozycje muszą być przypisane
+    private async Task ApproveAsync(CreateProductDTO dto)
+    {
+        try
+        {
+            approvedProductId = await AdminProductApi.ApproveSubmissionAsync(Id, dto);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+    }
+
+    private void RedirectToLogin()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}

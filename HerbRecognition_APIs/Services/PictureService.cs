@@ -6,10 +6,9 @@ using Npgsql;
 
 namespace HerbRecognition_APIs.Services
 {
-    public enum PictureOwnerType { Plant, UserInput }
+    public enum PictureOwnerType { Plant, UserInput, Product, ProductInput }
 
     public readonly record struct PictureOwner(PictureOwnerType Type, int Id);
-
 
     /// <summary>Błąd, który można pokazać użytkownikowi (400).</summary>
     public class PictureValidationException(string message) : Exception(message);
@@ -20,10 +19,15 @@ namespace HerbRecognition_APIs.Services
         Task<List<PictureDTO>> AddAsync(PictureOwner owner, IReadOnlyList<IFormFile> uploads, CancellationToken ct);
         Task<bool> DeleteAsync(int pictureId);
         Task<bool> SetMainAsync(int pictureId);
-        Task<Dictionary<int, string>> GetPlantMainThumbnailsAsync();//Miniatura zdjęcia głównego każdej rośliny
+
+        /// <summary>Miniatura zdjęcia głównego każdej rośliny, która ma zdjęcia (klucz = Id rośliny).</summary>
+        Task<Dictionary<int, string>> GetPlantMainThumbnailsAsync();
     }
 
-    public class PictureService( HerbRecognitionDbContext data, IPictureFileStore fileStore, ImageProcessor imageProcessor) : IPictureService
+    public class PictureService(
+        HerbRecognitionDbContext data,
+        IPictureFileStore fileStore,
+        ImageProcessor imageProcessor) : IPictureService
     {
         public const int MaxPictures = 3;
         public const long MaxFileBytes = 8 * 1024 * 1024;
@@ -46,9 +50,13 @@ namespace HerbRecognition_APIs.Services
                 throw new PictureValidationException("Nie wybrano żadnego zdjęcia.");
 
             if (!await OwnerExistsAsync(owner, ct))
-                throw new KeyNotFoundException(owner.Type == PictureOwnerType.Plant
-                    ? $"Roślina #{owner.Id} nie istnieje."
-                    : $"Zgłoszenie #{owner.Id} nie istnieje.");
+                throw new KeyNotFoundException(owner.Type switch
+                {
+                    PictureOwnerType.Plant => $"Roślina #{owner.Id} nie istnieje.",
+                    PictureOwnerType.UserInput => $"Zgłoszenie #{owner.Id} nie istnieje.",
+                    PictureOwnerType.Product => $"Produkt #{owner.Id} nie istnieje.",
+                    _ => $"Zgłoszenie produktu #{owner.Id} nie istnieje."
+                });
 
             var existing = await OwnedBy(owner).CountAsync(ct);
             if (existing + uploads.Count > MaxPictures)
@@ -75,7 +83,7 @@ namespace HerbRecognition_APIs.Services
                 }
             }
 
-            // 2. pliki na dysk -> wiersze w bazie; przy błędzie sprzątanie plikow
+            // 2. pliki na dysk -> wiersze w bazie; przy błędzie sprzątanie plików
             var hasMain = await OwnedBy(owner).AnyAsync(p => p.CzyGlowneZdjecie, ct);
             var savedLinks = new List<string>();
 
@@ -90,6 +98,8 @@ namespace HerbRecognition_APIs.Services
                     {
                         Plantid = owner.Type == PictureOwnerType.Plant ? owner.Id : null,
                         UserInputId = owner.Type == PictureOwnerType.UserInput ? owner.Id : null,
+                        ProductId = owner.Type == PictureOwnerType.Product ? owner.Id : null,
+                        ProductInputId = owner.Type == PictureOwnerType.ProductInput ? owner.Id : null,
                         Picturelink = link,
                         CzyGlowneZdjecie = !hasMain && savedLinks.Count == 1
                     });
@@ -102,7 +112,7 @@ namespace HerbRecognition_APIs.Services
                 foreach (var link in savedLinks)
                     fileStore.Delete(link);
 
-                // trigger picture_max_3 – sa juz 3 zdjecia w bazie
+                // trigger picture_max_3 – są już 3 zdjęcia w bazie
                 if (ex is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.CheckViolation } })
                     throw new PictureValidationException($"Można mieć najwyżej {MaxPictures} zdjęcia.");
 
@@ -184,22 +194,31 @@ namespace HerbRecognition_APIs.Services
         private IQueryable<Picture> OwnedBy(PictureOwner owner)
         {
             var id = owner.Id;
-            return owner.Type == PictureOwnerType.Plant
-                ? data.Pictures.Where(p => p.Plantid == id)
-                : data.Pictures.Where(p => p.UserInputId == id);
+            return owner.Type switch
+            {
+                PictureOwnerType.Plant => data.Pictures.Where(p => p.Plantid == id),
+                PictureOwnerType.UserInput => data.Pictures.Where(p => p.UserInputId == id),
+                PictureOwnerType.Product => data.Pictures.Where(p => p.ProductId == id),
+                _ => data.Pictures.Where(p => p.ProductInputId == id)
+            };
         }
 
         private static PictureOwner OwnerOf(Picture picture) =>
-            picture.Plantid is int plantId
-                ? new PictureOwner(PictureOwnerType.Plant, plantId)
-                : new PictureOwner(PictureOwnerType.UserInput, picture.UserInputId!.Value);
+            picture.Plantid is int plantId ? new(PictureOwnerType.Plant, plantId)
+            : picture.UserInputId is int userInputId ? new(PictureOwnerType.UserInput, userInputId)
+            : picture.ProductId is int productId ? new(PictureOwnerType.Product, productId)
+            : new(PictureOwnerType.ProductInput, picture.ProductInputId!.Value);
 
         private Task<bool> OwnerExistsAsync(PictureOwner owner, CancellationToken ct)
         {
             var id = owner.Id;
-            return owner.Type == PictureOwnerType.Plant
-                ? data.Plants.AnyAsync(p => p.Id == id, ct)
-                : data.UserInputs.AnyAsync(u => u.Id == id, ct);
+            return owner.Type switch
+            {
+                PictureOwnerType.Plant => data.Plants.AnyAsync(p => p.Id == id, ct),
+                PictureOwnerType.UserInput => data.UserInputs.AnyAsync(u => u.Id == id, ct),
+                PictureOwnerType.Product => data.Products.AnyAsync(p => p.Id == id, ct),
+                _ => data.ProductInputs.AnyAsync(p => p.Id == id, ct)
+            };
         }
 
         private PictureDTO ToDto(Picture p) => new()

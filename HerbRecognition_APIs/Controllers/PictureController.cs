@@ -37,7 +37,7 @@ namespace HerbRecognition_APIs.Controllers
         public Task<IActionResult> UploadForPlant(int id, [FromForm] List<IFormFile> photos, CancellationToken ct) =>
             UploadAsync(new(PictureOwnerType.Plant, id), photos, ct);
 
-        // ----- zgłoszenia -----
+        // ----- zgłoszenia roślin -----
 
         [Authorize]
         [HttpGet("api/userInput/{id:int}/pictures")]
@@ -52,6 +52,33 @@ namespace HerbRecognition_APIs.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
         public Task<IActionResult> UploadForSubmission(int id, [FromForm] List<IFormFile> photos, CancellationToken ct) =>
             UploadAsync(new(PictureOwnerType.UserInput, id), photos, ct);
+
+        // ----- zatwierdzone produkty -----
+
+        [HttpGet("api/products/{id:int}/pictures")]
+        public async Task<IActionResult> GetForProduct(int id) =>
+            Ok(await pictures.GetAsync(new(PictureOwnerType.Product, id)));
+
+        [Authorize]
+        [HttpPost("api/products/{id:int}/pictures")]
+        [RequestSizeLimit(MaxUploadBytes)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
+        public Task<IActionResult> UploadForProduct(int id, [FromForm] List<IFormFile> photos, CancellationToken ct) =>
+            UploadAsync(new(PictureOwnerType.Product, id), photos, ct);
+
+        // ----- zgłoszenia produktów -----
+
+        [Authorize]
+        [HttpGet("api/productInput/{id:int}/pictures")]
+        public async Task<IActionResult> GetForProductSubmission(int id) =>
+            Ok(await pictures.GetAsync(new(PictureOwnerType.ProductInput, id)));
+
+        [HttpPost("api/productInput/{id:int}/pictures")]
+        [EnableRateLimiting("submit")]
+        [RequestSizeLimit(MaxUploadBytes)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
+        public Task<IActionResult> UploadForProductSubmission(int id, [FromForm] List<IFormFile> photos, CancellationToken ct) =>
+            UploadAsync(new(PictureOwnerType.ProductInput, id), photos, ct);
 
         // ----- pojedyncze zdjęcie -----
 

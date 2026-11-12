@@ -1,0 +1,219 @@
+@page "/product-form"
+@page "/plants/{PlantId:int}/add-product"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject PlantApiService PlantApi
+@inject ProductApiService ProductApi
+@inject PictureApiService PictureApi
+@inject AdminProductApiService AdminProductApi
+@inject AdminPictureApiService AdminPictureApi
+@inject AdminAuthService Auth
+@inject NavigationManager Nav
+
+@*
+    Dodawanie przepisu:
+    - /product-form                     – z biblioteki przepisów; rośliny wybiera się w formularzu,
+    - /plants/{id}/add-product          – ze strony rośliny; ta roślina jest w przepisie na stałe.
+*@
+
+<PageTitle>Dodaj przepis</PageTitle>
+
+<div class="plants-page submission-page">
+
+    <section class="plants-header">
+        <div>
+            <span class="section-label">HERB RECOGNITION</span>
+            <h1>Dodaj przepis</h1>
+            <p>
+                @if (plant is not null)
+                {
+                    <text>Produkt z rośliny <strong>@plant.Name</strong> – syrop, napar, nalewka, maść…</text>
+                }
+                else
+                {
+                    <text>Syrop, napar, nalewka, maść… z roślin z naszej bazy. Rośliny wskażesz w formularzu.</text>
+                }
+                @(Auth.IsLoggedIn
+                                ? " Jako admin możesz wysłać zgłoszenie albo dodać przepis od razu do bazy."
+                                : " Zgłoszenie zostanie zweryfikowane przed publikacją.")
+            </p>
+        </div>
+    </section>
+
+    <a href="@BackUrl" class="back-link">← @(PlantId is null ? "Wróć do przepisów" : "Wróć do rośliny")</a>
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie...</p>
+        </div>
+    }
+    else if (plantNotFound)
+    {
+        <div class="plants-error">
+            <h2>Nie znaleziono rośliny</h2>
+            <p>Możesz dodać przepis bez wskazanej rośliny i wybrać rośliny w formularzu.</p>
+            <a href="/product-form" class="submission-button">Dodaj przepis</a>
+        </div>
+    }
+    else if (submittedId is int submissionId)
+    {
+        <div class="submission-success">
+            <h2>Zgłoszenie zapisane!</h2>
+            <p>Dziękujemy. Przepis czeka na weryfikację.</p>
+            <p>Numer zgłoszenia: <strong>@submissionId</strong></p>
+
+            @if (photoError is not null)
+            {
+                <div class="plants-error">Zgłoszenie zapisano, ale bez zdjęć: @photoError</div>
+            }
+
+            <div class="admin-success-actions">
+                <a href="@BackUrl" class="submission-button">@(PlantId is null ? "Wróć do przepisów" : "Wróć do rośliny")</a>
+            </div>
+        </div>
+    }
+    else if (createdProductId is int productId)
+    {
+        <div class="submission-success">
+            <h2>Przepis dodany do bazy</h2>
+            <p>Produkt #@productId jest już widoczny w bibliotece przepisów.</p>
+
+            @if (photoError is not null)
+            {
+                <div class="plants-error">Produkt zapisano, ale bez zdjęć: @photoError</div>
+            }
+
+            <div class="admin-success-actions">
+                <a href="@($"/products/{productId}")" class="submission-button">Zobacz przepis</a>
+                <a href="@($"/admin/products/{productId}")" class="submission-button secondary">Edytuj w panelu</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <ProductSubmissionForm @key="PlantId"
+                               FixedPlant="plant"
+                               AdminMode="Auth.IsLoggedIn"
+                               SubmitText="Wyślij zgłoszenie"
+                               OnSubmit="SubmitAsync"
+                               SecondaryText="Dodaj od razu do bazy"
+                               OnSecondary="@(Auth.IsLoggedIn ? EventCallback.Factory.Create<CreateProductDTO>(this, CreateDirectAsync) : default)"
+                               RequireResolvedForSecondary="true"
+                               OnUnauthorized="RedirectToLogin"
+                               FormName="AddProduct">
+            <ExtraContent>
+                <section class="submission-section">
+                    <h2>6. Zdjęcia</h2>
+                    <p class="section-description">
+                        Opcjonalnie do 3 zdjęć gotowego produktu – np. słoik syropu albo napar w kubku.
+                    </p>
+                    <PhotoPicker @bind-Photos="photos" MaxCount="3" />
+                </section>
+            </ExtraContent>
+        </ProductSubmissionForm>
+    }
+</div>
+
+@code {
+    /// <summary>Roślina, ze strony której otwarto formularz. Null = /product-form.</summary>
+    [Parameter] public int? PlantId { get; set; }
+
+    private PlantRefDTO? plant;
+    private List<PhotoUpload> photos = new();
+
+    private bool isLoading = true;
+    private bool plantNotFound;
+    private int? submittedId;
+    private int? createdProductId;
+    private string? photoError;
+
+    private string BackUrl => PlantId is int id ? $"/plants/{id}" : "/products";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        plant = null;
+        plantNotFound = false;
+        submittedId = null;
+        createdProductId = null;
+        photoError = null;
+        photos = new();
+
+        if (PlantId is int id)
+        {
+            try
+            {
+                var loaded = await PlantApi.GetPlantByIdAsync(id);
+                if (loaded is not null)
+                    plant = new PlantRefDTO { Id = loaded.Id, Name = loaded.PolishName, IsApproved = true };
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Nie udało się wczytać rośliny {id}: {ex.Message}");
+            }
+
+            plantNotFound = plant is null;
+        }
+
+        isLoading = false;
+    }
+
+    // "Wyślij zgłoszenie" – kwarantanna
+    private async Task SubmitAsync(CreateProductDTO dto)
+    {
+        var id = await ProductApi.SubmitAsync(dto);
+
+        // zgłoszenie już jest – błąd zdjęć go nie cofa, tylko informujemy
+        if (photos.Count > 0)
+        {
+            try
+            {
+                await PictureApi.UploadForProductSubmissionAsync(id, photos);
+            }
+            catch (Exception ex)
+            {
+                photoError = ex is PictureApiException ? ex.Message : "nie udało się połączyć z serwerem.";
+            }
+        }
+
+        submittedId = id;
+    }
+
+    // "Dodaj od razu do bazy" – tylko admin
+    private async Task CreateDirectAsync(CreateProductDTO dto)
+    {
+        try
+        {
+            var id = await AdminProductApi.CreateProductAsync(dto);
+
+            if (photos.Count > 0)
+            {
+                try
+                {
+                    await AdminPictureApi.UploadAsync(PictureOwnerKind.Product, id, photos);
+                }
+                catch (Exception ex)
+                {
+                    photoError = ex is PictureApiException ? ex.Message : "nie udało się połączyć z serwerem.";
+                }
+            }
+
+            createdProductId = id;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+    }
+
+    private void RedirectToLogin()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}

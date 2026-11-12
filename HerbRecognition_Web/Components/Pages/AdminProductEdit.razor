@@ -1,0 +1,124 @@
+@page "/admin/products/{Id:int}"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject AdminAuthService Auth
+@inject AdminProductApiService AdminProductApi
+@inject NavigationManager Nav
+
+<PageTitle>Przepis #@Id – panel administratora</PageTitle>
+
+<div class="plants-page submission-page admin-page">
+    <AdminNav />
+
+    <section class="plants-header admin-header">
+        <div>
+            <span class="section-label">PANEL ADMINISTRATORA</span>
+            <h1>Przepis #@Id</h1>
+            <p>Zmiany są widoczne od razu po zapisaniu. Zdjęcia zapisują się osobno, od razu po wybraniu.</p>
+        </div>
+    </section>
+
+    <a href="/admin/products" class="back-link">← Wszystkie przepisy</a>
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie przepisu...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(loadError))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się wczytać przepisu</h2>
+            <p>@loadError</p>
+            <a href="/admin/products" class="submission-button">Wróć do listy</a>
+        </div>
+    }
+    else if (product is not null)
+    {
+        @if (!string.IsNullOrEmpty(savedMessage))
+        {
+            <div class="admin-message success">@savedMessage</div>
+        }
+
+        <ProductSubmissionForm @key="Id"
+                               Initial="product"
+                               AdminMode="true"
+                               SubmitText="Zapisz zmiany"
+                               OnSubmit="SaveAsync"
+                               RequireResolvedForSubmit="true"
+                               OnUnauthorized="RedirectToLogin"
+                               FormName="AdminProductEdit">
+            <ExtraContent>
+                <PlantPhotoManager Owner="PictureOwnerKind.Product"
+                                   OwnerId="Id"
+                                   Title="6. Zdjęcia"
+                                   OnUnauthorized="RedirectToLogin" />
+            </ExtraContent>
+        </ProductSubmissionForm>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private CreateProductDTO? product;
+
+    private bool isLoading = true;
+    private string? loadError;
+    private string? savedMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            RedirectToLogin();
+            return;
+        }
+
+        isLoading = true;
+        loadError = null;
+        savedMessage = null;
+        product = null;
+
+        try
+        {
+            product = await AdminProductApi.GetProductAsync(Id);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            loadError = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync(CreateProductDTO dto)
+    {
+        try
+        {
+            await AdminProductApi.UpdateProductAsync(Id, dto);
+            savedMessage = $"Zapisano zmiany ({DateTime.Now:HH:mm}).";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+    }
+
+    private void RedirectToLogin()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}

@@ -1,0 +1,314 @@
+@page "/products/{Id:int}"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject ProductApiService ProductApi
+@inject AdminAuthService Auth
+
+<PageTitle>@(product is null ? "Przepis" : product.Name)</PageTitle>
+
+@*
+    Kolejność w HTML = kolejność na telefonie (wszystko jedno pod drugim):
+    zdjęcia -> nagłówek z roślinami -> przeciwwskazania -> na co działa -> przepis.
+    Na komputerze zdjęcie stoi po lewej obok "na co działa", przepis na całą szerokość.
+    Klasy pd-* jak na stronie rośliny – tryb ciemny z dark.css działa bez zmian.
+*@
+
+<div class="plant-details-page">
+
+    @if (isLoading)
+    {
+        <div class="plants-status">
+            <div class="loading-spinner"></div>
+            <p>Ładowanie przepisu...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="plants-error">
+            <h2>Nie udało się pobrać przepisu</h2>
+            <p>@errorMessage</p>
+            <a href="/products" class="back-link">← Wróć do przepisów</a>
+        </div>
+    }
+    else if (product is null)
+    {
+        <div class="plants-status">
+            <h2>Nie znaleziono przepisu</h2>
+            <p>Przepis o podanym numerze nie istnieje.</p>
+            <a href="/products" class="back-link">← Wróć do przepisów</a>
+        </div>
+    }
+    else
+    {
+        <div class="plant-details-container">
+
+            <a href="/products" class="back-link">← Wszystkie przepisy</a>
+
+            <div class="prd-layout @(pictures.Count > 0 ? "has-gallery" : "")">
+
+                @* ---------- zdjęcia ---------- *@
+                @if (pictures.Count > 0)
+                {
+                    <div class="pd-gallery @(pictures.Count == 1 ? "is-single" : "")"
+                         role="region"
+                         aria-roledescription="karuzela"
+                         aria-label="@($"Zdjęcia: {product.Name}")"
+                         tabindex="0"
+                         @onkeydown="OnGalleryKey"
+                         @ontouchstart="OnTouchStart"
+                         @ontouchend="OnTouchEnd">
+
+                        <div class="pd-gallery-track" style="@($"transform: translateX(-{current * 100}%)")">
+                            @for (var i = 0; i < pictures.Count; i++)
+                            {
+                                <figure class="pd-slide" aria-hidden="@(i == current ? "false" : "true")">
+                                    <img src="@pictures[i]"
+                                         alt="@($"{product.Name} – zdjęcie {i + 1} z {pictures.Count}")"
+                                         loading="@(i == 0 ? "eager" : "lazy")"
+                                         draggable="false" />
+                                </figure>
+                            }
+                        </div>
+
+                        @if (pictures.Count > 1)
+                        {
+                            <button type="button" class="pd-gallery-nav prev"
+                                    disabled="@(current == 0)"
+                                    @onclick="() => Go(current - 1)"
+                                    aria-label="Poprzednie zdjęcie">‹</button>
+
+                            <button type="button" class="pd-gallery-nav next"
+                                    disabled="@(current == pictures.Count - 1)"
+                                    @onclick="() => Go(current + 1)"
+                                    aria-label="Następne zdjęcie">›</button>
+
+                            <span class="pd-gallery-counter" aria-live="polite">@(current + 1) / @pictures.Count</span>
+
+                            <div class="pd-gallery-dots">
+                                @for (var i = 0; i < pictures.Count; i++)
+                                {
+                                    var index = i;
+                                    <button type="button"
+                                            @onclick="() => Go(index)"
+                                            aria-label="@($"Zdjęcie {index + 1}")"
+                                            aria-current="@(index == current ? "true" : "false")"></button>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="prd-main">
+
+                    @* ---------- nagłówek ---------- *@
+                    <section class="pd-head">
+                        <div class="pd-head-main">
+                            <div class="plant-type-badge">
+                                <span class="pd-type-icon" aria-hidden="true">@typeIcon</span>
+                                @(product.ProductTypeName ?? "Produkt")
+                            </div>
+
+                            <h1>@product.Name</h1>
+
+                            <div class="prd-plants">
+                                <span class="prd-label">Z roślin</span>
+                                <div class="prd-chips">
+                                    @foreach (var plant in product.Plants)
+                                    {
+                                        @if (plant.IsApproved)
+                                        {
+                                            <a href="@($"/plants/{plant.Id}")" class="prd-chip">@plant.Name</a>
+                                        }
+                                        else
+                                        {
+                                            <span class="prd-chip is-pending" title="Roślina czeka na weryfikację">@plant.Name</span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pd-head-meta">
+                            <span class="pd-id">#@product.Id</span>
+
+                            @* tylko wygoda – ochroną są strony admina i API (JWT z rolą Admin) *@
+                            @if (Auth.IsLoggedIn)
+                            {
+                                <a href="@($"/admin/products/{product.Id}")" class="prd-edit">
+                                    <span aria-hidden="true">✎</span> Edytuj
+                                </a>
+                            }
+                        </div>
+                    </section>
+
+                    @* ---------- przeciwwskazania: pasek ostrzegawczy ---------- *@
+                    @if (product.Contraindications.Count > 0)
+                    {
+                        <section class="pd-toxic">
+                            <span class="pd-toxic-icon" aria-hidden="true">⚠</span>
+                            <div>
+                                <h2>Przeciwwskazania</h2>
+                                <ul class="prd-list">
+                                    @foreach (var c in product.Contraindications)
+                                    {
+                                        <li>@c.Name</li>
+                                    }
+                                </ul>
+                            </div>
+                        </section>
+                    }
+
+                    @* ---------- na co działa ---------- *@
+                    <section class="pd-card">
+                        <span class="section-label">NA CO DZIAŁA</span>
+                        <h2>Dolegliwości</h2>
+
+                        <dl class="pd-fields">
+                            @foreach (var disease in product.Diseases)
+                            {
+                                <div class="pd-field">
+                                    <dt>@disease.Name</dt>
+                                    <dd class="@(string.IsNullOrWhiteSpace(disease.Symptoms) ? "is-empty" : null)">
+                                        @(string.IsNullOrWhiteSpace(disease.Symptoms) ? "Brak opisu objawów" : disease.Symptoms)
+                                    </dd>
+                                </div>
+                            }
+                        </dl>
+                    </section>
+
+                    @if (product.HealthProperties.Count > 0 || product.ActiveSubstances.Count > 0)
+                    {
+                        <section class="pd-card">
+                            <span class="section-label">DZIAŁANIE</span>
+                            <h2>Właściwości i substancje</h2>
+
+                            @if (product.HealthProperties.Count > 0)
+                            {
+                                <div class="prd-group">
+                                    <span class="prd-label">Właściwości zdrowotne</span>
+                                    <div class="prd-chips">
+                                        @foreach (var p in product.HealthProperties)
+                                        {
+                                            <span class="prd-chip is-static">@p.Name</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (product.ActiveSubstances.Count > 0)
+                            {
+                                <div class="prd-group">
+                                    <span class="prd-label">Substancje czynne</span>
+                                    <div class="prd-chips">
+                                        @foreach (var s in product.ActiveSubstances)
+                                        {
+                                            <span class="prd-chip is-static">@s.Name</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </section>
+                    }
+                </div>
+            </div>
+
+            @* ---------- przepis: na całą szerokość ---------- *@
+            <section class="pd-card prd-recipe-card">
+                <span class="section-label">PRZEPIS</span>
+                <h2>Jak przygotować</h2>
+                <div class="prd-recipe">@product.Recipe</div>
+            </section>
+
+            <p class="prd-disclaimer">
+                Informacje mają charakter poglądowy i nie zastępują porady lekarza ani farmaceuty.
+            </p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private GetProductDTO? product;
+    private List<string> pictures = new();
+    private string typeIcon = "🌿";
+
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        product = null;
+        pictures = new();
+        current = 0;
+
+        try
+        {
+            product = await ProductApi.GetProductAsync(Id);
+
+            if (product is not null)
+            {
+                typeIcon = ProductTypeIcon.For(product.ProductTypeName);
+
+                try
+                {
+                    var loaded = await ProductApi.GetProductPicturesAsync(Id);
+                    pictures = loaded.Select(p => SafeUrl.Image(p.Url)).OfType<string>().ToList();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Nie udało się pobrać zdjęć przepisu {Id}: {ex.Message}");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Nie udało się połączyć z API. Spróbuj ponownie za chwilę.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    //  Karuzela – jak na stronie rośliny, bez JavaScriptu
+    // ------------------------------------------------------------------
+
+    private int current;
+    private double touchStartX;
+    private double touchStartY;
+
+    private void Go(int index) =>
+        current = Math.Clamp(index, 0, Math.Max(0, pictures.Count - 1));
+
+    private void OnGalleryKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "ArrowLeft") Go(current - 1);
+        else if (e.Key == "ArrowRight") Go(current + 1);
+    }
+
+    private void OnTouchStart(TouchEventArgs e)
+    {
+        if (e.Touches.Length == 0) return;
+        touchStartX = e.Touches[0].ClientX;
+        touchStartY = e.Touches[0].ClientY;
+    }
+
+    private void OnTouchEnd(TouchEventArgs e)
+    {
+        if (e.ChangedTouches.Length == 0) return;
+
+        var dx = e.ChangedTouches[0].ClientX - touchStartX;
+        var dy = e.ChangedTouches[0].ClientY - touchStartY;
+
+        if (Math.Abs(dx) < 40 || Math.Abs(dy) > Math.Abs(dx)) return;
+
+        Go(current + (dx < 0 ? 1 : -1));
+    }
+}

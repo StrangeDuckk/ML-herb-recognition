@@ -9,7 +9,7 @@ namespace HerbRecognition_Web.Communication.DTOs
         public string? Source { get; set; }
     }
 
-    public enum PictureOwnerKind { Plant, Submission }
+    public enum PictureOwnerKind { Plant, Submission, Product, ProductSubmission }
 
     /// <summary>Zdjęcie wybrane w przeglądarce, jeszcze niewysłane do API.</summary>
     public sealed record PhotoUpload(string FileName, byte[] Data, string PreviewUrl);

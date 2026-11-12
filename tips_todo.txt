@@ -1,5 +1,8 @@
 - zrobic dodawanie przepisow
-	- zajac sie przepisami, dodawaniem substancji czynnych itp
+	- zrobic wyszukiwanie po formularzu dla przepisow
+
+- zrobic filtry w bibliotece dla roslin
+- zrobic filtry w bibliotece dla przepisow
 
 - zrobic widok ekranu telefonu porzadnie, jak na ick tlumaczyl
 

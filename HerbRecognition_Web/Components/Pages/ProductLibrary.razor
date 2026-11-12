@@ -1,0 +1,197 @@
+@page "/products"
+
+@using System.Globalization
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject ProductApiService ProductApi
+@inject AdminAuthService Auth
+
+<PageTitle>Przepisy</PageTitle>
+
+<div class="prod-page">
+
+    <section class="prod-page-header">
+        <span class="section-label">HERB RECOGNITION</span>
+        <h1>Przepisy</h1>
+        <p>
+            Syropy, napary, nalewki i maści z roślin z naszej bazy –
+            z czego je zrobić i na co pomagają.
+        </p>
+
+        <div class="prod-filters">
+            <input type="search"
+                   class="prod-search"
+                   placeholder="Szukaj: nazwa, roślina albo dolegliwość (np. kaszel)"
+                   aria-label="Szukaj przepisów"
+                   @bind="query" @bind:event="oninput" />
+
+            <label class="prod-switch">
+                <input type="checkbox"
+                       @bind="showPending"
+                       @bind:after="OnShowPendingChangedAsync" />
+                <span class="prod-switch-slider" aria-hidden="true"></span>
+                <span>Pokaż też przepisy czekające na weryfikację</span>
+            </label>
+
+            @if (showPending && isLoadingPending)
+            {
+                <span class="prod-note">Ładowanie zgłoszeń...</span>
+            }
+            else if (showPending && pendingError is not null)
+            {
+                <span class="prod-note is-error">@pendingError</span>
+            }
+        </div>
+    </section>
+
+    @if (isLoading)
+    {
+        <div class="prod-status">
+            <div class="prod-spinner"></div>
+            <p>Ładowanie przepisów...</p>
+        </div>
+    }
+    else if (errorMessage is not null)
+    {
+        <div class="prod-status is-error">
+            <h2>Nie udało się pobrać przepisów</h2>
+            <p>@errorMessage</p>
+            <button type="button" class="prod-button" @onclick="LoadAsync">Spróbuj ponownie</button>
+        </div>
+    }
+    else if (!Cards.Any())
+    {
+        <div class="prod-status">
+            @if (string.IsNullOrWhiteSpace(query))
+            {
+                <h2>Brak przepisów</h2>
+                <p>Baza nie zawiera jeszcze przepisów. Dodaj pierwszy!</p>
+            }
+            else
+            {
+                <h2>Nic nie pasuje do „@query.Trim()”</h2>
+                <p>Spróbuj innej nazwy rośliny albo dolegliwości – albo dodaj ten przepis.</p>
+            }
+            <a href="/product-form" class="prod-button">Dodaj przepis <span aria-hidden="true">→</span></a>
+        </div>
+    }
+    else
+    {
+        <p class="prod-note prod-count">Przepisy: @Cards.Count()</p>
+
+        <section class="prod-grid">
+            @foreach (var item in Cards)
+            {
+                <ProductCard @key="(item.IsPending, item.Id)" Item="item" ShowEdit="Auth.IsLoggedIn" />
+            }
+
+            @* ostatni kafelek – jak w bibliotece roślin *@
+            <div class="prod-card-cta">
+                <span class="prod-card-cta-icon" aria-hidden="true">🍯</span>
+                <p>Nie ma przepisu, którego szukasz? Możesz dodać go za pomocą formularza.</p>
+                <a href="/product-form" class="prod-button">Przejdź do formularza <span aria-hidden="true">→</span></a>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    private static readonly CultureInfo Polish = new("pl-PL");
+    private static readonly StringComparer PolishOrder = StringComparer.Create(Polish, ignoreCase: true);
+
+    /// <summary>Tekst z wyszukiwarki na stronie głównej: /products?q=kaszel</summary>
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Q { get; set; }
+
+    private List<ProductPreviewDTO> products = new();
+    private List<ProductPreviewDTO> pending = new();
+
+    private string query = "";
+    private string? appliedQ;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    private bool showPending;
+    private bool pendingLoaded;
+    private bool isLoadingPending;
+    private string? pendingError;
+
+    // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie po nazwie, z filtrem tekstowym
+    private IEnumerable<ProductPreviewDTO> Cards =>
+        products
+            .Concat(showPending ? pending : Enumerable.Empty<ProductPreviewDTO>())
+            .Where(Matches)
+            .OrderBy(p => p.Name, PolishOrder);
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    // tekst z adresu trafia do pola wyszukiwania (także przy kolejnym wyszukaniu ze strony głównej)
+    protected override void OnParametersSet()
+    {
+        if (Q == appliedQ) return;
+
+        appliedQ = Q;
+        query = Q?.Trim() ?? "";
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            products = await ProductApi.GetProductsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd pobierania przepisów: {ex}");
+            errorMessage = "Wystąpił problem podczas komunikacji z API.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // zgłoszenia pobieramy dopiero przy pierwszym włączeniu przełącznika
+    private async Task OnShowPendingChangedAsync()
+    {
+        if (!showPending || pendingLoaded) return;
+
+        isLoadingPending = true;
+        pendingError = null;
+
+        try
+        {
+            pending = await ProductApi.GetPendingProductsAsync();
+            pendingLoaded = true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd pobierania zgłoszeń przepisów: {ex}");
+            pendingError = "Nie udało się pobrać niezweryfikowanych przepisów.";
+        }
+        finally
+        {
+            isLoadingPending = false;
+        }
+    }
+
+    private bool Matches(ProductPreviewDTO p)
+    {
+        var text = query.Trim();
+        if (text.Length == 0) return true;
+
+        return Has(p.Name, text)
+               || Has(p.ProductTypeName, text)
+               || p.Plants.Any(x => Has(x.Name, text))
+               || p.Diseases.Any(x => Has(x, text))
+               || p.HealthProperties.Any(x => Has(x, text));
+    }
+
+    private static bool Has(string? source, string text) =>
+        source is not null && Polish.CompareInfo.IndexOf(source, text, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) >= 0;
+}

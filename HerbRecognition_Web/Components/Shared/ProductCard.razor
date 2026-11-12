@@ -1,0 +1,103 @@
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+
+@*
+    Kafelek przepisu – biblioteka przepisów i sekcja "Przepisy" na stronie rośliny.
+    Zawsze pokazuje: z jakich roślin i na co działa.
+    Style: globalne (products-library.css), bo kafelek jest używany na kilku stronach.
+*@
+
+<article class="prod-card @(Item.IsPending ? "is-pending" : "")">
+
+    <div class="prod-card-media">
+        @if (thumbnail is not null)
+        {
+            <img src="@thumbnail" alt="" loading="lazy" />
+        }
+        else
+        {
+            <span class="prod-card-placeholder" aria-hidden="true">@icon</span>
+        }
+
+        <div class="prod-card-pills">
+            <span class="prod-pill">
+                <span aria-hidden="true">@icon</span>
+                @(Item.ProductTypeName ?? "Produkt")
+            </span>
+
+            @if (Item.IsPending)
+            {
+                <span class="prod-pill is-pending">Niezweryfikowany</span>
+            }
+        </div>
+
+        @* tylko wygoda – ochroną są strony admina i API (JWT z rolą Admin) *@
+        @if (ShowEdit)
+        {
+            <a class="prod-card-edit"
+               href="@(Item.IsPending ? $"/admin/product-submissions/{Item.Id}" : $"/admin/products/{Item.Id}")">
+                <span aria-hidden="true">✎</span> Edytuj
+            </a>
+        }
+    </div>
+
+    <div class="prod-card-body">
+        <h3 title="@Item.Name">
+            @if (Item.IsPending)
+            {
+                @Item.Name
+            }
+            else
+            {
+                @* link rozciągnięty na cały kafelek (CSS ::after) *@
+                <a href="@($"/products/{Item.Id}")" class="prod-card-link">@Item.Name</a>
+            }
+        </h3>
+
+        @if (Item.Plants.Count > 0)
+        {
+            <p class="prod-card-line">
+                <span class="prod-card-label">Z roślin</span>
+                @for (var i = 0; i < Item.Plants.Count; i++)
+                {
+                    var plant = Item.Plants[i];
+                    <span class="@(plant.IsApproved ? "" : "prod-plant-pending")"
+                          title="@(plant.IsApproved ? null : "Roślina czeka na weryfikację")">@plant.Name</span>@(i < Item.Plants.Count - 1 ? ", " : "")
+                }
+            </p>
+        }
+
+        @if (Item.Diseases.Count > 0)
+        {
+            <div class="prod-card-line prod-card-diseases">
+                <span class="prod-card-label">Na</span>
+                @foreach (var disease in Item.Diseases.Take(MaxDiseases))
+                {
+                    <span class="prod-disease">@disease</span>
+                }
+                @if (Item.Diseases.Count > MaxDiseases)
+                {
+                    <span class="prod-disease is-more">+@(Item.Diseases.Count - MaxDiseases)</span>
+                }
+            </div>
+        }
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public ProductPreviewDTO Item { get; set; } = new();
+
+    /// <summary>Zalogowany admin – przycisk "Edytuj".</summary>
+    [Parameter] public bool ShowEdit { get; set; }
+
+    private const int MaxDiseases = 3;
+
+    private string icon = "🌿";
+    private string? thumbnail;
+
+    protected override void OnParametersSet()
+    {
+        icon = ProductTypeIcon.For(Item.ProductTypeName);
+        thumbnail = SafeUrl.Image(Item.MainThumbnailUrl);
+    }
+}

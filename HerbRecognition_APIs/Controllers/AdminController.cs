@@ -65,7 +65,7 @@ namespace HerbRecognition_APIs.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict("Nie można usunąć – ta wartość jest używana przez zapisane rośliny.");
+                return Conflict("Nie można usunąć – ta wartość jest używana przez zapisane rośliny lub produkty.");
             }
         }
     }

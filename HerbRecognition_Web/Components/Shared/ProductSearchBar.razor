@@ -1,0 +1,34 @@
+@inject NavigationManager Nav
+
+@*
+    Wyszukiwarka przepisów – wygląd jak SearchBar roślin.
+    Otwiera bibliotekę przepisów z wpisanym tekstem: /products?q=...
+    (filtr działa po nazwie, typie, roślinie, chorobie i właściwości).
+*@
+
+<div class="search-bar-wrap">
+    <form class="search-bar" role="search" @onsubmit="Search">
+        <input type="search"
+               placeholder="Wyszukaj przepis, roślinę albo dolegliwość..."
+               aria-label="Wyszukaj przepis"
+               maxlength="100"
+               @bind="query" @bind:event="oninput" />
+
+        <button type="submit" aria-label="Szukaj przepisów">🔍</button>
+    </form>
+
+    <a href="/products" class="search-form-link">Przeglądaj wszystkie przepisy →</a>
+</div>
+
+@code {
+    private string query = "";
+
+    private void Search()
+    {
+        var text = query.Trim();
+
+        Nav.NavigateTo(text.Length == 0
+            ? "/products"
+            : $"/products?q={Uri.EscapeDataString(text)}");
+    }
+}

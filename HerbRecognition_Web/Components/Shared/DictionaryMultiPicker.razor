@@ -1,0 +1,241 @@
+@using System.Globalization
+@using HerbRecognition_Web.Communication.DTOs
+
+@*
+    Wybór wielu wpisów ze słownika + propozycje nowych wartości.
+    - użytkownik: "Dodaj nową" tworzy propozycję (pomarańczowa), admin ją potem przypisze,
+    - admin (AdminMode): "Dodaj nową" i "Przypisz" otwierają okno słownika (OnResolve).
+    Listy SelectedIds i Proposals należą do rodzica – komponent zmienia je w miejscu
+    i wywołuje OnChanged.
+*@
+
+<div class="dict-picker">
+    @if (SelectedIds.Count > 0 || Proposals.Count > 0)
+    {
+        <div class="dict-chips">
+            @foreach (var id in SelectedIds)
+            {
+                var entry = Entries.FirstOrDefault(e => e.Id == id);
+                <span class="dict-chip" title="@entry?.Description">
+                    @(entry?.Name ?? $"#{id}")
+                    <button type="button"
+                            aria-label="@($"Usuń: {entry?.Name}")"
+                            disabled="@Disabled"
+                            @onclick="() => RemoveIdAsync(id)">×</button>
+                </span>
+            }
+
+            @foreach (var proposal in Proposals)
+            {
+                <span class="dict-chip is-new">
+                    @proposal.Name
+                    <small>nowa</small>
+
+                    @if (AdminMode)
+                    {
+                        <button type="button" class="dict-chip-resolve"
+                                disabled="@Disabled"
+                                @onclick="() => OnResolve.InvokeAsync(proposal)">
+                            Przypisz
+                        </button>
+                    }
+
+                    <button type="button"
+                            aria-label="@($"Usuń: {proposal.Name}")"
+                            disabled="@Disabled"
+                            @onclick="() => RemoveProposalAsync(proposal)">×</button>
+                </span>
+            }
+        </div>
+    }
+
+    @* objawy dla zaproponowanych chorób (opcjonalnie) *@
+    @if (Kind.HasDescription() && !AdminMode)
+    {
+        @foreach (var proposal in Proposals)
+        {
+            <label class="dict-proposal-note">
+                <span>Objawy: „@proposal.Name” (opcjonalnie)</span>
+                <textarea rows="2" maxlength="4000" disabled="@Disabled"
+                          @bind="proposal.Description" @bind:event="oninput"></textarea>
+            </label>
+        }
+    }
+
+    @if (!AtLimit)
+    {
+        <div class="dict-search">
+            <input type="text"
+                   placeholder="@Placeholder"
+                   aria-label="@Label"
+                   maxlength="@Kind.MaxLength()"
+                   disabled="@Disabled"
+                   @bind="query" @bind:event="oninput"
+                   @onfocus="() => isOpen = true"
+                   @onkeydown="OnKeyDownAsync" />
+
+            @if (isOpen && !string.IsNullOrWhiteSpace(query))
+            {
+                <div class="dict-backdrop" @onclick="Close"></div>
+
+                <div class="dict-results" role="listbox">
+                    @foreach (var entry in Matches)
+                    {
+                        <button type="button" class="dict-option" role="option" @onclick="() => AddIdAsync(entry.Id)">
+                            <span class="dict-option-names">
+                                <strong>@entry.Name</strong>
+                                @if (!string.IsNullOrWhiteSpace(entry.Description))
+                                {
+                                    <span>@entry.Description</span>
+                                }
+                            </span>
+                        </button>
+                    }
+
+                    @if (CanPropose)
+                    {
+                        <button type="button" class="dict-option" role="option" @onclick="ProposeAsync">
+                            <span class="dict-option-names">
+                                <strong>Dodaj nową: „@Trimmed”</strong>
+                                <span>@(AdminMode ? "sprawdzisz słownik i dodasz wpis" : "administrator sprawdzi ją przed publikacją")</span>
+                            </span>
+                            <span class="dict-badge">nowa</span>
+                        </button>
+                    }
+
+                    @if (!Matches.Any() && !CanPropose)
+                    {
+                        <div class="dict-info">Brak pasujących wpisów.</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="dict-limit">Osiągnięto limit @Max wpisów.</p>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ProductDictionary Kind { get; set; }
+    [Parameter, EditorRequired] public List<DictionaryEntry> Entries { get; set; } = new();
+    [Parameter, EditorRequired] public List<int> SelectedIds { get; set; } = new();
+    [Parameter, EditorRequired] public List<DictionaryProposal> Proposals { get; set; } = new();
+
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "Wpisz, żeby wyszukać...";
+    [Parameter] public bool AdminMode { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public int Max { get; set; } = 20;
+
+    /// <summary>Lista wybranych / propozycji się zmieniła.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    /// <summary>Admin: przypisanie propozycji (istniejącej albo nowo wpisanej) do słownika.</summary>
+    [Parameter] public EventCallback<DictionaryProposal> OnResolve { get; set; }
+
+    private static readonly CultureInfo Polish = new("pl-PL");
+
+    private string query = "";
+    private bool isOpen;
+
+    private string Trimmed => query.Trim();
+    private bool AtLimit => SelectedIds.Count + Proposals.Count >= Max;
+
+    private IEnumerable<DictionaryEntry> Matches
+    {
+        get
+        {
+            var text = Trimmed;
+            if (text.Length == 0) return Enumerable.Empty<DictionaryEntry>();
+
+            return Entries
+                .Where(e => !SelectedIds.Contains(e.Id))
+                .Where(e => Contains(e.Name, text) || Contains(e.Description, text))
+                .OrderByDescending(e => e.Name.StartsWith(text, true, Polish))
+                .ThenBy(e => e.Name, StringComparer.Create(Polish, true))
+                .Take(8);
+        }
+    }
+
+    private bool CanPropose
+    {
+        get
+        {
+            var text = Trimmed;
+            return text.Length >= 2
+                   && !AtLimit
+                   && !Entries.Any(e => Same(e.Name, text))
+                   && !Proposals.Any(p => Same(p.Name, text));
+        }
+    }
+
+    private async Task AddIdAsync(int id)
+    {
+        if (!SelectedIds.Contains(id))
+            SelectedIds.Add(id);
+
+        Reset();
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task ProposeAsync()
+    {
+        var proposal = new DictionaryProposal { Name = Trimmed };
+        Reset();
+
+        if (AdminMode)
+        {
+            // admin od razu sprawdza słownik – nic nie zostaje "w zawieszeniu"
+            await OnResolve.InvokeAsync(proposal);
+            return;
+        }
+
+        Proposals.Add(proposal);
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task RemoveIdAsync(int id)
+    {
+        SelectedIds.Remove(id);
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task RemoveProposalAsync(DictionaryProposal proposal)
+    {
+        Proposals.Remove(proposal);
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            Close();
+            return;
+        }
+
+        if (e.Key != "Enter") return;
+
+        var first = Matches.FirstOrDefault();
+        if (first is not null)
+            await AddIdAsync(first.Id);
+        else if (CanPropose)
+            await ProposeAsync();
+    }
+
+    private void Close() => isOpen = false;
+
+    private void Reset()
+    {
+        query = "";
+        isOpen = false;
+    }
+
+    private static bool Contains(string? source, string text) =>
+        source is not null && Polish.CompareInfo.IndexOf(source, text, CompareOptions.IgnoreCase) >= 0;
+
+    private static bool Same(string a, string b) =>
+        string.Equals(a.Trim(), b.Trim(), StringComparison.CurrentCultureIgnoreCase);
+}

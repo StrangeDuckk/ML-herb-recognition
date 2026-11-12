@@ -35,15 +35,40 @@
                 swoją wiedzę o świecie roślin. Odkryj również ich właściwości zdrowotne i przepisy.
             </p>
 
-            @* ----- searchbar ----- *@
+            @* ----- wyszukiwarka: rośliny albo przepisy ----- *@
             <div class="hero-search">
-                <HerbRecognition_Web.Components.Shared.SearchBar />
+                <div class="hero-search-tabs" role="group" aria-label="Czego szukasz?">
+                    <button type="button" class="hero-search-tab"
+                            aria-pressed="@(searchProducts ? "false" : "true")"
+                            @onclick="() => searchProducts = false">
+                        <span aria-hidden="true">🌿</span> Rośliny
+                    </button>
+                    <button type="button" class="hero-search-tab"
+                            aria-pressed="@(searchProducts ? "true" : "false")"
+                            @onclick="() => searchProducts = true">
+                        <span aria-hidden="true">🍯</span> Przepisy
+                    </button>
+                </div>
+
+                @if (searchProducts)
+                {
+                    <ProductSearchBar />
+                }
+                else
+                {
+                    <SearchBar />
+                }
             </div>
 
             <div class="hero-actions">
 
                 <a href="/plants" class="primary-button">
                     Wszystkie rośliny
+                    <span>→</span>
+                </a>
+
+                <a href="/products" class="primary-button">
+                    Wszystkie przepisy
                     <span>→</span>
                 </a>
 
@@ -130,6 +155,9 @@
 
     private HeroPick? hero;
     private PersistingComponentStateSubscription persisting;
+
+    /// <summary>Wyszukiwarka na stronie głównej: false = rośliny, true = przepisy.</summary>
+    private bool searchProducts;
 
     public sealed record HeroPick(int PlantId, string PolishName, string? LatinName, string TypeIcon, string ImageUrl);
 

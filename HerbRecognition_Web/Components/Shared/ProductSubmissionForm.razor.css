@@ -1,0 +1,297 @@
+﻿.submission-page {
+    padding-bottom: 64px;
+}
+
+.submission-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+
+/* ---------- sekcja ---------- */
+
+.submission-section {
+    padding: 28px 32px 30px;
+    background: #ffffff;
+    border: 1px solid #e0e6df;
+    border-radius: 18px;
+    box-shadow: 0 5px 18px rgba(42, 61, 47, 0.035);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submission-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-bottom: 22px;
+}
+
+    .submission-section-head h2,
+    .submission-section > h2 {
+        margin: 0;
+        color: #24372a;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+/* sekcje bez <header> – np. "10. Zdjęcia" z ExtraContent */
+.submission-section > h2 {
+    margin-bottom: 22px;
+}
+
+/* "Czy posiada …?" – przełącznik w nagłówku */
+.submission-section-head .switch-label {
+    color: #536158;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* wyłączona sekcja: sam nagłówek, przygaszony */
+.submission-section.is-off {
+    padding-top: 18px;
+    padding-bottom: 18px;
+    background: #f8faf6;
+    box-shadow: none;
+}
+
+    .submission-section.is-off .submission-section-head {
+        margin-bottom: 0;
+    }
+
+        .submission-section.is-off .submission-section-head h2 {
+            color: #8a978c;
+        }
+
+.section-description {
+    margin: -10px 0 20px;
+    color: #68756a;
+    font-size: 0.9rem;
+}
+
+
+/* ---------- pola: równe pary w dwóch kolumnach ---------- */
+
+.submission-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+    align-items: start;
+}
+
+.submission-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* "Dodatkowe informacje" na całą szerokość */
+.submission-field--wide {
+    grid-column: 1 / -1;
+}
+
+.submission-field label {
+    color: #344538;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.submission-field input,
+.submission-field select {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 13px;
+    color: #26372a;
+    background: #fbfcf9;
+    border: 1px solid #d8e1d5;
+    border-radius: 10px;
+    font: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+    .submission-field input:hover,
+    .submission-field select:hover {
+        border-color: #b7c7b7;
+    }
+
+    .submission-field input:focus,
+    .submission-field select:focus {
+        outline: none;
+        background: #ffffff;
+        border-color: #52745a;
+        box-shadow: 0 0 0 3px rgba(82, 116, 90, 0.14);
+    }
+
+    .submission-field input.invalid,
+    .submission-field select.invalid {
+        border-color: #c34d4d;
+    }
+
+
+/* ---------- przełączniki Tak/Nie: osobny, równy rząd ---------- */
+
+.submission-toggles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 1px dashed #e0e6df;
+}
+
+    .submission-toggles > * {
+        min-width: 0;
+        height: 100%; /* wszystkie pola w rzędzie tej samej wysokości */
+    }
+
+
+/* ---------- walidacja i błędy ---------- */
+
+.validation-message {
+    color: #b33a3a;
+    font-size: 0.84rem;
+}
+
+.validation-errors {
+    margin: 0 auto;
+    max-width: 1000px;
+    padding: 16px 20px 16px 40px;
+    color: #8f3030;
+    background: #fff4f2;
+    border: 1px solid #f0d2cd;
+    border-radius: 12px;
+}
+
+/* błąd zapisu nad przyciskami (styl .plants-error z innych stron ma duże marginesy) */
+.submission-form > .plants-error {
+    margin: 0;
+    max-width: none;
+    padding: 16px 20px;
+    text-align: left;
+    color: #8f3030;
+    background: #fff4f2;
+    border: 1px solid #f0d2cd;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+
+/* ---------- przyciski ---------- */
+
+.submission-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+.submission-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 12px 26px;
+    color: #ffffff;
+    background: #315c3e;
+    border: 1px solid #315c3e;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+    .submission-button:hover:not(:disabled) {
+        background: #24372a;
+        border-color: #24372a;
+        transform: translateY(-1px);
+    }
+
+    .submission-button:focus-visible {
+        outline: 2px solid #315c3e;
+        outline-offset: 3px;
+    }
+
+    .submission-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .submission-button.secondary {
+        color: #315c3e;
+        background: #ffffff;
+        border-color: #b7c7b7;
+    }
+
+        .submission-button.secondary:hover:not(:disabled) {
+            color: #24372a;
+            background: #eaf0e8;
+            border-color: #52745a;
+        }
+
+
+/* ---------- strona sukcesu ---------- */
+
+.submission-success {
+    max-width: 720px;
+    margin: 32px auto;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #dce8d8;
+    border-radius: 18px;
+    box-shadow: 0 5px 18px rgba(42, 61, 47, 0.035);
+}
+
+    .submission-success h2 {
+        margin-top: 0;
+        color: #315c3e;
+    }
+
+
+/* ---------- tablet / telefon ---------- */
+
+@media (max-width: 760px) {
+    .submission-toggles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .submission-section {
+        padding: 20px 18px 22px;
+        border-radius: 14px;
+    }
+
+    .submission-section-head {
+        margin-bottom: 18px;
+    }
+
+        .submission-section-head h2 {
+            font-size: 1.2rem;
+        }
+
+        /* przełącznik pod tytułem, na całą szerokość */
+        .submission-section-head .switch-label {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+    .submission-grid,
+    .submission-toggles {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .submission-actions,
+    .submission-actions .submission-button {
+        width: 100%;
+    }
+}

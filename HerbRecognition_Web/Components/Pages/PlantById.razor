@@ -6,17 +6,12 @@
 
 @inject PlantApiService PlantApiService
 @inject AdminAuthService Auth
+@inject ProductApiService ProductApi
 
 <PageTitle>
     @(plant is null ? "Szczegóły rośliny" : plant.PolishName)
 </PageTitle>
 
-@*
-    Wariant A.
-    Kolejność w HTML = kolejność na telefonie (wszystko jedno pod drugim):
-    zdjęcia -> nagłówek z podstawowymi informacjami -> toksyczność -> części -> podobne.
-    Na komputerze CSS tylko przestawia te same bloki – żadna informacja nie jest ukrywana.
-*@
 
 <div class="plant-details-page">
 
@@ -146,6 +141,7 @@
                                     <span aria-hidden="true">✎</span> Edytuj
                                 </a>
                             }
+                            <a href="@($"/plants/{plant.Id}/add-product")" class="plant-card-edit">＋ Dodaj przepis</a>
                         </div>
 
                         <div class="pd-facts">
@@ -212,9 +208,34 @@
                                 <span class="similar-badge pending">Zgłoszenie #@pending.Id</span>
                             </div>
                         }
+
                     </div>
                 </section>
             }
+
+            <section class="plant-section">
+                <div class="section-heading prod-section-heading">
+                    <div>
+                        <span class="section-label">PRZEPISY</span>
+                        <h2>Co można z niej zrobić</h2>
+                    </div>
+                    <a href="@($"/plants/{plant.Id}/add-product")" class="prod-add-button">＋ Dodaj przepis</a>
+                </div>
+
+                @if (products.Count == 0)
+                {
+                    <p class="section-note">Nie ma jeszcze przepisów z tą rośliną – dodaj pierwszy.</p>
+                }
+                else
+                {
+                    <div class="prod-grid">
+                        @foreach (var item in products)
+                        {
+                            <ProductCard @key="item.Id" Item="item" ShowEdit="Auth.IsLoggedIn" />
+                        }
+                    </div>
+                }
+            </section>
 
         </div>
     }
@@ -230,6 +251,7 @@
     private GetPlantDTO? plant;
     private List<string> pictures = new();
     private List<SimilarPlantCandidateDTO> pendingSimilar = new();
+    private List<ProductPreviewDTO> products = new();
 
     private List<(string Label, string? Value)> basicFields = new();
     private List<PartView> upperParts = new();
@@ -267,6 +289,7 @@
         pictures = new();
         pendingSimilar = new();
         current = 0;
+        products = new();
 
         try
         {
@@ -295,6 +318,15 @@
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Nie udało się pobrać zgłoszeń podobnych roślin: {ex.Message}");
+                }
+
+                try
+                {
+                    products = await ProductApi.GetProductsAsync(Id);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Nie udało się pobrać przepisów rośliny {Id}: {ex.Message}");
                 }
 
                 BuildView();

@@ -5,9 +5,13 @@ namespace HerbRecognition_Web.Communication.DTOs
     public class DictionaryItemDTO
     {
         public int Id { get; set; }
-        [Required, StringLength(100, MinimumLength = 1)]
+        [Required, StringLength(1000, MinimumLength = 1)]
         public string? Name { get; set; } = "";
         public int? value { get; set; }
+
+        // tylko choroby – objawy
+        [StringLength(4000)]
+        public string? Description { get; set; }
 
         // tylko dla kolorów
         [Range(0, 255)] public int? R { get; set; }

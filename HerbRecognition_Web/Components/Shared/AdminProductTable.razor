@@ -1,0 +1,135 @@
+@using HerbRecognition_Web.Communication.DTOs
+
+@*
+    Tabela panelu admina – wspólna dla zgłoszeń produktów i produktów w bazie.
+*@
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nr</th>
+                <th>Przepis</th>
+                <th>Typ</th>
+                <th>Rośliny</th>
+                <th>Na co działa</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+                <tr class="@(item.IsCorrupted ? "admin-row-corrupted" : "")">
+                    <td class="admin-id">#@item.Id</td>
+
+                    <td>
+                        <div class="admin-plant-cell">
+                            <div class="summary-thumb">
+                                @if (item.MainThumbnailUrl is not null)
+                                {
+                                    <img src="@item.MainThumbnailUrl" alt="" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span>brak<br />zdjęć</span>
+                                }
+                            </div>
+
+                            <div class="admin-plant-names">
+                                @if (ViewUrl is not null && !item.IsCorrupted)
+                                {
+                                    <a href="@ViewUrl(item.Id)" class="admin-plant-link"><strong>@item.Name</strong></a>
+                                }
+                                else
+                                {
+                                    <strong>@item.Name</strong>
+                                }
+
+                                @if (item.IsCorrupted)
+                                {
+                                    <span>Dane nie dają się odczytać – możesz je tylko usunąć.</span>
+                                }
+                                else if (item.NewEntriesCount > 0)
+                                {
+                                    <span class="admin-part admin-part-new">
+                                        Nowe wpisy do przypisania: @item.NewEntriesCount
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>@(item.ProductTypeName ?? "–")</td>
+
+                    <td>
+                        <div class="admin-parts">
+                            @foreach (var plant in item.Plants)
+                            {
+                                <span class="admin-part @(plant.IsApproved ? "" : "is-pending")"
+                                      title="@(plant.IsApproved ? "Roślina w bazie" : "Roślina czeka na weryfikację")">
+                                    @plant.Name
+                                </span>
+                            }
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="admin-parts">
+                            @foreach (var disease in item.Diseases)
+                            {
+                                <span class="admin-part">@disease</span>
+                            }
+                            <span class="admin-part admin-part-photos @(item.PictureCount == 0 ? "is-empty" : "")">
+                                Zdjęcia @item.PictureCount/3
+                            </span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="admin-actions">
+                            @if (confirmDeleteId == item.Id)
+                            {
+                                <button type="button" class="admin-btn small danger solid"
+                                        disabled="@IsBusy"
+                                        @onclick="() => DeleteAsync(item.Id)">
+                                    Na pewno usuń
+                                </button>
+                                <button type="button" class="admin-btn small secondary"
+                                        @onclick="() => confirmDeleteId = null">
+                                    Anuluj
+                                </button>
+                            }
+                            else
+                            {
+                                @if (!item.IsCorrupted)
+                                {
+                                    <a class="admin-btn small secondary" href="@EditUrl(item.Id)">Edytuj</a>
+                                }
+                                <button type="button" class="admin-btn small danger"
+                                        @onclick="() => confirmDeleteId = item.Id">
+                                    Usuń
+                                </button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<ProductPreviewDTO> Items { get; set; } = new();
+    [Parameter, EditorRequired] public Func<int, string> EditUrl { get; set; } = default!;
+    [Parameter] public Func<int, string>? ViewUrl { get; set; }
+    [Parameter] public EventCallback<int> OnDelete { get; set; }
+    [Parameter] public bool IsBusy { get; set; }
+
+    private int? confirmDeleteId;
+
+    private async Task DeleteAsync(int id)
+    {
+        await OnDelete.InvokeAsync(id);
+        confirmDeleteId = null;
+    }
+}

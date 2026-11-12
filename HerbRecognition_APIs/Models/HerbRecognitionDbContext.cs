@@ -20,6 +20,7 @@ public partial class HerbRecognitionDbContext : DbContext
     public virtual DbSet<Color> Colors { get; set; }
 
     public virtual DbSet<Disease> Diseases { get; set; }
+    public virtual DbSet<Contraindication> Contraindications { get; set; }
 
     public virtual DbSet<Flavour> Flavours { get; set; }
 
@@ -64,6 +65,7 @@ public partial class HerbRecognitionDbContext : DbContext
     public virtual DbSet<Thickness> Thicknesses { get; set; }
 
     public virtual DbSet<UserInput> UserInputs { get; set; }
+    public virtual DbSet<ProductInput> ProductInputs { get; set; }
 
     public virtual DbSet<MonthOfHarvest> MonthOfHarvests { get; set; }
 
@@ -141,6 +143,15 @@ public partial class HerbRecognitionDbContext : DbContext
             entity.Property(e => e.Symptoms)
                 .HasColumnName("symptoms")
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<Contraindication>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("contraindication_pk");
+            entity.ToTable("contraindication");
+
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
+            entity.Property(e => e.Name).HasMaxLength(1000).HasColumnName("name").IsRequired();
         });
 
         modelBuilder.Entity<Flavour>(entity =>
@@ -326,39 +337,47 @@ public partial class HerbRecognitionDbContext : DbContext
 
         modelBuilder.Entity<Healthproperty>(entity =>
         {
-            entity.HasKey(e => e.Id)
-                .HasName("healthproperty_pk");
-
+            entity.HasKey(e => e.Id).HasName("healthproperty_pk");
             entity.ToTable("healthproperty");
 
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id")
-                .IsRequired();
-
-            entity.Property(e => e.Property)
-                .HasMaxLength(300)
-                .HasColumnName("property")
-                .IsRequired();
-
-            entity.Property(e => e.Activesubstanceid)
-                .HasColumnName("activesubstanceid")
-                .IsRequired();
-
-            entity.Property(e => e.Diseaseid)
-                .HasColumnName("diseaseid")
-                .IsRequired();
-
-            entity.HasOne(d => d.Activesubstance).WithMany(p => p.Healthproperties)
-                .HasForeignKey(d => d.Activesubstanceid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("healthproperties_activesubstances");
-
-            entity.HasOne(d => d.Disease).WithMany(p => p.Healthproperties)
-                .HasForeignKey(d => d.Diseaseid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("healthproperties_diseases");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
+            entity.Property(e => e.Property).HasMaxLength(300).HasColumnName("property").IsRequired();
         });
+        //modelBuilder.Entity<Healthproperty>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id)
+        //        .HasName("healthproperty_pk");
+
+        //    entity.ToTable("healthproperty");
+
+        //    entity.Property(e => e.Id)
+        //        .UseIdentityAlwaysColumn()
+        //        .HasColumnName("id")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Property)
+        //        .HasMaxLength(300)
+        //        .HasColumnName("property")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Activesubstanceid)
+        //        .HasColumnName("activesubstanceid")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Diseaseid)
+        //        .HasColumnName("diseaseid")
+        //        .IsRequired();
+
+        //    entity.HasOne(d => d.Activesubstance).WithMany(p => p.Healthproperties)
+        //        .HasForeignKey(d => d.Activesubstanceid)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("healthproperties_activesubstances");
+
+        //    entity.HasOne(d => d.Disease).WithMany(p => p.Healthproperties)
+        //        .HasForeignKey(d => d.Diseaseid)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("healthproperties_diseases");
+        //});
 
         modelBuilder.Entity<Leaf>(entity =>
         {
@@ -486,6 +505,19 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasForeignKey(d => d.UserInputId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("picture_userinput");
+
+            entity.Property(e => e.ProductId).HasColumnName("productid");
+            entity.Property(e => e.ProductInputId).HasColumnName("productinputid");
+
+            entity.HasOne<Product>().WithMany()
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("picture_product");
+
+            entity.HasOne<ProductInput>().WithMany()
+                .HasForeignKey(d => d.ProductInputId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("picture_productinput");
         });
 
         modelBuilder.Entity<Plant>(entity =>
@@ -590,9 +622,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasForeignKey(d => d.Sapid)
                 .HasConstraintName("entity_sap");
 
-            //entity.HasOne(d => d.SimilarPlants).WithMany(p => p.InverseSimilarPlants)
-            //    .HasForeignKey(d => d.Similarplantsid)
-            //    .HasConstraintName("plants_plants");
+
 
             entity.HasOne(d => d.Stalk).WithMany(p => p.Plants)
                 .HasForeignKey(d => d.Stalkid)
@@ -633,32 +663,57 @@ public partial class HerbRecognitionDbContext : DbContext
         modelBuilder.Entity<PlantProduct>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("plant_product_pk");
-
             entity.ToTable("plant_product");
 
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id")
-                .IsRequired();
-
-            entity.Property(e => e.Plantsid)
-                .HasColumnName("plantsid")
-                .IsRequired();
-
-            entity.Property(e => e.Productsid)
-                .HasColumnName("productsid")
-                .IsRequired();
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
+            entity.Property(e => e.Plantsid).HasColumnName("plantsid");
+            entity.Property(e => e.UserInputId).HasColumnName("userinputid");
+            entity.Property(e => e.Productsid).HasColumnName("productsid");
 
             entity.HasOne(d => d.Plants).WithMany(p => p.PlantProducts)
                 .HasForeignKey(d => d.Plantsid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("plants_properties_plants");
 
+            entity.HasOne<UserInput>().WithMany()
+                .HasForeignKey(d => d.UserInputId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("plant_product_userinput");
+
             entity.HasOne(d => d.Products).WithMany(p => p.PlantProducts)
                 .HasForeignKey(d => d.Productsid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("plants_properties_products");
         });
+        //modelBuilder.Entity<PlantProduct>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id).HasName("plant_product_pk");
+
+        //    entity.ToTable("plant_product");
+
+        //    entity.Property(e => e.Id)
+        //        .UseIdentityAlwaysColumn()
+        //        .HasColumnName("id")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Plantsid)
+        //        .HasColumnName("plantsid")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Productsid)
+        //        .HasColumnName("productsid")
+        //        .IsRequired();
+
+        //    entity.HasOne(d => d.Plants).WithMany(p => p.PlantProducts)
+        //        .HasForeignKey(d => d.Plantsid)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("plants_properties_plants");
+
+        //    entity.HasOne(d => d.Products).WithMany(p => p.PlantProducts)
+        //        .HasForeignKey(d => d.Productsid)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("plants_properties_products");
+        //});
 
         modelBuilder.Entity<Planttype>(entity =>
         {
@@ -697,45 +752,112 @@ public partial class HerbRecognitionDbContext : DbContext
         modelBuilder.Entity<Product>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("product_pk");
-
             entity.ToTable("product");
 
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id")
-                .IsRequired();
-
-            entity.Property(e => e.Name)
-                .HasMaxLength(300)
-                .HasColumnName("name")
-                .IsRequired();
-
-            entity.Property(e => e.Recipe)
-                .HasColumnName("recipe")
-                .IsRequired();
-
-            entity.Property(e => e.Healthpropertyid)
-                .HasColumnName("healthpropertyid")
-                .IsRequired();
-
-            entity.Property(e => e.Contraindication)
-                .HasMaxLength(100)
-                .HasColumnName("contraindication");
-
-            entity.Property(e => e.Producttypeid)
-                .HasColumnName("producttypeid")
-                .IsRequired();
-
-            entity.HasOne(d => d.Healthproperty).WithMany(p => p.Products)
-                .HasForeignKey(d => d.Healthpropertyid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("products_healthproperties");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
+            entity.Property(e => e.Name).HasMaxLength(300).HasColumnName("name").IsRequired();
+            entity.Property(e => e.Recipe).HasColumnName("recipe").IsRequired();
+            entity.Property(e => e.Producttypeid).HasColumnName("producttypeid");
 
             entity.HasOne(d => d.Producttype).WithMany(p => p.Products)
                 .HasForeignKey(d => d.Producttypeid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("products_producttypes");
+
+            entity.HasMany(d => d.Healthproperties).WithMany(p => p.Products)
+                .UsingEntity<Dictionary<string, object>>(
+                    "product_healthproperty",
+                    r => r.HasOne<Healthproperty>().WithMany().HasForeignKey("healthpropertyid")
+                          .OnDelete(DeleteBehavior.Restrict).HasConstraintName("product_healthproperty_hp"),
+                    l => l.HasOne<Product>().WithMany().HasForeignKey("productid")
+                          .OnDelete(DeleteBehavior.Cascade).HasConstraintName("product_healthproperty_product"),
+                    j =>
+                    {
+                        j.ToTable("product_healthproperty");
+                        j.HasKey("productid", "healthpropertyid").HasName("product_healthproperty_pk");
+                    });
+
+            entity.HasMany(d => d.Activesubstances).WithMany(p => p.Products)
+                .UsingEntity<Dictionary<string, object>>(
+                    "product_activesubstance",
+                    r => r.HasOne<Activesubstance>().WithMany().HasForeignKey("activesubstanceid")
+                          .OnDelete(DeleteBehavior.Restrict).HasConstraintName("product_activesubstance_as"),
+                    l => l.HasOne<Product>().WithMany().HasForeignKey("productid")
+                          .OnDelete(DeleteBehavior.Cascade).HasConstraintName("product_activesubstance_product"),
+                    j =>
+                    {
+                        j.ToTable("product_activesubstance");
+                        j.HasKey("productid", "activesubstanceid").HasName("product_activesubstance_pk");
+                    });
+
+            entity.HasMany(d => d.Diseases).WithMany(p => p.Products)
+                .UsingEntity<Dictionary<string, object>>(
+                    "product_disease",
+                    r => r.HasOne<Disease>().WithMany().HasForeignKey("diseaseid")
+                          .OnDelete(DeleteBehavior.Restrict).HasConstraintName("product_disease_disease"),
+                    l => l.HasOne<Product>().WithMany().HasForeignKey("productid")
+                          .OnDelete(DeleteBehavior.Cascade).HasConstraintName("product_disease_product"),
+                    j =>
+                    {
+                        j.ToTable("product_disease");
+                        j.HasKey("productid", "diseaseid").HasName("product_disease_pk");
+                    });
+
+            entity.HasMany(d => d.Contraindications).WithMany(p => p.Products)
+                .UsingEntity<Dictionary<string, object>>(
+                    "product_contraindication",
+                    r => r.HasOne<Contraindication>().WithMany().HasForeignKey("contraindicationid")
+                          .OnDelete(DeleteBehavior.Restrict).HasConstraintName("product_contraindication_ci"),
+                    l => l.HasOne<Product>().WithMany().HasForeignKey("productid")
+                          .OnDelete(DeleteBehavior.Cascade).HasConstraintName("product_contraindication_product"),
+                    j =>
+                    {
+                        j.ToTable("product_contraindication");
+                        j.HasKey("productid", "contraindicationid").HasName("product_contraindication_pk");
+                    });
         });
+        //modelBuilder.Entity<Product>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id).HasName("product_pk");
+
+        //    entity.ToTable("product");
+
+        //    entity.Property(e => e.Id)
+        //        .UseIdentityAlwaysColumn()
+        //        .HasColumnName("id")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Name)
+        //        .HasMaxLength(300)
+        //        .HasColumnName("name")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Recipe)
+        //        .HasColumnName("recipe")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Healthpropertyid)
+        //        .HasColumnName("healthpropertyid")
+        //        .IsRequired();
+
+        //    entity.Property(e => e.Contraindication)
+        //        .HasMaxLength(100)
+        //        .HasColumnName("contraindication");
+
+        //    entity.Property(e => e.Producttypeid)
+        //        .HasColumnName("producttypeid")
+        //        .IsRequired();
+
+        //    entity.HasOne(d => d.Healthproperty).WithMany(p => p.Products)
+        //        .HasForeignKey(d => d.Healthpropertyid)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("products_healthproperties");
+
+        //    entity.HasOne(d => d.Producttype).WithMany(p => p.Products)
+        //        .HasForeignKey(d => d.Producttypeid)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("products_producttypes");
+        //});
 
         modelBuilder.Entity<Producttype>(entity =>
         {
@@ -749,7 +871,7 @@ public partial class HerbRecognitionDbContext : DbContext
                 .IsRequired();
 
             entity.Property(e => e.Name)
-                .HasMaxLength(50)
+                .HasMaxLength(100)
                 .HasColumnName("name")
                 .IsRequired();
         });
@@ -927,6 +1049,16 @@ public partial class HerbRecognitionDbContext : DbContext
                 .HasColumnType("jsonb")
                 .HasColumnName("inputdata")
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<ProductInput>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("productinput_pkey");
+            entity.ToTable("productinput");
+
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
+            entity.Property(e => e.Inputdata).HasColumnType("jsonb").HasColumnName("inputdata").IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnName("createdat").HasDefaultValueSql("now()");
         });
 
         OnModelCreatingPartial(modelBuilder);

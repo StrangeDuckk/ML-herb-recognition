@@ -35,6 +35,11 @@ namespace HerbRecognition_APIs.Services
         Task<bool> UpdateDictionaryItemAsync(string dictionary, int id, DictionaryItemDTO dto);
         Task<bool> DeleteDictionaryItemAsync(string dictionary, int id);
         Task<List<GetMonthOfHarvestDTO>> GetAllDictMonthOfHarvestAsync();
+        Task<List<GetProductTypeDTO>> GetAllDictProductTypesAsync();
+        Task<List<GetHealthPropertyDTO>> GetAllDictHealthPropertiesAsync();
+        Task<List<GetActiveSubstanceDTO>> GetAllDictActiveSubstancesAsync();
+        Task<List<GetDiseaseDTO>> GetAllDictDiseasesAsync();
+        Task<List<GetContraindicationDTO>> GetAllDictContraindicationsAsync();
     }
 
     public class DbService(HerbRecognitionDbContext data) : IDbService 
@@ -356,6 +361,26 @@ namespace HerbRecognition_APIs.Services
                     MonthName = p.MonthName
                 }).ToListAsync() ;
         }
+        public async Task<List<GetProductTypeDTO>> GetAllDictProductTypesAsync() =>
+            await data.Producttypes.OrderBy(x => x.Name)
+                .Select(x => new GetProductTypeDTO { ProductTypeId = x.Id, Name = x.Name })
+                .ToListAsync();//productType
+        public async Task<List<GetHealthPropertyDTO>> GetAllDictHealthPropertiesAsync() =>
+            await data.Healthproperties.OrderBy(x => x.Property)
+                .Select(x => new GetHealthPropertyDTO { HealthPropertyId = x.Id, Property = x.Property })
+                .ToListAsync();//healthProperty
+        public async Task<List<GetActiveSubstanceDTO>> GetAllDictActiveSubstancesAsync() =>
+            await data.Activesubstances.OrderBy(x => x.Activesubstance1)
+                .Select(x => new GetActiveSubstanceDTO { ActiveSubstanceId = x.Id, ActiveSubstance = x.Activesubstance1 })
+                .ToListAsync();//activeSubstances
+        public async Task<List<GetDiseaseDTO>> GetAllDictDiseasesAsync() =>
+            await data.Diseases.OrderBy(x => x.Name)
+                .Select(x => new GetDiseaseDTO { DiseaseId = x.Id, Name = x.Name, Symptoms = x.Symptoms })
+                .ToListAsync();//diseases
+        public async Task<List<GetContraindicationDTO>> GetAllDictContraindicationsAsync() =>
+            await data.Contraindications.OrderBy(x => x.Name)
+                .Select(x => new GetContraindicationDTO { ContraindicationId = x.Id, Name = x.Name })
+                .ToListAsync();//contraindications
 
         // ----------- UserInput Controller api/userInput/ ------
         private async Task<List<SimilarPlantCandidateDTO>> MapSubmissionsToCandidatesAsync(IEnumerable<UserInput> submissions)
@@ -507,8 +532,13 @@ namespace HerbRecognition_APIs.Services
                     ["surface"] = (typeof(Surface), nameof(Surface.SurfaceName)),
                     ["thickness"] = (typeof(Thickness), nameof(Thickness.ThicknessName)),
                     ["color"] = (typeof(Models.Color), nameof(Models.Color.ColorName)),
-                    ["monthOfHarvest"] = (typeof(MonthOfHarvest), nameof(MonthOfHarvest.MonthName))
-                };
+                    ["monthOfHarvest"] = (typeof(MonthOfHarvest), nameof(MonthOfHarvest.MonthName)),
+                    ["productType"] = (typeof(Producttype), nameof(Producttype.Name)),
+                    ["healthProperty"] = (typeof(Healthproperty), nameof(Healthproperty.Property)),
+                    ["activeSubstance"] = (typeof(Activesubstance), nameof(Activesubstance.Activesubstance1)),
+                    ["disease"] = (typeof(Disease), nameof(Disease.Name)),
+                    ["contraindication"] = (typeof(Contraindication), nameof(Contraindication.Name))
+        };
         private static readonly HashSet<string> EditOnlyDictionaries = new(StringComparer.OrdinalIgnoreCase)//stała liczba, edycja istniejacych
                 {
                     "monthOfHarvest"
@@ -561,16 +591,30 @@ namespace HerbRecognition_APIs.Services
         }
         private static void ApplyValues(EntityEntry entry, string nameProp, DictionaryItemDTO dto)
         {
-            entry.Property(nameProp).CurrentValue = dto.Name.Trim();
+            var name = (dto.Name ?? "").Trim();
+            if (name.Length == 0)
+                throw new ArgumentException("Nazwa nie może być pusta.");
+
+            var maxLength = entry.Property(nameProp).Metadata.GetMaxLength();
+            if (maxLength is int max && name.Length > max)
+                throw new ArgumentException($"Nazwa może mieć najwyżej {max} znaków.");
+
+            entry.Property(nameProp).CurrentValue = name;
 
             if (entry.Metadata.ClrType == typeof(Models.Color))
             {
-                // nazwy kolumn RGB dopasuj do swojej encji Color
                 SetNumber(entry, "R", dto.R);
                 SetNumber(entry, "G", dto.G);
                 SetNumber(entry, "B", dto.B);
             }
 
+            // choroba: objawy (kolumna NOT NULL – pusty tekst, gdy admin ich nie poda;
+            // przy edycji bez pola Description objawy zostają bez zmian)
+            if (entry.Metadata.ClrType == typeof(Disease) &&
+                (dto.Description is not null || entry.State == EntityState.Added))
+            {
+                entry.Property(nameof(Disease.Symptoms)).CurrentValue = dto.Description?.Trim() ?? "";
+            }
         }
         private static void SetNumber(EntityEntry entry, string propertyName, int? value)
         {

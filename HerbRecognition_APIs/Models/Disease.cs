@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace HerbRecognition_APIs.Models;
 
+/// <summary>Słownik chorób.</summary>
 public partial class Disease
 {
     public int Id { get; set; }
@@ -11,5 +12,5 @@ public partial class Disease
 
     public string Symptoms { get; set; } = null!;
 
-    public virtual ICollection<Healthproperty> Healthproperties { get; set; } = new List<Healthproperty>();
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

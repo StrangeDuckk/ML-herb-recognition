@@ -143,6 +143,7 @@ builder.Services.AddDbContext<HerbRecognitionDbContext>(options =>
 builder.Services.AddScoped<IDbService, DbService>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IPlantSearchService, PlantSearchService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 // pictures:
 builder.Services.Configure<PictureStorageOptions>(builder.Configuration.GetSection("PictureStorage"));

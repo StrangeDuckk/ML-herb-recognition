@@ -62,5 +62,24 @@ namespace HerbRecognition_APIs.Controllers
         {
             return Ok(await dbService.GetAllDictMonthOfHarvestAsync());
         }
+        [HttpGet("productType")]
+        public async Task<IActionResult> GetProductTypes() =>
+            Ok(await dbService.GetAllDictProductTypesAsync());
+
+        [HttpGet("healthProperty")]
+        public async Task<IActionResult> GetHealthProperties() =>
+            Ok(await dbService.GetAllDictHealthPropertiesAsync());
+
+        [HttpGet("activeSubstance")]
+        public async Task<IActionResult> GetActiveSubstances() =>
+            Ok(await dbService.GetAllDictActiveSubstancesAsync());
+
+        [HttpGet("disease")]
+        public async Task<IActionResult> GetDiseases() =>
+            Ok(await dbService.GetAllDictDiseasesAsync());
+
+        [HttpGet("contraindication")]
+        public async Task<IActionResult> GetContraindications() =>
+            Ok(await dbService.GetAllDictContraindicationsAsync());
     }
 }

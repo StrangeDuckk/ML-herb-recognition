@@ -14,6 +14,9 @@ namespace HerbRecognition_Web.Communication.Services
         public Task<List<PictureDTO>> UploadForSubmissionAsync(
             int submissionId, IReadOnlyList<PhotoUpload> photos, CancellationToken ct = default) =>
             UploadAsync(http, $"api/userInput/{submissionId}/pictures", photos, bearerToken: null, ct);
+        public Task<List<PictureDTO>> UploadForProductSubmissionAsync(
+            int productSubmissionId, IReadOnlyList<PhotoUpload> photos, CancellationToken ct = default) =>
+            UploadAsync(http, $"api/productInput/{productSubmissionId}/pictures", photos, bearerToken: null, ct);
 
         /// <summary>Odpowiedź z plikiem albo null (zła nazwa / brak pliku). Wywołujący zwalnia odpowiedź.</summary>
         public async Task<HttpResponseMessage?> GetFileAsync(string fileName, CancellationToken ct)
@@ -103,10 +106,14 @@ namespace HerbRecognition_Web.Communication.Services
 
         // ------------------------------------------------------------------
 
-        private static string OwnerPath(PictureOwnerKind owner, int id) =>
-            owner == PictureOwnerKind.Plant ? $"api/plants/{id}" : $"api/userInput/{id}";
+        private static string OwnerPath(PictureOwnerKind owner, int id) => owner switch
+        {
+            PictureOwnerKind.Plant => $"api/plants/{id}",
+            PictureOwnerKind.Submission => $"api/userInput/{id}",
+            PictureOwnerKind.Product => $"api/products/{id}",
+            _ => $"api/productInput/{id}"
+        };
 
-        // TODO: dopasuj do tego, jak AdminApiService pobiera token z AdminAuthService
         private string Token =>
             auth.Token ?? throw new UnauthorizedAccessException();
 

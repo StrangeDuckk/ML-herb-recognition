@@ -1504,6 +1504,1220 @@ a.admin-btn {
         opacity: 1;
     }
 
+/* =====================================================================
+   PRZEPISY – formularz, wybór ze s³owników, okno "Przypisz", panel admina.
+   ===================================================================== */
+/* ---------- biblioteka --------- */
+
+.prod-card-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 6px;
+    min-height: 280px;
+    padding: 28px;
+    border: 2px dashed #c9d6ce;
+    border-radius: 16px;
+    background: transparent;
+}
+
+    .prod-card-cta p {
+        margin: 0;
+        color: #536158;
+        line-height: 1.6;
+    }
+
+.prod-card-cta-icon {
+    font-size: 2.4rem;
+    line-height: 1;
+    opacity: 0.6;
+}
+
+:root[data-theme="dark"] .prod-card-cta {
+    border-color: var(--d-border-strong);
+}
+
+    :root[data-theme="dark"] .prod-card-cta p {
+        color: var(--d-text-2);
+    }
+
+/* ---------- formularz ---------- */
+
+.product-dict-grid {
+    display: grid;
+    gap: 22px;
+}
+
+.product-fixed-plant {
+    margin-bottom: 12px;
+}
+
+.submission-form .product-recipe {
+    min-height: 220px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+
+/* ---------- wybór ze s³ownika (DictionaryMultiPicker) ---------- */
+
+.dict-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dict-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dict-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 6px 6px 6px 12px;
+    border: 1px solid #c9e0d2;
+    border-radius: 999px;
+    background: #e3f0e8;
+    color: #2f6c4d;
+    font-size: 0.9rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+    .dict-chip small {
+        font-weight: 500;
+        opacity: 0.8;
+    }
+
+    .dict-chip.is-new {
+        border-color: #f1dcb0;
+        background: #fdf3e1;
+        color: #9a6a12;
+    }
+
+    .dict-chip.is-fixed {
+        padding-right: 14px;
+    }
+
+    .dict-chip > button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.06);
+        color: inherit;
+        font-size: 1rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+        .dict-chip > button:hover:not(:disabled) {
+            background: rgba(0, 0, 0, 0.14);
+        }
+
+    .dict-chip > .dict-chip-resolve {
+        width: auto;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: #9a6a12;
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+        .dict-chip > .dict-chip-resolve:hover:not(:disabled) {
+            background: #7d560e;
+        }
+
+.dict-proposal-note {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #9a6a12;
+}
+
+.dict-search {
+    position: relative;
+}
+
+    .dict-search input {
+        width: 100%;
+    }
+
+.dict-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+}
+
+.dict-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 11;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px;
+    background: #ffffff;
+    border: 1px solid #dfe5e1;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.dict-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .dict-option:hover:not(:disabled),
+    .dict-option:focus-visible {
+        background: #f0f6f2;
+        outline: none;
+    }
+
+.dict-option-names {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+    .dict-option-names span {
+        overflow: hidden;
+        color: #7a857f;
+        font-size: 0.85rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+.dict-badge {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #fdf3e1;
+    color: #9a6a12;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+    .dict-badge.is-existing {
+        background: #e3f0e8;
+        color: #2f6c4d;
+    }
+
+.dict-info {
+    margin: 0;
+    padding: 10px;
+    color: #7a857f;
+}
+
+.dict-limit {
+    margin: 0;
+    color: #7a857f;
+    font-size: 0.85rem;
+}
+
+
+/* ---------- okno "Przypisz" (DictionaryResolveDialog) ---------- */
+
+.hr-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(15, 25, 18, 0.45);
+}
+
+.hr-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 301;
+    width: min(640px, calc(100vw - 24px));
+    max-height: min(86vh, 760px);
+    overflow-y: auto;
+    padding: 24px 26px;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    border: 1px solid #e0e6df;
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.hr-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+    .hr-modal-head h2 {
+        margin: 0;
+        color: #1d2b21;
+        font-size: 1.35rem;
+        overflow-wrap: anywhere;
+    }
+
+.hr-modal-close {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e0e6df;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #536158;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+    .hr-modal-close:hover {
+        background: #eaf0e8;
+    }
+
+.hr-modal-note {
+    margin: 12px 0 0;
+    color: #536158;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.hr-modal-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #eef2ed;
+}
+
+    .hr-modal-section h3 {
+        margin: 0;
+        color: #284631;
+        font-size: 1rem;
+    }
+
+.hr-modal-search {
+    width: 100%;
+}
+
+.hr-modal-list {
+    max-height: 260px;
+    margin: 0;
+    padding: 4px;
+    overflow-y: auto;
+    list-style: none;
+    border: 1px solid #eef2ed;
+    border-radius: 10px;
+}
+
+.hr-modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+    .hr-modal-fields label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        color: #344538;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .hr-modal-fields .admin-input {
+        width: 100%;
+    }
+
+.hr-modal .submission-button {
+    align-self: flex-start;
+}
+
+@media (max-width: 640px) {
+    .hr-modal {
+        top: auto;
+        bottom: 0;
+        width: 100vw;
+        max-height: 90vh;
+        transform: translateX(-50%);
+        border-radius: 18px 18px 0 0;
+    }
+}
+
+
+/* ---------- panel admina ---------- */
+
+.admin-tabs-group {
+    padding: 10px 12px 4px;
+    color: #7a857f;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.admin-filter {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+.admin-part.is-pending,
+.admin-part.admin-part-new {
+    background: #fdf3e1;
+    color: #9a6a12;
+}
+
+.admin-part.admin-part-new {
+    width: fit-content;
+    margin-top: 4px;
+}
+
+
+/* =====================================================================
+   TRYB CIEMNY
+   ===================================================================== */
+
+:root[data-theme="dark"] .dict-chip {
+    background: var(--d-accent-soft);
+    border-color: #2c4a37;
+    color: var(--d-accent);
+}
+
+    :root[data-theme="dark"] .dict-chip.is-new {
+        background: var(--d-warn-bg);
+        border-color: var(--d-warn-border);
+        color: var(--d-warn-text);
+    }
+
+    :root[data-theme="dark"] .dict-chip > button {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+        :root[data-theme="dark"] .dict-chip > button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+    :root[data-theme="dark"] .dict-chip > .dict-chip-resolve {
+        background: #b98a2e;
+        color: #1b1408;
+    }
+
+:root[data-theme="dark"] .dict-proposal-note {
+    color: var(--d-warn-text);
+}
+
+:root[data-theme="dark"] .dict-search input {
+    background-color: var(--d-surface-2);
+    border-color: var(--d-border-strong);
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] .dict-results,
+:root[data-theme="dark"] .hr-modal {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] .dict-option:hover:not(:disabled),
+:root[data-theme="dark"] .dict-option:focus-visible {
+    background: var(--d-accent-soft);
+}
+
+:root[data-theme="dark"] .dict-option-names span,
+:root[data-theme="dark"] .dict-info,
+:root[data-theme="dark"] .dict-limit,
+:root[data-theme="dark"] .admin-tabs-group {
+    color: var(--d-muted);
+}
+
+:root[data-theme="dark"] .dict-badge {
+    background: var(--d-warn-bg);
+    color: var(--d-warn-text);
+}
+
+    :root[data-theme="dark"] .dict-badge.is-existing {
+        background: var(--d-accent-soft);
+        color: var(--d-accent);
+    }
+
+:root[data-theme="dark"] .hr-modal-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="dark"] .hr-modal-head h2 {
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] .hr-modal-note,
+:root[data-theme="dark"] .hr-modal-fields label {
+    color: var(--d-text-2);
+}
+
+:root[data-theme="dark"] .hr-modal-section {
+    border-top-color: var(--d-border);
+}
+
+    :root[data-theme="dark"] .hr-modal-section h3 {
+        color: var(--d-text);
+    }
+
+:root[data-theme="dark"] .hr-modal-list {
+    border-color: var(--d-border);
+}
+
+:root[data-theme="dark"] .hr-modal-close {
+    background: var(--d-surface-2);
+    border-color: var(--d-border);
+    color: var(--d-text-2);
+}
+
+:root[data-theme="dark"] .admin-part.is-pending,
+:root[data-theme="dark"] .admin-part.admin-part-new {
+    background: var(--d-warn-bg);
+    color: var(--d-warn-text);
+}
+
+
+.hr-modal .admin-input {
+    flex: none;
+    width: 100%;
+}
+
+.hr-modal textarea.admin-input {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.hr-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.hr-modal .hr-modal-actions .submission-button {
+    align-self: auto;
+}
+
+.hr-modal-details > summary {
+    color: #284631;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.hr-modal-details[open] > summary {
+    margin-bottom: 4px;
+}
+
+.hr-link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #315c3e;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+
+/* ---------- propozycja nowego wpisu – karta, tak samo w ka¿dym s³owniku ---------- */
+
+.dict-proposal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px dashed #f1dcb0;
+    border-radius: 12px;
+    background: #fffaf0;
+}
+
+.dict-proposal-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+    .dict-proposal-head strong {
+        flex: 1;
+        min-width: 0;
+        color: #6b4a0d;
+        overflow-wrap: anywhere;
+    }
+
+.dict-proposal-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+}
+
+.dict-proposal .dict-chip-resolve {
+    height: 28px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: #9a6a12;
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .dict-proposal .dict-chip-resolve:hover:not(:disabled) {
+        background: #7d560e;
+    }
+
+.dict-proposal-remove {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    color: #6b4a0d;
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+    .dict-proposal-remove:hover:not(:disabled) {
+        background: rgba(0, 0, 0, 0.14);
+    }
+
+.dict-proposal-note {
+    color: #9a6a12;
+}
+
+.dict-proposal-hint {
+    margin: 0;
+    color: #9a6a12;
+    font-size: 0.82rem;
+}
+
+
+/* ---------- tryb ciemny ---------- */
+
+:root[data-theme="dark"] .dict-proposal {
+    background: var(--d-warn-bg);
+    border-color: var(--d-warn-border);
+}
+
+:root[data-theme="dark"] .dict-proposal-head strong,
+:root[data-theme="dark"] .dict-proposal-hint,
+:root[data-theme="dark"] .dict-proposal-note {
+    color: var(--d-warn-text);
+}
+
+:root[data-theme="dark"] .dict-proposal .dict-chip-resolve {
+    background: #b98a2e;
+    color: #1b1408;
+}
+
+:root[data-theme="dark"] .dict-proposal-remove {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--d-warn-text);
+}
+
+:root[data-theme="dark"] .hr-modal-details > summary {
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] .hr-link-button {
+    color: var(--d-accent);
+}
+
+/* =====================================================================
+   PRZEPISY – biblioteka, kafelek przepisu, sekcja na stronie roœliny.
+   Wklej na koniec wwwroot/app.css (globalnie, bo kafelek jest na kilku stronach).
+   ===================================================================== */
+
+/* ---------- strona biblioteki ---------- */
+
+.prod-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+}
+
+.prod-page-header {
+    margin-bottom: 40px;
+}
+
+    .prod-page-header h1 {
+        margin: 0;
+        font-size: clamp(3rem, 6vw, 5rem);
+        line-height: 1;
+        letter-spacing: -0.06em;
+    }
+
+    .prod-page-header p {
+        max-width: 620px;
+        margin: 24px 0 0;
+        color: #536158;
+        font-size: 1.1rem;
+        line-height: 1.7;
+    }
+
+.prod-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 22px;
+    margin-top: 28px;
+}
+
+.prod-search {
+    flex: 1 1 340px;
+    max-width: 560px;
+    height: 52px;
+    padding: 0 18px;
+    border: 1px solid #d7ddd6;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #1c2a22;
+    font: inherit;
+    font-size: 1rem;
+    box-shadow: 0 6px 20px rgba(31, 52, 40, 0.06);
+}
+
+    .prod-search:focus {
+        outline: none;
+        border-color: #376b4b;
+        box-shadow: 0 8px 24px rgba(55, 107, 75, 0.12);
+    }
+
+/* prze³¹cznik – ten sam wygl¹d co "Poka¿ te¿ roœliny…" */
+.prod-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    user-select: none;
+}
+
+    .prod-switch input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+.prod-switch-slider {
+    position: relative;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 24px;
+    border-radius: 999px;
+    background: #b8c1bc;
+    transition: background 0.2s ease;
+}
+
+    .prod-switch-slider::before {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        transition: transform 0.2s ease;
+    }
+
+.prod-switch:has(input:checked) .prod-switch-slider {
+    background: #39815c;
+}
+
+    .prod-switch:has(input:checked) .prod-switch-slider::before {
+        transform: translateX(20px);
+    }
+
+.prod-switch:has(input:focus-visible) .prod-switch-slider {
+    outline: 2px solid #39815c;
+    outline-offset: 3px;
+}
+
+.prod-note {
+    color: #7a857f;
+    font-size: 0.9rem;
+}
+
+    .prod-note.is-error {
+        color: #c0392b;
+    }
+
+.prod-count {
+    margin: 0 0 16px;
+}
+
+.prod-status {
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    color: #536158;
+}
+
+    .prod-status h2 {
+        margin: 0;
+        color: #1d2b21;
+    }
+
+    .prod-status.is-error h2 {
+        color: #8f3030;
+    }
+
+.prod-spinner {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 16px;
+    border: 3px solid #dfe6df;
+    border-top-color: #52745a;
+    border-radius: 50%;
+    animation: prod-spin 0.8s linear infinite;
+}
+
+@keyframes prod-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.prod-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 11px 20px;
+    border: 0;
+    border-radius: 10px;
+    background: #315c3e;
+    color: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    .prod-button:hover {
+        background: #24372a;
+    }
+
+
+/* ---------- siatka i kafelek ---------- */
+
+.prod-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.prod-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e0e6df;
+    border-radius: 16px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+    .prod-card:hover {
+        transform: translateY(-4px);
+        border-color: #b7c7b7;
+        box-shadow: 0 18px 40px rgba(29, 43, 33, 0.08);
+    }
+
+    .prod-card.is-pending {
+        border-style: dashed;
+        border-color: #f1dcb0;
+        background: #fffaf0;
+    }
+
+        .prod-card.is-pending:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+    .prod-card:has(.prod-card-link:focus-visible) {
+        outline: 2px solid #315c3e;
+        outline-offset: 3px;
+    }
+
+/* zdjêcie zawsze w ca³oœci */
+.prod-card-media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: #f3f6f2;
+}
+
+    .prod-card-media img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+.prod-card-placeholder {
+    font-size: 4rem;
+    line-height: 1;
+    opacity: 0.35;
+}
+
+.prod-card-pills {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.prod-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 0 0 1px #e0e6df;
+    color: #52745a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+    .prod-pill.is-pending {
+        background: #fdf3e1;
+        box-shadow: 0 0 0 1px #f1dcb0;
+        color: #9a6a12;
+    }
+
+.prod-card-edit {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2; /* nad rozci¹gniêtym linkiem */
+    padding: 6px 14px;
+    border: 1px solid #b7c7b7;
+    border-radius: 20px;
+    background: #ffffff;
+    color: #315c3e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+    .prod-card-edit:hover,
+    .prod-card-edit:focus-visible {
+        background: #eaf0e8;
+    }
+
+.prod-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 20px 18px;
+    border-top: 1px solid #e0e6df;
+}
+
+    .prod-card-body h3 {
+        margin: 0 0 2px;
+        color: #1d2b21;
+        font-size: 1.2rem;
+        letter-spacing: -0.02em;
+        overflow-wrap: anywhere;
+    }
+
+.prod-card-link {
+    color: inherit;
+    text-decoration: none;
+    outline: none;
+}
+
+    /* ca³y kafelek klikalny */
+    .prod-card-link::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+.prod-card-line {
+    margin: 0;
+    color: #536158;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.prod-card-label {
+    display: inline-block;
+    margin-right: 6px;
+    color: #759078;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.prod-plant-pending {
+    color: #9a6a12;
+    font-style: italic;
+}
+
+.prod-card-diseases {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.prod-disease {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #e3f0e8;
+    color: #2f6c4d;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+    .prod-disease.is-more {
+        background: #eef1ef;
+        color: #5f6b65;
+    }
+
+
+/* ---------- sekcja "Przepisy" na stronie roœliny ---------- */
+
+.prod-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+}
+
+.prod-add-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border: 1px solid #b7c7b7;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #315c3e;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+    .prod-add-button:hover {
+        background: #eaf0e8;
+        border-color: #52745a;
+    }
+
+@media (max-width: 600px) {
+    .prod-page {
+        padding: 60px 20px 80px;
+    }
+
+    .prod-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =====================================================================
+   TRYB CIEMNY (zmienne z dark.css)
+   ===================================================================== */
+
+:root[data-theme="dark"] .prod-page-header p,
+:root[data-theme="dark"] .prod-status,
+:root[data-theme="dark"] .prod-card-line {
+    color: var(--d-text-2);
+}
+
+    :root[data-theme="dark"] .prod-status h2,
+    :root[data-theme="dark"] .prod-card-body h3 {
+        color: var(--d-text);
+    }
+
+:root[data-theme="dark"] .prod-search {
+    background: var(--d-surface-2);
+    border-color: var(--d-border-strong);
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] .prod-switch-slider {
+    background: #3a463d;
+}
+
+:root[data-theme="dark"] .prod-switch:has(input:checked) .prod-switch-slider {
+    background: var(--d-accent-strong);
+}
+
+:root[data-theme="dark"] .prod-note,
+:root[data-theme="dark"] .prod-card-label {
+    color: var(--d-muted);
+}
+
+:root[data-theme="dark"] .prod-spinner {
+    border-color: var(--d-border);
+    border-top-color: var(--d-accent);
+}
+
+:root[data-theme="dark"] .prod-button {
+    background: var(--d-accent-strong);
+}
+
+:root[data-theme="dark"] .prod-card {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+}
+
+    :root[data-theme="dark"] .prod-card:hover {
+        border-color: var(--d-border-strong);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    :root[data-theme="dark"] .prod-card.is-pending {
+        background: #1f1b12;
+        border-color: var(--d-warn-border);
+    }
+
+:root[data-theme="dark"] .prod-card-media {
+    background: var(--d-soft);
+}
+
+:root[data-theme="dark"] .prod-card-body {
+    border-top-color: var(--d-border);
+}
+
+:root[data-theme="dark"] .prod-pill {
+    background: rgba(28, 38, 32, 0.94);
+    box-shadow: 0 0 0 1px var(--d-border);
+    color: var(--d-text);
+}
+
+    :root[data-theme="dark"] .prod-pill.is-pending {
+        background: var(--d-warn-bg);
+        color: var(--d-warn-text);
+    }
+
+:root[data-theme="dark"] .prod-card-edit,
+:root[data-theme="dark"] .prod-add-button,
+:root[data-theme="dark"] .prd-edit {
+    background: var(--d-surface-2);
+    border-color: var(--d-border-strong);
+    color: var(--d-accent);
+}
+
+:root[data-theme="dark"] .prod-disease {
+    background: var(--d-accent-soft);
+    color: var(--d-accent);
+}
+
+    :root[data-theme="dark"] .prod-disease.is-more {
+        background: var(--d-surface-2);
+        color: var(--d-text-2);
+    }
+
+:root[data-theme="dark"] .prod-plant-pending {
+    color: var(--d-warn-text);
+}
+
+/* strona przepisu (klasy prd-*; pd-* obs³uguje dark.css) */
+:root[data-theme="dark"] .prd-label {
+    color: var(--d-muted);
+}
+
+:root[data-theme="dark"] .prd-chip {
+    background: var(--d-accent-soft);
+    border-color: #2c4a37;
+    color: var(--d-accent);
+}
+
+    :root[data-theme="dark"] .prd-chip.is-pending {
+        background: var(--d-warn-bg);
+        border-color: var(--d-warn-border);
+        color: var(--d-warn-text);
+    }
+
+:root[data-theme="dark"] .prd-list {
+    color: #e6d3a6;
+}
+
+:root[data-theme="dark"] .prd-recipe {
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] .prd-disclaimer {
+    color: var(--d-muted);
+}
+
+/* na stronie przepisu dt to nazwa choroby – jasna, nie przygaszona */
+:root[data-theme="dark"] .prd-main .pd-field dt {
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] .prd-main .pd-field dd {
+    color: var(--d-text-2);
+}
+/* strona przepisu: pastylki w³aœciwoœci i substancji w trybie ciemnym */
+:root[data-theme="dark"] .prd-chip.is-static {
+    background: var(--d-surface-2);
+    border-color: var(--d-border-strong);
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] a.prd-chip:hover {
+    background: var(--d-accent-soft);
+    border-color: var(--d-accent-strong);
+}
 
 @media (max-width: 500px) {
 

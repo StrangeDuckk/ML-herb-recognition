@@ -32,7 +32,7 @@ namespace HerbRecognition_APIs.Services
             IEnumerable<int>? plantIds, IEnumerable<int>? userInputIds);
     }
 
-    public class SubmissionService(HerbRecognitionDbContext data, IPictureFileStore pictureFiles) : ISubmissionService
+    public class SubmissionService(HerbRecognitionDbContext data, IPictureFileStore pictureFiles, IProductService products) : ISubmissionService
     {
         // =====================================================================
         //  JSON zgłoszeń – ten sam format co w PostUserInputPlantAsync
@@ -141,6 +141,8 @@ namespace HerbRecognition_APIs.Services
                 NormalizeSimilar(otherDto, selfUserInputId: other.Id);
                 other.Inputdata = Serialize(otherDto);
             }
+
+            await products.OnPlantSubmissionDeletedAsync(id);
 
             data.UserInputs.Remove(submission);
             await data.SaveChangesAsync();
@@ -255,6 +257,8 @@ namespace HerbRecognition_APIs.Services
                         .ExecuteUpdateAsync(s => s
                             .SetProperty(p => p.Plantid, (int?)plant.Id)
                             .SetProperty(p => p.UserInputId, (int?)null));
+                    // produkty i zgłoszenia produktów wskazujące to zgłoszenie -> nowa roślina
+                    await products.OnPlantSubmissionApprovedAsync(sid, plant.Id);
                 }
 
                 var pictureLinks = await data.Pictures

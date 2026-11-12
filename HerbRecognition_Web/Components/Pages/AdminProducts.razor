@@ -1,0 +1,134 @@
+@page "/admin/products"
+
+@using HerbRecognition_Web.Communication.DTOs
+@using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
+
+@inject AdminAuthService Auth
+@inject AdminProductApiService AdminProductApi
+@inject NavigationManager Nav
+
+<PageTitle>Przepisy – panel administratora</PageTitle>
+
+<div class="plants-page admin-page">
+    <AdminNav />
+
+    <section class="plants-header admin-header">
+        <div>
+            <span class="section-label">PANEL ADMINISTRATORA</span>
+            <h1>Przepisy w bazie</h1>
+        </div>
+    </section>
+
+    <section class="admin-content">
+        <div class="admin-content-head">
+            <h2>Zatwierdzone przepisy</h2>
+            @if (!isLoading)
+            {
+                <span class="admin-count">@items.Count</span>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="admin-message @(isError ? "error" : "success")">@message</div>
+        }
+
+        @if (isLoading)
+        {
+            <p class="admin-empty">Ładowanie przepisów...</p>
+        }
+        else if (items.Count == 0)
+        {
+            <p class="admin-empty">Baza nie zawiera jeszcze przepisów.</p>
+        }
+        else
+        {
+            <AdminProductTable Items="items"
+                               EditUrl="@(id => $"/admin/products/{id}")"
+                               ViewUrl="@(id => $"/products/{id}")"
+                               OnDelete="DeleteAsync"
+                               IsBusy="isBusy" />
+        }
+    </section>
+</div>
+
+@code {
+    private List<ProductPreviewDTO> items = new();
+
+    private bool isLoading = true;
+    private bool isBusy;
+    private bool isError;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.IsLoggedIn)
+        {
+            RedirectToLogin();
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            items = await AdminProductApi.GetProductsAsync();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            items = new();
+            ShowMessage($"Nie udało się wczytać przepisów: {ex.Message}", error: true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        isBusy = true;
+        message = null;
+
+        try
+        {
+            await AdminProductApi.DeleteProductAsync(id);
+            await LoadAsync();
+            ShowMessage($"Usunięto przepis #{id}.", error: false);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            RedirectToLogin();
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"Nie udało się usunąć przepisu: {ex.Message}", error: true);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void ShowMessage(string text, bool error)
+    {
+        message = text;
+        isError = error;
+    }
+
+    private void RedirectToLogin()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/admin/login");
+    }
+}
