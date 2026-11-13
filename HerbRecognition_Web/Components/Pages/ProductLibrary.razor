@@ -98,6 +98,7 @@
 </div>
 
 @code {
+
     private static readonly CultureInfo Polish = new("pl-PL");
     private static readonly StringComparer PolishOrder = StringComparer.Create(Polish, ignoreCase: true);
 
@@ -185,11 +186,19 @@
         var text = query.Trim();
         if (text.Length == 0) return true;
 
+
+
         return Has(p.Name, text)
+
                || Has(p.ProductTypeName, text)
+
                || p.Plants.Any(x => Has(x.Name, text))
+
                || p.Diseases.Any(x => Has(x, text))
-               || p.HealthProperties.Any(x => Has(x, text));
+
+               || p.HealthProperties.Any(x => Has(x, text))
+
+               || p.ActiveSubstances.Any(x => Has(x, text));
     }
 
     private static bool Has(string? source, string text) =>

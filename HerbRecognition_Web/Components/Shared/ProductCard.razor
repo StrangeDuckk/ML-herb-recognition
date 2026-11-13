@@ -3,7 +3,7 @@
 
 @*
     Kafelek przepisu – biblioteka przepisów i sekcja "Przepisy" na stronie rośliny.
-    Zawsze pokazuje: z jakich roślin i na co działa.
+    Zawsze pokazuje: z jakich roślin, na co działa i substancje czynne.
     Style: globalne (products-library.css), bo kafelek jest używany na kilku stronach.
 *@
 
@@ -62,22 +62,38 @@
                 {
                     var plant = Item.Plants[i];
                     <span class="@(plant.IsApproved ? "" : "prod-plant-pending")"
-                          title="@(plant.IsApproved ? null : "Roślina czeka na weryfikację")">@plant.Name</span>@(i < Item.Plants.Count - 1 ? ", " : "")
+                          title="@(plant.IsApproved ? null : "Roślina czeka na weryfikację")">@plant.Name</span>
+                          @(i < Item.Plants.Count - 1 ? ", " : "")
                 }
             </p>
         }
 
         @if (Item.Diseases.Count > 0)
         {
-            <div class="prod-card-line prod-card-diseases">
+            <div class="prod-card-line prod-card-tags">
                 <span class="prod-card-label">Na</span>
-                @foreach (var disease in Item.Diseases.Take(MaxDiseases))
+                @foreach (var disease in Item.Diseases.Take(MaxTags))
                 {
                     <span class="prod-disease">@disease</span>
                 }
-                @if (Item.Diseases.Count > MaxDiseases)
+                @if (Item.Diseases.Count > MaxTags)
                 {
-                    <span class="prod-disease is-more">+@(Item.Diseases.Count - MaxDiseases)</span>
+                    <span class="prod-disease is-more">+@(Item.Diseases.Count - MaxTags)</span>
+                }
+            </div>
+        }
+
+        @if (Item.ActiveSubstances.Count > 0)
+        {
+            <div class="prod-card-line prod-card-tags">
+                <span class="prod-card-label">Substancje</span>
+                @foreach (var substance in Item.ActiveSubstances.Take(MaxTags))
+                {
+                    <span class="prod-substance">@substance</span>
+                }
+                @if (Item.ActiveSubstances.Count > MaxTags)
+                {
+                    <span class="prod-substance is-more">+@(Item.ActiveSubstances.Count - MaxTags)</span>
                 }
             </div>
         }
@@ -90,7 +106,7 @@
     /// <summary>Zalogowany admin – przycisk "Edytuj".</summary>
     [Parameter] public bool ShowEdit { get; set; }
 
-    private const int MaxDiseases = 3;
+    private const int MaxTags = 3;
 
     private string icon = "🌿";
     private string? thumbnail;

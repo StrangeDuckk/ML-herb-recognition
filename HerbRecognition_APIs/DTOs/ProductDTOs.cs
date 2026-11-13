@@ -79,6 +79,7 @@ namespace HerbRecognition_APIs.DTOs
         public List<PlantRefDTO> Plants { get; set; } = new();
         public List<string> Diseases { get; set; } = new();
         public List<string> HealthProperties { get; set; } = new();
+        public List<string> ActiveSubstances { get; set; } = new();
         public string? MainThumbnailUrl { get; set; }
 
         // ----- tylko panel admina / kwarantanna -----

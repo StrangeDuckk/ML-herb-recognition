@@ -222,9 +222,13 @@
                     <a href="@($"/plants/{plant.Id}/add-product")" class="prod-add-button">＋ Dodaj przepis</a>
                 </div>
 
-                @if (products.Count == 0)
+                @if (products.Count == 0 && pendingProducts.Count == 0)
                 {
                     <p class="section-note">Nie ma jeszcze przepisów z tą rośliną – dodaj pierwszy.</p>
+                }
+                else if (products.Count == 0)
+                {
+                    <p class="section-note">Nie ma jeszcze zweryfikowanych przepisów – poniżej te, które czekają na sprawdzenie.</p>
                 }
                 else
                 {
@@ -233,6 +237,24 @@
                         {
                             <ProductCard @key="item.Id" Item="item" ShowEdit="Auth.IsLoggedIn" />
                         }
+                    </div>
+                }
+
+                @if (pendingProducts.Count > 0)
+                {
+                    <div class="prod-pending-block">
+                        <span class="section-label">OCZEKUJĄCE NA WERYFIKACJĘ</span>
+                        <h3 class="prod-subheading">Zgłoszone przepisy</h3>
+                        <p class="section-note">
+                            Przepisy dodane przez użytkowników. Pojawią się w bibliotece po sprawdzeniu przez administratora.
+                        </p>
+
+                        <div class="prod-grid">
+                            @foreach (var item in pendingProducts)
+                            {
+                                <ProductCard @key="item.Id" Item="item" ShowEdit="Auth.IsLoggedIn" />
+                            }
+                        </div>
                     </div>
                 }
             </section>
@@ -252,6 +274,7 @@
     private List<string> pictures = new();
     private List<SimilarPlantCandidateDTO> pendingSimilar = new();
     private List<ProductPreviewDTO> products = new();
+    private List<ProductPreviewDTO> pendingProducts = new();
 
     private List<(string Label, string? Value)> basicFields = new();
     private List<PartView> upperParts = new();
@@ -290,6 +313,7 @@
         pendingSimilar = new();
         current = 0;
         products = new();
+        pendingProducts = new();
 
         try
         {
@@ -323,6 +347,7 @@
                 try
                 {
                     products = await ProductApi.GetProductsAsync(Id);
+                    pendingProducts = await ProductApi.GetPendingProductsAsync(Id);
                 }
                 catch (Exception ex)
                 {

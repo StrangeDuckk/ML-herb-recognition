@@ -14,7 +14,7 @@ namespace HerbRecognition_APIs.Services
         // ----- publiczne -----
         Task<List<ProductPreviewDTO>> GetProductsAsync(int? plantId = null);
         Task<GetProductDTO?> GetProductAsync(int id);
-        Task<List<ProductPreviewDTO>> GetPendingPreviewsAsync();
+        Task<List<ProductPreviewDTO>> GetPendingPreviewsAsync(int? plantId = null);
         Task<int> SubmitAsync(CreateProductDTO dto);
 
         // ----- admin: zgłoszenia (productinput) -----
@@ -92,11 +92,16 @@ namespace HerbRecognition_APIs.Services
             };
         }
 
-        /// <summary>Zgłoszenia produktów do biblioteki (bez zdjęć – nie były jeszcze sprawdzone).</summary>
-        public async Task<List<ProductPreviewDTO>> GetPendingPreviewsAsync()
+        /// <summary>Zgłoszenia produktów do biblioteki (bez zdjęć – nie były jeszcze sprawdzone).
+        /// plantId: tylko zgłoszenia wskazujące tę zatwierdzoną roślinę.</summary>
+        public async Task<List<ProductPreviewDTO>> GetPendingPreviewsAsync(int? plantId = null)
         {
             var previews = await QuerySubmissionPreviewsAsync(includeAdminInfo: false);
-            return previews.Where(p => !p.IsCorrupted).ToList();
+
+            return previews
+                .Where(p => !p.IsCorrupted)
+                .Where(p => plantId is null || p.Plants.Any(x => x.IsApproved && x.Id == plantId))
+                .ToList();
         }
 
         public async Task<int> SubmitAsync(CreateProductDTO dto)
@@ -628,6 +633,7 @@ namespace HerbRecognition_APIs.Services
                     TypeName = p.Producttype.Name,
                     Diseases = p.Diseases.OrderBy(d => d.Name).Select(d => d.Name).ToList(),
                     Properties = p.Healthproperties.OrderBy(h => h.Property).Select(h => h.Property).ToList(),
+                    Substances = p.Activesubstances.OrderBy(a => a.Activesubstance1).Select(a => a.Activesubstance1).ToList(),
                     Plants = p.PlantProducts
                         .Select(pp => new PlantLinkRow(pp.Plantsid, pp.UserInputId,
                             pp.Plants != null ? pp.Plants.Polishname : null))
@@ -649,6 +655,7 @@ namespace HerbRecognition_APIs.Services
                     ProductTypeName = r.TypeName,
                     Diseases = r.Diseases,
                     HealthProperties = r.Properties,
+                    ActiveSubstances = r.Substances,
                     Plants = ToPlantRefs(r.Plants, pendingNames),
                     MainThumbnailUrl = info.Thumbnail,
                     PictureCount = includeAdminInfo ? info.Count : 0
@@ -667,11 +674,13 @@ namespace HerbRecognition_APIs.Services
             var plantIds = valid.SelectMany(d => d.PlantIds ?? new()).Distinct().ToList();
             var diseaseIds = valid.SelectMany(d => d.DiseaseIds ?? new()).Distinct().ToList();
             var propertyIds = valid.SelectMany(d => d.HealthPropertyIds ?? new()).Distinct().ToList();
+            var substanceIds = valid.SelectMany(d => d.ActiveSubstanceIds ?? new()).Distinct().ToList();
 
             var types = await data.Producttypes.Where(t => typeIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, t => t.Name);
             var plants = await data.Plants.Where(p => plantIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Polishname);
             var diseases = await data.Diseases.Where(d => diseaseIds.Contains(d.Id)).ToDictionaryAsync(d => d.Id, d => d.Name);
             var properties = await data.Healthproperties.Where(h => propertyIds.Contains(h.Id)).ToDictionaryAsync(h => h.Id, h => h.Property);
+            var substances = await data.Activesubstances.Where(a => substanceIds.Contains(a.Id)).ToDictionaryAsync(a => a.Id, a => a.Activesubstance1);
             var pendingNames = await PendingPlantNamesAsync(valid.SelectMany(d => d.PlantUserInputIds ?? new()).Select(x => (int?)x));
 
             var pictures = includeAdminInfo
@@ -711,6 +720,9 @@ namespace HerbRecognition_APIs.Services
                         .ToList(),
                     HealthProperties = (d.HealthPropertyIds ?? new()).Select(id => properties.GetValueOrDefault(id) ?? $"#{id}")
                         .Concat(d.NewHealthProperties ?? new())
+                        .ToList(),
+                    ActiveSubstances = (d.ActiveSubstanceIds ?? new()).Select(id => substances.GetValueOrDefault(id) ?? $"#{id}")
+                        .Concat(d.NewActiveSubstances ?? new())
                         .ToList(),
                     MainThumbnailUrl = includeAdminInfo ? info.Thumbnail : null,   // publicznie bez zdjęć
                     PictureCount = info.Count,

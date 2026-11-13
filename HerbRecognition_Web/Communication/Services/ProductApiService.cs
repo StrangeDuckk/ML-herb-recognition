@@ -41,8 +41,9 @@ namespace HerbRecognition_Web.Communication.Services
                 plantId is int id ? $"api/products?plantId={id}" : "api/products")
             ?? new List<ProductPreviewDTO>();
 
-        public async Task<List<ProductPreviewDTO>> GetPendingProductsAsync() =>
-            await http.GetFromJsonAsync<List<ProductPreviewDTO>>("api/products/pending")
+        public async Task<List<ProductPreviewDTO>> GetPendingProductsAsync(int? plantId = null) =>
+            await http.GetFromJsonAsync<List<ProductPreviewDTO>>(
+                plantId is int id ? $"api/products/pending?plantId={id}" : "api/products/pending")
             ?? new List<ProductPreviewDTO>();
 
         public async Task<GetProductDTO?> GetProductAsync(int id)

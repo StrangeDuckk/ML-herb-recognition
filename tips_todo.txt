@@ -1,8 +1,10 @@
 - zrobic dodawanie przepisow
 	- zrobic wyszukiwanie po formularzu dla przepisow
-
+	- dodac przepisy nie zweryfikowane po stronie rosliny konkretnej
 - zrobic filtry w bibliotece dla roslin
 - zrobic filtry w bibliotece dla przepisow
+
+- strona glowna, po zmianie na przepisy - zmiana obrazka na jeden z przepisowych, po zmianie spowrotem zmiana na losowy i tak w kolko
 
 - zrobic widok ekranu telefonu porzadnie, jak na ick tlumaczyl
 

@@ -2570,6 +2570,57 @@ a.admin-btn {
     }
 }
 
+/* kafelek: wiersze z pastylkami (choroby, substancje) */
+.prod-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+/* substancje czynne – neutralne, ¿eby odró¿nia³y siê od chorób */
+.prod-substance {
+    padding: 3px 10px;
+    border: 1px solid #dfe5e1;
+    border-radius: 999px;
+    background: #f6faf8;
+    color: #3d4a43;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+    .prod-substance.is-more {
+        background: #eef1ef;
+        color: #5f6b65;
+    }
+
+/* strona roœliny: zg³oszone przepisy */
+.prod-pending-block {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px dashed #e0e6df;
+}
+
+.prod-subheading {
+    margin: 0 0 6px;
+    color: #2c3d31;
+    font-size: 1.25rem;
+}
+
+:root[data-theme="dark"] .prod-substance {
+    background: var(--d-surface-2);
+    border-color: var(--d-border-strong);
+    color: var(--d-text-2);
+}
+
+:root[data-theme="dark"] .prod-pending-block {
+    border-top-color: var(--d-border);
+}
+
+:root[data-theme="dark"] .prod-subheading {
+    color: var(--d-text);
+}
+
 
 /* =====================================================================
    TRYB CIEMNY (zmienne z dark.css)

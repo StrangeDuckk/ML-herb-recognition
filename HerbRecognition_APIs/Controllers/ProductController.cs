@@ -22,11 +22,12 @@ namespace HerbRecognition_APIs.Controllers
             return product is null ? NotFound() : Ok(product);
         }
 
-        // GET api/products/pending – zgłoszenia do biblioteki (przełącznik "pokaż niezweryfikowane")
+        // GET api/products/pending            – wszystkie zgłoszenia (biblioteka)
+        // GET api/products/pending?plantId=5  – zgłoszenia z daną rośliną (strona rośliny)
         [HttpGet("api/products/pending")]
         [EnableRateLimiting("search")]
-        public async Task<IActionResult> GetPending() =>
-            Ok(await products.GetPendingPreviewsAsync());
+        public async Task<IActionResult> GetPending([FromQuery] int? plantId) =>
+            Ok(await products.GetPendingPreviewsAsync(plantId));
 
         // POST api/productInput – nowe zgłoszenie produktu (kwarantanna)
         [HttpPost("api/productInput")]
