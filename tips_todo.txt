@@ -1,6 +1,6 @@
 - zrobic dodawanie przepisow
 	- zrobic wyszukiwanie po formularzu dla przepisow
-	- dodac przepisy nie zweryfikowane po stronie rosliny konkretnej
+
 - zrobic filtry w bibliotece dla roslin
 - zrobic filtry w bibliotece dla przepisow
 

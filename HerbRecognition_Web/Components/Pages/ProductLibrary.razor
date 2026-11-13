@@ -128,13 +128,20 @@
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
-    // tekst z adresu trafia do pola wyszukiwania (także przy kolejnym wyszukaniu ze strony głównej)
-    protected override void OnParametersSet()
+    // wejście z wyszukiwarki (/products?q=...): fraza trafia do pola wyszukiwania,
+    // a wyniki od razu obejmują też zgłoszenia – przełącznik można wyłączyć
+    protected override async Task OnParametersSetAsync()
     {
         if (Q == appliedQ) return;
 
         appliedQ = Q;
         query = Q?.Trim() ?? "";
+
+        if (query.Length > 0)
+        {
+            showPending = true;
+            await OnShowPendingChangedAsync();
+        }
     }
 
     private async Task LoadAsync()
