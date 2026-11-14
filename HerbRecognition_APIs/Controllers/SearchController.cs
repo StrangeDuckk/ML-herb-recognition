@@ -11,7 +11,8 @@ namespace HerbRecognition_APIs.Controllers
     public class SearchController(
         IDbService dbService,
         ISubmissionService submissions,
-        IPlantSearchService plantSearch) : ControllerBase
+        IPlantSearchService plantSearch,
+        IProductSearchService productSearch) : ControllerBase
     {
         private const int MaxResolveIds = 50;
 
@@ -46,6 +47,14 @@ namespace HerbRecognition_APIs.Controllers
         public async Task<IActionResult> SearchByForm([FromBody] PlantSearchCriteriaDTO criteria)
         {
             return Ok(await plantSearch.SearchAsync(criteria));
+        }
+
+        // POST api/search/products/form
+        [HttpPost("products/form")]
+        [RequestSizeLimit(64 * 1024)]
+        public async Task<IActionResult> SearchProductsByForm([FromBody] ProductSearchCriteriaDTO criteria)
+        {
+            return Ok(await productSearch.SearchAsync(criteria));
         }
     }
 }

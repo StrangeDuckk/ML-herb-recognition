@@ -93,5 +93,14 @@ namespace HerbRecognition_Web.Communication.Services
                     return p.Value;
             return null;
         }
+
+        public async Task<ProductSearchResponseDTO> SearchByFormAsync(ProductSearchCriteriaDTO criteria)
+        {
+            using var response = await http.PostAsJsonAsync("api/search/products/form", criteria);
+            await EnsureSuccessAsync(response);
+
+            return await response.Content.ReadFromJsonAsync<ProductSearchResponseDTO>()
+                   ?? new ProductSearchResponseDTO();
+        }
     }
 }

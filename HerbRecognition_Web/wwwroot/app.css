@@ -2621,6 +2621,22 @@ a.admin-btn {
     color: var(--d-text);
 }
 
+.prod-form-link {
+    display: inline-block;
+    margin-top: 14px;
+    color: #2f6243;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .prod-form-link:hover {
+        text-decoration: underline;
+    }
+
+:root[data-theme="dark"] .prod-form-link {
+    color: var(--d-accent);
+}
 
 /* =====================================================================
    TRYB CIEMNY (zmienne z dark.css)
@@ -2768,6 +2784,23 @@ a.admin-btn {
 :root[data-theme="dark"] a.prd-chip:hover {
     background: var(--d-accent-soft);
     border-color: var(--d-accent-strong);
+}
+
+:root[data-theme="dark"] .prs-hint {
+    background: var(--d-surface);
+    border-color: var(--d-border);
+    color: var(--d-text-2);
+}
+
+    :root[data-theme="dark"] .prs-hint strong,
+    :root[data-theme="dark"] .prs-results-title {
+        color: var(--d-text);
+    }
+
+:root[data-theme="dark"] .prs-hero p,
+:root[data-theme="dark"] .prs-results-meta {
+    color: var(--d-text-2);
+    border-color: var(--d-border);
 }
 
 @media (max-width: 500px) {

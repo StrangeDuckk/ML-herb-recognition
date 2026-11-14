@@ -8,8 +8,10 @@
     Wspólny formularz produktu (przepisu) – jak PlantSubmissionForm.
     - zgłoszenie z widoku rośliny: FixedPlant = ta roślina (nie da się jej usunąć),
     - panel admina: Initial = dane zgłoszenia / produktu, AdminMode = true
-      (nowe wartości od razu przypisuje się do słownika w oknie dialogowym).
-    Błędy rzucone przez OnSubmit/OnSecondary są wyświetlane nad przyciskami.
+      (nowe wartości od razu przypisuje się do słownika w oknie dialogowym),
+    - wyszukiwanie: SearchMode = true, nic nie jest wymagane, bez "Dodaj nową",
+      przeciwwskazania działają jako filtr, przycisk wywołuje OnSearch z kryteriami.
+    Błędy rzucone przez OnSubmit/OnSecondary/OnSearch są wyświetlane nad przyciskami.
 *@
 
 @if (isLoading)
@@ -37,19 +39,23 @@ else
                 <header class="submission-section-head">
                     <h2>1. Informacje podstawowe</h2>
                 </header>
-                <p class="section-description">Pola oznaczone * są wymagane.</p>
+
+                @if (!SearchMode)
+                {
+                    <p class="section-description">Pola oznaczone * są wymagane.</p>
+                }
 
                 <div class="submission-grid">
                     <div class="submission-field">
-                        <label for="product-name">Nazwa produktu *</label>
+                        <label for="product-name">Nazwa produktu@(Req)</label>
                         <InputText id="product-name" @bind-Value="model.Name" maxlength="300"
-                                   placeholder="np. Syrop z kwiatów mniszka" />
+                                   placeholder="@(SearchMode ? "np. syrop" : "np. Syrop z kwiatów mniszka")" />
                     </div>
 
                     <div class="submission-field">
-                        <label for="product-type">Typ produktu *</label>
+                        <label for="product-type">Typ produktu@(Req)</label>
                         <InputSelect id="product-type" @bind-Value="model.ProductTypeId">
-                            <option value="0">Wybierz typ</option>
+                            <option value="0">@(SearchMode ? "Nie wiem / dowolny" : "Wybierz typ")</option>
                             @foreach (var type in productTypes)
                             {
                                 <option value="@type.ProductTypeId">@type.Name</option>
@@ -62,11 +68,17 @@ else
             @* ================= 2. Rośliny ================= *@
             <section class="submission-section">
                 <header class="submission-section-head">
-                    <h2>2. Rośliny *</h2>
+                    <h2>2. Rośliny@(Req)</h2>
                 </header>
                 <p class="section-description">
-                    Z jakich roślin powstaje produkt. Możesz wskazać też rośliny,
-                    które czekają na weryfikację.
+                    @if (SearchMode)
+                    {
+                        <text>Rośliny, które masz pod ręką – przepisy z nimi będą wyżej w wynikach.</text>
+                    }
+                    else
+                    {
+                        <text>Z jakich roślin powstaje produkt. Możesz wskazać też rośliny, które czekają na weryfikację.</text>
+                    }
                 </p>
 
                 @if (FixedPlant is not null)
@@ -88,12 +100,21 @@ else
                     <h2>3. Na co działa</h2>
                 </header>
                 <p class="section-description">
-                    Wpisz kilka liter i wybierz z listy. Jeśli czegoś brakuje, dodaj nową wartość –
-                    @(AdminMode ? "od razu przypiszesz ją do słownika." : "administrator sprawdzi ją przed publikacją.")
+                    @if (SearchMode)
+                    {
+                        <text>Dolegliwości, właściwości lub substancje, których szukasz. Każda wybrana pozycja liczy się osobno.</text>
+                    }
+                    else
+                    {
+                        <text>
+                            Wpisz kilka liter i wybierz z listy. Jeśli czegoś brakuje, dodaj nową wartość –
+                            @(AdminMode ? "od razu przypiszesz ją do słownika." : "administrator sprawdzi ją przed publikacją.")
+                        </text>
+                    }
                 </p>
 
                 <div class="product-dict-grid">
-                    @DictionaryField(ProductDictionary.Disease, "Choroby *", "np. przeziębienie, kaszel")
+                    @DictionaryField(ProductDictionary.Disease, $"Choroby{Req}", "np. przeziębienie, kaszel")
                     @DictionaryField(ProductDictionary.HealthProperty, "Właściwości zdrowotne", "np. przeciwzapalne")
                     @DictionaryField(ProductDictionary.ActiveSubstance, "Substancje czynne", "np. flawonoidy")
                 </div>
@@ -102,32 +123,59 @@ else
             @* ================= 4. Przeciwwskazania ================= *@
             <section class="submission-section">
                 <header class="submission-section-head">
-                    <h2>4. Przeciwwskazania</h2>
+                    <h2>4. @(SearchMode ? "Bezpieczeństwo" : "Przeciwwskazania")</h2>
                 </header>
-                <p class="section-description">Kto nie powinien stosować produktu – np. ciąża, alergie, choroby nerek.</p>
+                <p class="section-description">
+                    @if (SearchMode)
+                    {
+                        <text>
+                            Pomiń przepisy z wybranymi przeciwwskazaniami – np. „ciąża”.
+                            To filtr: takie przepisy w ogóle nie pojawią się w wynikach.
+                        </text>
+                    }
+                    else
+                    {
+                        <text>Kto nie powinien stosować produktu – np. ciąża, alergie, choroby nerek.</text>
+                    }
+                </p>
 
-                @DictionaryField(ProductDictionary.Contraindication, "Przeciwwskazania", "np. ciąża")
-            </section>
+                @DictionaryField(ProductDictionary.Contraindication,
+                SearchMode ? "Wyklucz przeciwwskazania" : "Przeciwwskazania", "np. ciąża")
+        </section>
 
-            @* ================= 5. Przepis ================= *@
-            <section class="submission-section">
-                <header class="submission-section-head">
-                    <h2>5. Przepis *</h2>
-                </header>
-                <p class="section-description">Składniki, kolejne kroki przygotowania i sposób stosowania.</p>
+        @* ================= 5. Przepis ================= *@
+        <section class="submission-section">
+            <header class="submission-section-head">
+                <h2>5. Przepis@(Req)</h2>
+            </header>
 
-                <div class="submission-field submission-field--wide">
-                    <label for="product-recipe" class="visually-hidden">Przepis</label>
-                    <InputTextArea id="product-recipe" class="product-recipe" rows="10" maxlength="10000"
-                                   @bind-Value="model.Recipe"
-                                   placeholder="1. Zbierz kwiaty… 2. Zalej wodą… 3. Gotuj 15 minut…" />
-                    <p class="photo-hint">@model.Recipe.Length / 10 000 znaków</p>
-                </div>
+            @if (SearchMode)
+                {
+                    <p class="section-description">Słowa, które mają się pojawić w przepisie – np. „miód”, „cytryna”.</p>
+
+                    <div class="submission-field submission-field--wide">
+                        <label for="product-recipe">Słowa z przepisu</label>
+                        <InputText id="product-recipe" @bind-Value="model.Recipe" maxlength="300"
+                                   placeholder="np. miód, cytryna" />
+                    </div>
+                }
+                else
+                {
+                    <p class="section-description">Składniki, kolejne kroki przygotowania i sposób stosowania.</p>
+
+                    <div class="submission-field submission-field--wide">
+                        <label for="product-recipe" class="visually-hidden">Przepis</label>
+                        <InputTextArea id="product-recipe" class="product-recipe" rows="10" maxlength="10000"
+                                       @bind-Value="model.Recipe"
+                                       placeholder="1. Zbierz kwiaty… 2. Zalej wodą… 3. Gotuj 15 minut…" />
+                        <p class="photo-hint">@model.Recipe.Length / 10 000 znaków</p>
+                    </div>
+                }
             </section>
 
             @ExtraContent
 
-            @if (AdminMode && ProposalCount > 0)
+            @if (!SearchMode && AdminMode && ProposalCount > 0)
             {
                 <div class="admin-message error" role="status">
                     Do przypisania w słownikach: @ProposalCount
@@ -141,7 +189,7 @@ else
             }
 
             <div class="submission-actions">
-                @if (OnSecondary.HasDelegate)
+                @if (!SearchMode && OnSecondary.HasDelegate)
                 {
                     <button type="button" class="submission-button secondary"
                             disabled="@IsBusy"
@@ -152,7 +200,7 @@ else
 
                 <button type="button" class="submission-button"
                         disabled="@IsBusy"
-                        @onclick="() => RunAsync(OnSubmit, SubmitText, RequireResolvedForSubmit)">
+                        @onclick="PrimaryAsync">
                     @(busyAction == SubmitText ? BusyText : SubmitText)
                 </button>
             </div>
@@ -196,7 +244,11 @@ else
     [Parameter] public string BusyText { get; set; } = "Zapisywanie...";
     [Parameter] public string FormName { get; set; } = "ProductSubmission";
 
-    /// <summary>Dodatkowa zawartość nad przyciskami (np. zdjęcia).</summary>
+    /// <summary>Tryb wyszukiwania: nic nie jest wymagane, przycisk wywołuje OnSearch.</summary>
+    [Parameter] public bool SearchMode { get; set; }
+    [Parameter] public EventCallback<ProductSearchCriteriaDTO> OnSearch { get; set; }
+
+    /// <summary>Dodatkowa zawartość nad przyciskami (np. zdjęcia, ustawienia wyszukiwania).</summary>
     [Parameter] public RenderFragment? ExtraContent { get; set; }
 
     /// <summary>Sesja admina wygasła (okno słownika).</summary>
@@ -229,6 +281,7 @@ else
     private string? busyAction;
     private bool IsBusy => busyAction is not null;
 
+    private string Req => SearchMode ? "" : " *";
     private int ProposalCount => proposals.Values.Sum(p => p.Count);
 
     // ------------------------------------------------------------------
@@ -313,18 +366,19 @@ else
 
     private RenderFragment DictionaryField(ProductDictionary kind, string label, string placeholder) =>
         @<div class="submission-field submission-field--wide">
-            <label>@label</label>
-            <DictionaryMultiPicker Kind="kind"
-                                   Entries="entries[kind]"
-                                   SelectedIds="selected[kind]"
-                                   Proposals="proposals[kind]"
-                                   Label="@label"
-                                   Placeholder="@placeholder"
-                                   AdminMode="AdminMode"
-                                   Disabled="IsBusy"
-                                   OnChanged="() => submitError = null"
-                                   OnResolve="p => resolving = (kind, p)" />
-        </div>;
+        <label>@label</label>
+        <DictionaryMultiPicker Kind="kind"
+                               Entries="entries[kind]"
+                               SelectedIds="selected[kind]"
+                               Proposals="proposals[kind]"
+                               Label="@label"
+                               Placeholder="@placeholder"
+                               AdminMode="AdminMode && !SearchMode"
+                               AllowProposals="!SearchMode"
+                               Disabled="IsBusy"
+                               OnChanged="() => submitError = null"
+                               OnResolve="p => resolving = (kind, p)" />
+    </div>;
 
     private void ResolveWith(int id)
     {
@@ -351,6 +405,9 @@ else
     //  Przyciski
     // ------------------------------------------------------------------
 
+    private Task PrimaryAsync() =>
+        SearchMode ? RunSearchAsync() : RunAsync(OnSubmit, SubmitText, RequireResolvedForSubmit);
+
     private async Task RunAsync(EventCallback<CreateProductDTO> action, string label, bool requireResolved)
     {
         submitError = Validate(requireResolved);
@@ -366,6 +423,27 @@ else
         {
             Console.Error.WriteLine($"Błąd zapisu produktu: {ex}");
             submitError = $"Nie udało się zapisać: {ex.Message}";
+        }
+        finally
+        {
+            busyAction = null;
+        }
+    }
+
+    // wyszukiwanie: bez walidacji wymaganych pól – liczy się to, co użytkownik wie
+    private async Task RunSearchAsync()
+    {
+        submitError = null;
+        busyAction = SubmitText;
+
+        try
+        {
+            await OnSearch.InvokeAsync(BuildSearchCriteria());
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Błąd wyszukiwania przepisów: {ex}");
+            submitError = $"Nie udało się wyszukać: {ex.Message}";
         }
         finally
         {
@@ -395,6 +473,10 @@ else
 
         return null;
     }
+
+    // ------------------------------------------------------------------
+    //  Zgłoszenie / edycja -> CreateProductDTO
+    // ------------------------------------------------------------------
 
     private CreateProductDTO BuildPayload()
     {
@@ -427,9 +509,33 @@ else
         };
     }
 
+    // ------------------------------------------------------------------
+    //  Wyszukiwanie -> ProductSearchCriteriaDTO (tylko wypełnione pola)
+    // ------------------------------------------------------------------
+
+    private ProductSearchCriteriaDTO BuildSearchCriteria() => new()
+    {
+        Name = NullIfEmpty(model.Name),
+        RecipeText = NullIfEmpty(model.Recipe),
+        ProductTypeId = model.ProductTypeId > 0 ? model.ProductTypeId : null,
+
+        PlantIds = OrNull(plants.Where(p => p.IsApproved).Select(p => p.Id)),
+        PlantUserInputIds = OrNull(plants.Where(p => !p.IsApproved).Select(p => p.Id)),
+
+        DiseaseIds = OrNull(selected[ProductDictionary.Disease]),
+        HealthPropertyIds = OrNull(selected[ProductDictionary.HealthProperty]),
+        ActiveSubstanceIds = OrNull(selected[ProductDictionary.ActiveSubstance]),
+
+        // w wyszukiwaniu przeciwwskazania = filtr wykluczający
+        ExcludeContraindicationIds = OrNull(selected[ProductDictionary.Contraindication])
+    };
+
     private static List<T>? OrNull<T>(IEnumerable<T> items)
     {
         var list = items.ToList();
         return list.Count > 0 ? list : null;
     }
+
+    private static string? NullIfEmpty(string? s) =>
+        string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 }

@@ -144,6 +144,7 @@ builder.Services.AddScoped<IDbService, DbService>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IPlantSearchService, PlantSearchService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductSearchService, ProductSearchService>();
 
 // pictures:
 builder.Services.Configure<PictureStorageOptions>(builder.Configuration.GetSection("PictureStorage"));

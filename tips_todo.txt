@@ -1,21 +1,10 @@
-- zrobic dodawanie przepisow
-	- zrobic wyszukiwanie po formularzu dla przepisow
-
 - zrobic filtry w bibliotece dla roslin
 - zrobic filtry w bibliotece dla przepisow
 
-- strona glowna, po zmianie na przepisy - zmiana obrazka na jeden z przepisowych, po zmianie spowrotem zmiana na losowy i tak w kolko
-
 - zrobic widok ekranu telefonu porzadnie, jak na ick tlumaczyl
 
+- testy jednostkowe bazy i api
 
-
-//  ---------------------------------------------------------
-// pisanie create api
-// ----- jesli endpoint tworzy nowe slowniki -----
-[Required]
-public CreateXDTO xPole { get; set; } = null!;
-
-// ----- jesli endpoint nie tworzy nowych rekordow
-[Required]
-public int xPoleId {get; set;}
+------------------------------------- jesli starczy czasu: -------------------------
+- wypelnianie formularza po zdjeciu
+- wyszukiwanie po zdjeciu (najpierw wypelnienie formularza, potem wyszukanie i po zdjeciu i po formularzu, glosowanie wyniku)

@@ -135,6 +135,9 @@
     /// <summary>Admin: przypisanie propozycji (istniejącej albo nowo wpisanej) do słownika.</summary>
     [Parameter] public EventCallback<DictionaryProposal> OnResolve { get; set; }
 
+    /// <summary>false = tylko wybór z listy (wyszukiwanie) – bez "Dodaj nową".</summary>
+    [Parameter] public bool AllowProposals { get; set; } = true;
+
     private static readonly CultureInfo Polish = new("pl-PL");
 
     private string query = "";
@@ -164,7 +167,8 @@
         get
         {
             var text = Trimmed;
-            return text.Length >= 2
+            return AllowProposals
+                   && text.Length >= 2
                    && !AtLimit
                    && !Entries.Any(e => Same(e.Name, text))
                    && !Proposals.Any(p => Same(p.Name, text));

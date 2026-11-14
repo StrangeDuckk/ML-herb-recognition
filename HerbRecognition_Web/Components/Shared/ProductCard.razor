@@ -2,9 +2,8 @@
 @using HerbRecognition_Web.Communication.Services
 
 @*
-    Kafelek przepisu – biblioteka przepisów i sekcja "Przepisy" na stronie rośliny.
+    Kafelek przepisu – biblioteka przepisów i sekcja "Przepisy" na stronie rośliny i wyszukiwanie po formularzu.
     Zawsze pokazuje: z jakich roślin, na co działa i substancje czynne.
-    Style: globalne (products-library.css), bo kafelek jest używany na kilku stronach.
 *@
 
 <article class="prod-card @(Item.IsPending ? "is-pending" : "")">
@@ -20,6 +19,11 @@
         }
 
         <div class="prod-card-pills">
+            @if (MatchPercent is int percent)
+            {
+                <span class="match-badge @MatchClass(percent)">@percent%</span>
+            }
+
             <span class="prod-pill">
                 <span aria-hidden="true">@icon</span>
                 @(Item.ProductTypeName ?? "Produkt")
@@ -97,6 +101,15 @@
                 }
             </div>
         }
+
+        @* wyszukiwanie przez formularz: pasek i liczba zgodnych cech *@
+        @if (MatchPercent is int match && ComparedCount > 0)
+        {
+            <div class="match-bar" aria-hidden="true">
+                <span style="width: @(match)%"></span>
+            </div>
+            <p class="match-details">Zgodne cechy: @MatchedCount z @ComparedCount</p>
+        }
     </div>
 </article>
 
@@ -105,6 +118,18 @@
 
     /// <summary>Zalogowany admin – przycisk "Edytuj".</summary>
     [Parameter] public bool ShowEdit { get; set; }
+
+    // ----- tylko wyniki wyszukiwania przez formularz -----
+    [Parameter] public int? MatchPercent { get; set; }
+    [Parameter] public int MatchedCount { get; set; }
+    [Parameter] public int ComparedCount { get; set; }
+
+    private static string MatchClass(int percent) => percent switch
+    {
+        >= 80 => "high",
+        >= 50 => "medium",
+        _ => "low"
+    };
 
     private const int MaxTags = 3;
 
