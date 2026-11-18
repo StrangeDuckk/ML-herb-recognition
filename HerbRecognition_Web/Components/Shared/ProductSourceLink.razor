@@ -1,0 +1,29 @@
+@using HerbRecognition_Web.Communication.Services
+
+@*
+    Źródło przepisu: zwykły tekst, a adres strony (https://…, www.…, coś.pl)
+    jako link otwierany w nowej karcie.
+    rel="noopener noreferrer nofollow" – strona docelowa nie dostaje dostępu do naszej karty,
+    a wyszukiwarki nie traktują linków od użytkowników jako polecenia.
+*@
+
+@if (parts.Href is not null)
+{
+    @parts.Before<a href="@parts.Href"
+                    class="prd-source-link"
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    title="Otwiera się w nowej karcie">@parts.LinkText<span class="prd-source-ext" aria-hidden="true">↗</span><span class="visually-hidden"> (otwiera się w nowej karcie)</span></a>@parts.After
+}
+else
+{
+    @parts.Before
+}
+
+@code {
+    [Parameter] public string? Source { get; set; }
+
+    private SourceLink.Parts parts = new("", null, null, "");
+
+    protected override void OnParametersSet() => parts = SourceLink.Split(Source);
+}

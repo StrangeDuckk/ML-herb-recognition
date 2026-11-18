@@ -15,6 +15,14 @@ namespace HerbRecognition_APIs.DTOs
         [Required, StringLength(10000, MinimumLength = 10)]
         public string Recipe { get; set; } = null!;
 
+        /// <summary>Proponowana dawka – zwykły tekst (opcjonalnie).</summary>
+        [StringLength(1000)]
+        public string? Dosage { get; set; }
+
+        /// <summary>Źródło przepisu: adres strony, autor albo "przepis własny" (opcjonalnie).</summary>
+        [StringLength(500)]
+        public string? Source { get; set; }
+
         [Range(1, int.MaxValue)]
         public int ProductTypeId { get; set; }
 
@@ -27,6 +35,7 @@ namespace HerbRecognition_APIs.DTOs
         public List<int>? ActiveSubstanceIds { get; set; }
         public List<int>? DiseaseIds { get; set; }
         public List<int>? ContraindicationIds { get; set; }
+        public List<int>? AdministrationRouteIds { get; set; }   // sposób podania – tylko ze słownika
 
         // ----- propozycje nowych wpisów (tylko w zgłoszeniu) -----
         // Admin przed zatwierdzeniem zamienia każdą na Id: wybiera istniejący wpis
@@ -80,6 +89,8 @@ namespace HerbRecognition_APIs.DTOs
         public List<string> Diseases { get; set; } = new();
         public List<string> HealthProperties { get; set; } = new();
         public List<string> ActiveSubstances { get; set; } = new();
+        public List<string> AdministrationRoutes { get; set; } = new();
+        public List<string> Contraindications { get; set; } = new();   // do filtra "bez przeciwwskazania"
         public string? MainThumbnailUrl { get; set; }
 
         // ----- tylko panel admina / kwarantanna -----
@@ -95,8 +106,11 @@ namespace HerbRecognition_APIs.DTOs
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Recipe { get; set; } = "";
+        public string? Dosage { get; set; }
+        public string? Source { get; set; }
         public string? ProductTypeName { get; set; }
         public List<PlantRefDTO> Plants { get; set; } = new();
+        public List<NamedRefDTO> AdministrationRoutes { get; set; } = new();
         public List<NamedRefDTO> HealthProperties { get; set; } = new();
         public List<NamedRefDTO> ActiveSubstances { get; set; } = new();
         public List<DiseaseRefDTO> Diseases { get; set; } = new();
@@ -135,6 +149,12 @@ namespace HerbRecognition_APIs.DTOs
     public class GetContraindicationDTO
     {
         public int ContraindicationId { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    public class GetAdministrationRouteDTO
+    {
+        public int AdministrationRouteId { get; set; }
         public string Name { get; set; } = "";
     }
 }

@@ -40,6 +40,8 @@ namespace HerbRecognition_APIs.Services
     {
         private const int MaxPlants = 20;
         private const int MaxPerDictionary = 20;
+        private const int MaxDosageLength = 1000;
+        private const int MaxSourceLength = 500;
 
         // =====================================================================
         //  PUBLICZNE
@@ -58,7 +60,11 @@ namespace HerbRecognition_APIs.Services
                     p.Id,
                     p.Name,
                     p.Recipe,
+                    p.Dosage,
+                    p.Source,
                     TypeName = p.Producttype.Name,
+                    Routes = p.AdministrationRoutes.OrderBy(r => r.Name)
+                        .Select(r => new NamedRefDTO { Id = r.Id, Name = r.Name }).ToList(),
                     Properties = p.Healthproperties.OrderBy(h => h.Property)
                         .Select(h => new NamedRefDTO { Id = h.Id, Name = h.Property }).ToList(),
                     Substances = p.Activesubstances.OrderBy(a => a.Activesubstance1)
@@ -83,7 +89,10 @@ namespace HerbRecognition_APIs.Services
                 Id = row.Id,
                 Name = row.Name,
                 Recipe = row.Recipe,
+                Dosage = row.Dosage,
+                Source = row.Source,
                 ProductTypeName = row.TypeName,
+                AdministrationRoutes = row.Routes,
                 HealthProperties = row.Properties,
                 ActiveSubstances = row.Substances,
                 Diseases = row.Diseases,
@@ -204,6 +213,8 @@ namespace HerbRecognition_APIs.Services
                 {
                     Name = p.Name,
                     Recipe = p.Recipe,
+                    Dosage = p.Dosage,
+                    Source = p.Source,
                     ProductTypeId = p.Producttypeid,
                     PlantIds = p.PlantProducts.Where(pp => pp.Plantsid != null)
                         .Select(pp => pp.Plantsid!.Value).ToList(),
@@ -212,7 +223,8 @@ namespace HerbRecognition_APIs.Services
                     HealthPropertyIds = p.Healthproperties.Select(h => h.Id).ToList(),
                     ActiveSubstanceIds = p.Activesubstances.Select(a => a.Id).ToList(),
                     DiseaseIds = p.Diseases.Select(d => d.Id).ToList(),
-                    ContraindicationIds = p.Contraindications.Select(c => c.Id).ToList()
+                    ContraindicationIds = p.Contraindications.Select(c => c.Id).ToList(),
+                    AdministrationRouteIds = p.AdministrationRoutes.Select(r => r.Id).ToList()
                 })
                 .FirstOrDefaultAsync();
         }
@@ -226,6 +238,7 @@ namespace HerbRecognition_APIs.Services
                 .Include(p => p.Activesubstances)
                 .Include(p => p.Diseases)
                 .Include(p => p.Contraindications)
+                .Include(p => p.AdministrationRoutes)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product is null) return false;
@@ -235,6 +248,8 @@ namespace HerbRecognition_APIs.Services
 
             product.Name = dto.Name;
             product.Recipe = dto.Recipe;
+            product.Dosage = dto.Dosage;
+            product.Source = dto.Source;
             product.Producttypeid = dto.ProductTypeId;
             await ApplyDictionariesAsync(product, dto);
 
@@ -344,6 +359,8 @@ namespace HerbRecognition_APIs.Services
             {
                 Name = dto.Name,
                 Recipe = dto.Recipe,
+                Dosage = dto.Dosage,
+                Source = dto.Source,
                 Producttypeid = dto.ProductTypeId
             };
 
@@ -358,13 +375,14 @@ namespace HerbRecognition_APIs.Services
             return product.Id;
         }
 
-        /// <summary>Ustawia cztery kolekcje słownikowe dokładnie na Id z DTO.</summary>
+        /// <summary>Ustawia kolekcje słownikowe (4 + sposoby podania) dokładnie na Id z DTO.</summary>
         private async Task ApplyDictionariesAsync(Product product, CreateProductDTO dto)
         {
             var hp = dto.HealthPropertyIds ?? new List<int>();
             var asIds = dto.ActiveSubstanceIds ?? new List<int>();
             var dIds = dto.DiseaseIds ?? new List<int>();
             var cIds = dto.ContraindicationIds ?? new List<int>();
+            var rIds = dto.AdministrationRouteIds ?? new List<int>();
 
             product.Healthproperties.Clear();
             foreach (var x in await data.Healthproperties.Where(h => hp.Contains(h.Id)).ToListAsync())
@@ -381,6 +399,10 @@ namespace HerbRecognition_APIs.Services
             product.Contraindications.Clear();
             foreach (var x in await data.Contraindications.Where(c => cIds.Contains(c.Id)).ToListAsync())
                 product.Contraindications.Add(x);
+
+            product.AdministrationRoutes.Clear();
+            foreach (var x in await data.AdministrationRoutes.Where(r => rIds.Contains(r.Id)).ToListAsync())
+                product.AdministrationRoutes.Add(x);
         }
 
         private static IEnumerable<PlantProduct> BuildPlantLinks(CreateProductDTO dto)
@@ -402,6 +424,8 @@ namespace HerbRecognition_APIs.Services
         {
             dto.Name = (dto.Name ?? "").Trim();
             dto.Recipe = (dto.Recipe ?? "").Trim();
+            dto.Dosage = string.IsNullOrWhiteSpace(dto.Dosage) ? null : dto.Dosage.Trim();
+            dto.Source = string.IsNullOrWhiteSpace(dto.Source) ? null : dto.Source.Trim();
 
             dto.PlantIds = CleanIds(dto.PlantIds);
             dto.PlantUserInputIds = CleanIds(dto.PlantUserInputIds);
@@ -409,6 +433,7 @@ namespace HerbRecognition_APIs.Services
             dto.ActiveSubstanceIds = CleanIds(dto.ActiveSubstanceIds);
             dto.DiseaseIds = CleanIds(dto.DiseaseIds);
             dto.ContraindicationIds = CleanIds(dto.ContraindicationIds);
+            dto.AdministrationRouteIds = CleanIds(dto.AdministrationRouteIds);
 
             dto.NewHealthProperties = CleanTexts(dto.NewHealthProperties, 300, "Właściwość zdrowotna");
             dto.NewActiveSubstances = CleanTexts(dto.NewActiveSubstances, 300, "Substancja czynna");
@@ -471,6 +496,12 @@ namespace HerbRecognition_APIs.Services
             if (dto.Recipe.Length > 10000)
                 throw new ProductValidationException("Przepis może mieć najwyżej 10 000 znaków.");
 
+            if (dto.Dosage is { Length: > MaxDosageLength })
+                throw new ProductValidationException($"Proponowana dawka może mieć najwyżej {MaxDosageLength} znaków.");
+
+            if (dto.Source is { Length: > MaxSourceLength })
+                throw new ProductValidationException($"Źródło przepisu może mieć najwyżej {MaxSourceLength} znaków.");
+
             var plantCount = Count(dto.PlantIds) + Count(dto.PlantUserInputIds);
             if (plantCount == 0)
                 throw new ProductValidationException("Wskaż przynajmniej jedną roślinę.");
@@ -485,6 +516,7 @@ namespace HerbRecognition_APIs.Services
             CheckLimit(Count(dto.ActiveSubstanceIds) + Count(dto.NewActiveSubstances), "substancji czynnych");
             CheckLimit(Count(dto.DiseaseIds) + Count(dto.NewDiseases), "chorób");
             CheckLimit(Count(dto.ContraindicationIds) + Count(dto.NewContraindications), "przeciwwskazań");
+            CheckLimit(Count(dto.AdministrationRouteIds), "sposobów podania");
 
             if (!await data.Producttypes.AnyAsync(t => t.Id == dto.ProductTypeId))
                 throw new KeyNotFoundException("Wybierz typ produktu.");
@@ -501,6 +533,8 @@ namespace HerbRecognition_APIs.Services
                 "Część wskazanych chorób nie istnieje.");
             await EnsureAllExistAsync(data.Contraindications.Select(c => c.Id), dto.ContraindicationIds,
                 "Część wskazanych przeciwwskazań nie istnieje.");
+            await EnsureAllExistAsync(data.AdministrationRoutes.Select(r => r.Id), dto.AdministrationRouteIds,
+                "Część wskazanych sposobów podania nie istnieje.");
 
             if (requireResolved)
             {
@@ -634,6 +668,8 @@ namespace HerbRecognition_APIs.Services
                     Diseases = p.Diseases.OrderBy(d => d.Name).Select(d => d.Name).ToList(),
                     Properties = p.Healthproperties.OrderBy(h => h.Property).Select(h => h.Property).ToList(),
                     Substances = p.Activesubstances.OrderBy(a => a.Activesubstance1).Select(a => a.Activesubstance1).ToList(),
+                    Contraindications = p.Contraindications.OrderBy(c => c.Name).Select(c => c.Name).ToList(),
+                    Routes = p.AdministrationRoutes.OrderBy(r => r.Name).Select(r => r.Name).ToList(),
                     Plants = p.PlantProducts
                         .Select(pp => new PlantLinkRow(pp.Plantsid, pp.UserInputId,
                             pp.Plants != null ? pp.Plants.Polishname : null))
@@ -656,6 +692,8 @@ namespace HerbRecognition_APIs.Services
                     Diseases = r.Diseases,
                     HealthProperties = r.Properties,
                     ActiveSubstances = r.Substances,
+                    Contraindications = r.Contraindications,
+                    AdministrationRoutes = r.Routes,
                     Plants = ToPlantRefs(r.Plants, pendingNames),
                     MainThumbnailUrl = info.Thumbnail,
                     PictureCount = includeAdminInfo ? info.Count : 0
@@ -675,12 +713,16 @@ namespace HerbRecognition_APIs.Services
             var diseaseIds = valid.SelectMany(d => d.DiseaseIds ?? new()).Distinct().ToList();
             var propertyIds = valid.SelectMany(d => d.HealthPropertyIds ?? new()).Distinct().ToList();
             var substanceIds = valid.SelectMany(d => d.ActiveSubstanceIds ?? new()).Distinct().ToList();
+            var contraIds = valid.SelectMany(d => d.ContraindicationIds ?? new()).Distinct().ToList();
+            var routeIds = valid.SelectMany(d => d.AdministrationRouteIds ?? new()).Distinct().ToList();
 
             var types = await data.Producttypes.Where(t => typeIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, t => t.Name);
             var plants = await data.Plants.Where(p => plantIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Polishname);
             var diseases = await data.Diseases.Where(d => diseaseIds.Contains(d.Id)).ToDictionaryAsync(d => d.Id, d => d.Name);
             var properties = await data.Healthproperties.Where(h => propertyIds.Contains(h.Id)).ToDictionaryAsync(h => h.Id, h => h.Property);
             var substances = await data.Activesubstances.Where(a => substanceIds.Contains(a.Id)).ToDictionaryAsync(a => a.Id, a => a.Activesubstance1);
+            var contraindications = await data.Contraindications.Where(c => contraIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name);
+            var routes = await data.AdministrationRoutes.Where(r => routeIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id, r => r.Name);
             var pendingNames = await PendingPlantNamesAsync(valid.SelectMany(d => d.PlantUserInputIds ?? new()).Select(x => (int?)x));
 
             var pictures = includeAdminInfo
@@ -723,6 +765,12 @@ namespace HerbRecognition_APIs.Services
                         .ToList(),
                     ActiveSubstances = (d.ActiveSubstanceIds ?? new()).Select(id => substances.GetValueOrDefault(id) ?? $"#{id}")
                         .Concat(d.NewActiveSubstances ?? new())
+                        .ToList(),
+                    Contraindications = (d.ContraindicationIds ?? new()).Select(id => contraindications.GetValueOrDefault(id) ?? $"#{id}")
+                        .Concat(d.NewContraindications ?? new())
+                        .ToList(),
+                    AdministrationRoutes = (d.AdministrationRouteIds ?? new())
+                        .Select(id => routes.GetValueOrDefault(id) ?? $"#{id}")
                         .ToList(),
                     MainThumbnailUrl = includeAdminInfo ? info.Thumbnail : null,   // publicznie bez zdjęć
                     PictureCount = info.Count,

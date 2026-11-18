@@ -11,7 +11,8 @@
 
 @*
     Kolejność w HTML = kolejność na telefonie (wszystko jedno pod drugim):
-    zdjęcia -> nagłówek z roślinami -> przeciwwskazania -> na co działa -> przepis.
+    zdjęcia -> nagłówek z roślinami -> przeciwwskazania -> na co działa -> przepis (+ źródło)
+    -> stosowanie (sposób podania, dawka).
     Na komputerze zdjęcie stoi po lewej obok "na co działa", przepis na całą szerokość.
     Klasy pd-* jak na stronie rośliny – tryb ciemny z dark.css działa bez zmian.
 *@
@@ -78,12 +79,16 @@
                             <button type="button" class="pd-gallery-nav prev"
                                     disabled="@(current == 0)"
                                     @onclick="() => Go(current - 1)"
-                                    aria-label="Poprzednie zdjęcie">‹</button>
+                                    aria-label="Poprzednie zdjęcie">
+                                ‹
+                            </button>
 
                             <button type="button" class="pd-gallery-nav next"
                                     disabled="@(current == pictures.Count - 1)"
                                     @onclick="() => Go(current + 1)"
-                                    aria-label="Następne zdjęcie">›</button>
+                                    aria-label="Następne zdjęcie">
+                                ›
+                            </button>
 
                             <span class="pd-gallery-counter" aria-live="polite">@(current + 1) / @pictures.Count</span>
 
@@ -220,7 +225,45 @@
                 <span class="section-label">PRZEPIS</span>
                 <h2>Jak przygotować</h2>
                 <div class="prd-recipe">@product.Recipe</div>
+
+                @if (!string.IsNullOrWhiteSpace(product.Source))
+                {
+                    <p class="prd-source">
+                        <span class="prd-label">Źródło</span>
+                        <span class="prd-source-text"><ProductSourceLink Source="@product.Source" /></span>
+                    </p>
+                }
             </section>
+
+            @* ---------- stosowanie: sposób podania i dawka ---------- *@
+            @if (product.AdministrationRoutes.Count > 0 || !string.IsNullOrWhiteSpace(product.Dosage))
+            {
+                <section class="pd-card prd-usage-card">
+                    <span class="section-label">STOSOWANIE</span>
+                    <h2>Jak stosować</h2>
+
+                    @if (product.AdministrationRoutes.Count > 0)
+                    {
+                        <div class="prd-group">
+                            <span class="prd-label">Sposób podania</span>
+                            <div class="prd-chips">
+                                @foreach (var route in product.AdministrationRoutes)
+                                {
+                                    <span class="prd-chip is-static">@route.Name</span>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(product.Dosage))
+                    {
+                        <div class="prd-group">
+                            <span class="prd-label">Proponowana dawka</span>
+                            <div class="prd-dosage">@product.Dosage</div>
+                        </div>
+                    }
+                </section>
+            }
 
             <p class="prd-disclaimer">
                 Informacje mają charakter poglądowy i nie zastępują porady lekarza ani farmaceuty.

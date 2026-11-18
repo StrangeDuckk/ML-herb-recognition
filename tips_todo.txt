@@ -1,6 +1,3 @@
-- zrobic filtry w bibliotece dla roslin
-- zrobic filtry w bibliotece dla przepisow
-
 - zrobic widok ekranu telefonu porzadnie, jak na ick tlumaczyl
 
 - testy jednostkowe bazy i api
@@ -8,3 +5,7 @@
 ------------------------------------- jesli starczy czasu: -------------------------
 - wypelnianie formularza po zdjeciu
 - wyszukiwanie po zdjeciu (najpierw wypelnienie formularza, potem wyszukanie i po zdjeciu i po formularzu, glosowanie wyniku)
+
+
+---------------------------------------------------------------------------------------
+logowanie do postgresa na serwerze: psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"

@@ -81,5 +81,9 @@ namespace HerbRecognition_APIs.Controllers
         [HttpGet("contraindication")]
         public async Task<IActionResult> GetContraindications() =>
             Ok(await dbService.GetAllDictContraindicationsAsync());
+
+        [HttpGet("administrationRoute")]
+        public async Task<IActionResult> GetAdministrationRoutes() =>
+            Ok(await dbService.GetAllDictAdministrationRoutesAsync());
     }
 }

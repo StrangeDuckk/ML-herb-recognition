@@ -8,6 +8,8 @@ namespace HerbRecognition_Web.Communication.DTOs
     {
         public string Name { get; set; } = "";
         public string Recipe { get; set; } = "";
+        public string? Dosage { get; set; }
+        public string? Source { get; set; }
         public int ProductTypeId { get; set; }
 
         public List<int>? PlantIds { get; set; }
@@ -17,6 +19,7 @@ namespace HerbRecognition_Web.Communication.DTOs
         public List<int>? ActiveSubstanceIds { get; set; }
         public List<int>? DiseaseIds { get; set; }
         public List<int>? ContraindicationIds { get; set; }
+        public List<int>? AdministrationRouteIds { get; set; }
 
         public List<string>? NewHealthProperties { get; set; }
         public List<string>? NewActiveSubstances { get; set; }
@@ -61,6 +64,8 @@ namespace HerbRecognition_Web.Communication.DTOs
         public List<string> Diseases { get; set; } = new();
         public List<string> HealthProperties { get; set; } = new();
         public List<string> ActiveSubstances { get; set; } = new();
+        public List<string> AdministrationRoutes { get; set; } = new();
+        public List<string> Contraindications { get; set; } = new();
         public string? MainThumbnailUrl { get; set; }
         public int PictureCount { get; set; }
         public int NewEntriesCount { get; set; }
@@ -73,8 +78,11 @@ namespace HerbRecognition_Web.Communication.DTOs
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Recipe { get; set; } = "";
+        public string? Dosage { get; set; }
+        public string? Source { get; set; }
         public string? ProductTypeName { get; set; }
         public List<PlantRefDTO> Plants { get; set; } = new();
+        public List<NamedRefDTO> AdministrationRoutes { get; set; } = new();
         public List<NamedRefDTO> HealthProperties { get; set; } = new();
         public List<NamedRefDTO> ActiveSubstances { get; set; } = new();
         public List<DiseaseRefDTO> Diseases { get; set; } = new();
@@ -91,7 +99,7 @@ namespace HerbRecognition_Web.Communication.DTOs
     //  Słowniki produktu w formularzu
     // =====================================================================
 
-    public enum ProductDictionary { HealthProperty, ActiveSubstance, Disease, Contraindication }
+    public enum ProductDictionary { HealthProperty, ActiveSubstance, Disease, Contraindication, AdministrationRoute }
 
     /// <summary>Wpis słownika: Id, nazwa i (dla chorób) objawy.</summary>
     public sealed record DictionaryEntry(int Id, string Name, string? Description);
@@ -110,7 +118,8 @@ namespace HerbRecognition_Web.Communication.DTOs
             ProductDictionary.Disease,
             ProductDictionary.HealthProperty,
             ProductDictionary.ActiveSubstance,
-            ProductDictionary.Contraindication
+            ProductDictionary.Contraindication,
+            ProductDictionary.AdministrationRoute
         };
 
         /// <summary>Adres w api/dictionaries/… i api/admin/dictionaries/…</summary>
@@ -119,6 +128,7 @@ namespace HerbRecognition_Web.Communication.DTOs
             ProductDictionary.HealthProperty => "healthProperty",
             ProductDictionary.ActiveSubstance => "activeSubstance",
             ProductDictionary.Disease => "disease",
+            ProductDictionary.AdministrationRoute => "administrationRoute",
             _ => "contraindication"
         };
 
@@ -127,11 +137,16 @@ namespace HerbRecognition_Web.Communication.DTOs
             ProductDictionary.HealthProperty => "Właściwości zdrowotne",
             ProductDictionary.ActiveSubstance => "Substancje czynne",
             ProductDictionary.Disease => "Choroby",
+            ProductDictionary.AdministrationRoute => "Sposób podania",
             _ => "Przeciwwskazania"
         };
 
-        public static int MaxLength(this ProductDictionary d) =>
-            d == ProductDictionary.Contraindication ? 1000 : 300;
+        public static int MaxLength(this ProductDictionary d) => d switch
+        {
+            ProductDictionary.Contraindication => 1000,
+            ProductDictionary.AdministrationRoute => 100,
+            _ => 300
+        };
 
         public static bool HasDescription(this ProductDictionary d) => d == ProductDictionary.Disease;
 
@@ -141,6 +156,7 @@ namespace HerbRecognition_Web.Communication.DTOs
             ProductDictionary.HealthProperty => ("healthPropertyId", "property", null),
             ProductDictionary.ActiveSubstance => ("activeSubstanceId", "activeSubstance", null),
             ProductDictionary.Disease => ("diseaseId", "name", "symptoms"),
+            ProductDictionary.AdministrationRoute => ("administrationRouteId", "name", null),
             _ => ("contraindicationId", "name", null)
         };
     }

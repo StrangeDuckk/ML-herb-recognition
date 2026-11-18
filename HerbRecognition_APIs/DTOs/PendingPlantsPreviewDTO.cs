@@ -10,5 +10,7 @@
         public string? Subriquet { get; set; }
         public string? PlantTypeName { get; set; }
         public string? MonthOfHarvestName { get; set; }
+        public string? OccuranceName { get; set; }
+        public string? PoisonabilityDescription { get; set; }   // null = nietrująca
     }
 }

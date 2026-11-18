@@ -1,5 +1,6 @@
 @using HerbRecognition_Web.Communication.DTOs
 @using HerbRecognition_Web.Communication.Services
+@using HerbRecognition_Web.Components.Shared
 
 @inject ProductApiService ProductApi
 @inject PlantApiService PlantApi
@@ -11,6 +12,7 @@
       (nowe wartości od razu przypisuje się do słownika w oknie dialogowym),
     - wyszukiwanie: SearchMode = true, nic nie jest wymagane, bez "Dodaj nową",
       przeciwwskazania działają jako filtr, przycisk wywołuje OnSearch z kryteriami.
+    Sposób podania to mały słownik admina – wybór kafelkami, bez "Dodaj nową".
     Błędy rzucone przez OnSubmit/OnSecondary/OnSearch są wyświetlane nad przyciskami.
 *@
 
@@ -170,6 +172,78 @@ else
                                        placeholder="1. Zbierz kwiaty… 2. Zalej wodą… 3. Gotuj 15 minut…" />
                         <p class="photo-hint">@model.Recipe.Length / 10 000 znaków</p>
                     </div>
+
+                    <div class="submission-field submission-field--wide">
+                        <label for="product-source">Źródło przepisu</label>
+                        <InputText id="product-source" @bind-Value="model.Source" maxlength="500"
+                                   placeholder="np. https://ziola.pl/syrop-z-mniszka, „Zioła polskie” – J. Kowalski, przepis własny" />
+                        <p class="photo-hint">
+                            Adres strony, autor lub książka – albo „przepis własny”.
+                            Adres (https://… albo coś.pl) będzie linkiem otwieranym w nowej karcie.
+                        </p>
+
+                        @if (SourceLink.HasLink(model.Source))
+                        {
+                            <p class="prd-source-preview">
+                                Podgląd: <ProductSourceLink Source="@model.Source" />
+                            </p>
+                        }
+                    </div>
+                }
+            </section>
+
+            @* ================= 6. Stosowanie ================= *@
+            <section class="submission-section">
+                <header class="submission-section-head">
+                    <h2>6. Stosowanie</h2>
+                </header>
+                <p class="section-description">
+                    @if (SearchMode)
+                    {
+                        <text>Jak chcesz stosować produkt – np. tylko doustnie albo tylko na skórę.</text>
+                    }
+                    else
+                    {
+                        <text>Jak podawać produkt i ile go stosować. Możesz zaznaczyć kilka sposobów.</text>
+                    }
+                </p>
+
+                <div class="submission-field submission-field--wide">
+                    <span class="submission-label" id="route-label">Sposób podania</span>
+
+                    @if (entries[ProductDictionary.AdministrationRoute].Count == 0)
+                    {
+                        <p class="photo-hint">Słownik sposobów podania jest pusty – administrator może go uzupełnić w panelu.</p>
+                    }
+                    else
+                    {
+                        <div class="route-toggles" role="group" aria-labelledby="route-label">
+                            @foreach (var route in entries[ProductDictionary.AdministrationRoute])
+                            {
+                                var isOn = selected[ProductDictionary.AdministrationRoute].Contains(route.Id);
+
+                                <button type="button"
+                                        class="route-toggle @(isOn ? "is-on" : "")"
+                                        aria-pressed="@(isOn ? "true" : "false")"
+                                        disabled="@IsBusy"
+                                        @onclick="() => ToggleRoute(route.Id)">
+                                    <span class="route-toggle-mark" aria-hidden="true">@(isOn ? "✓" : "+")</span>
+                                    @route.Name
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @if (!SearchMode)
+                {
+                    <div class="submission-field submission-field--wide">
+                        <label for="product-dosage">Proponowana dawka</label>
+                        <InputTextArea id="product-dosage" class="product-recipe product-dosage" rows="3" maxlength="1000"
+                                       @bind-Value="model.Dosage"
+                                       placeholder="np. dorośli: 1 łyżka 3 razy dziennie; dzieci od 6 lat: 1 łyżeczka 2 razy dziennie" />
+                        <p class="photo-hint">@(model.Dosage?.Length ?? 0) / 1000 znaków</p>
+                    </div>
                 }
             </section>
 
@@ -262,6 +336,8 @@ else
     {
         public string Name { get; set; } = "";
         public string Recipe { get; set; } = "";
+        public string? Dosage { get; set; }
+        public string? Source { get; set; }
         public int ProductTypeId { get; set; }
     }
 
@@ -327,12 +403,15 @@ else
     {
         model.Name = dto.Name ?? "";
         model.Recipe = dto.Recipe ?? "";
+        model.Dosage = dto.Dosage;
+        model.Source = dto.Source;
         model.ProductTypeId = dto.ProductTypeId;
 
         selected[ProductDictionary.HealthProperty] = dto.HealthPropertyIds?.ToList() ?? new();
         selected[ProductDictionary.ActiveSubstance] = dto.ActiveSubstanceIds?.ToList() ?? new();
         selected[ProductDictionary.Disease] = dto.DiseaseIds?.ToList() ?? new();
         selected[ProductDictionary.Contraindication] = dto.ContraindicationIds?.ToList() ?? new();
+        selected[ProductDictionary.AdministrationRoute] = dto.AdministrationRouteIds?.ToList() ?? new();
 
         proposals[ProductDictionary.HealthProperty] = ToProposals(dto.NewHealthProperties);
         proposals[ProductDictionary.ActiveSubstance] = ToProposals(dto.NewActiveSubstances);
@@ -379,6 +458,13 @@ else
                                OnChanged="() => submitError = null"
                                OnResolve="p => resolving = (kind, p)" />
     </div>;
+
+    private void ToggleRoute(int id)
+    {
+        var list = selected[ProductDictionary.AdministrationRoute];
+        if (!list.Remove(id)) list.Add(id);
+        submitError = null;
+    }
 
     private void ResolveWith(int id)
     {
@@ -468,6 +554,12 @@ else
         if (model.Recipe.Trim().Length < 10)
             return "Opisz przepis (co najmniej 10 znaków).";
 
+        if ((model.Dosage?.Trim().Length ?? 0) > 1000)
+            return "Proponowana dawka może mieć najwyżej 1000 znaków.";
+
+        if ((model.Source?.Trim().Length ?? 0) > 500)
+            return "Źródło przepisu może mieć najwyżej 500 znaków.";
+
         if (requireResolved && ProposalCount > 0)
             return "Najpierw przypisz nowe wpisy do słowników (pomarańczowe – przycisk „Przypisz”).";
 
@@ -488,6 +580,8 @@ else
         {
             Name = model.Name.Trim(),
             Recipe = model.Recipe.Trim(),
+            Dosage = NullIfEmpty(model.Dosage),
+            Source = NullIfEmpty(model.Source),
             ProductTypeId = model.ProductTypeId,
 
             PlantIds = OrNull(approvedPlants),
@@ -497,6 +591,7 @@ else
             ActiveSubstanceIds = OrNull(selected[ProductDictionary.ActiveSubstance]),
             DiseaseIds = OrNull(selected[ProductDictionary.Disease]),
             ContraindicationIds = OrNull(selected[ProductDictionary.Contraindication]),
+            AdministrationRouteIds = OrNull(selected[ProductDictionary.AdministrationRoute]),
 
             NewHealthProperties = OrNull(proposals[ProductDictionary.HealthProperty].Select(p => p.Name)),
             NewActiveSubstances = OrNull(proposals[ProductDictionary.ActiveSubstance].Select(p => p.Name)),
@@ -525,6 +620,7 @@ else
         DiseaseIds = OrNull(selected[ProductDictionary.Disease]),
         HealthPropertyIds = OrNull(selected[ProductDictionary.HealthProperty]),
         ActiveSubstanceIds = OrNull(selected[ProductDictionary.ActiveSubstance]),
+        AdministrationRouteIds = OrNull(selected[ProductDictionary.AdministrationRoute]),
 
         // w wyszukiwaniu przeciwwskazania = filtr wykluczający
         ExcludeContraindicationIds = OrNull(selected[ProductDictionary.Contraindication])

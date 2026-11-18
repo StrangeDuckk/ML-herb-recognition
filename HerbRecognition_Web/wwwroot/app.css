@@ -2634,6 +2634,385 @@ a.admin-btn {
         text-decoration: underline;
     }
 
+/* ---------- formularz przepisu: sposÛb podania (kafelki do zaznaczania) ---------- */
+
+.submission-field .submission-label {
+    color: #344538;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.route-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.route-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 14px 8px 10px;
+    border: 1px solid #d8e1d5;
+    border-radius: 999px;
+    background: #fbfcf9;
+    color: #3d4a43;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+    .route-toggle:hover {
+        border-color: #9cc5ab;
+    }
+
+    .route-toggle:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(82, 116, 90, 0.2);
+    }
+
+    .route-toggle.is-on {
+        border-color: #9cc5ab;
+        background: #e3f0e8;
+        color: #2f6c4d;
+    }
+
+    .route-toggle:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+.route-toggle-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.route-toggle.is-on .route-toggle-mark {
+    background: #2f6c4d;
+    color: #fff;
+}
+
+.submission-form .product-dosage {
+    min-height: 96px;
+}
+
+/* podglπd linku pod polem "èrÛd≥o" */
+.prd-source-preview {
+    margin: 6px 0 0;
+    color: #5f6b65;
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+}
+
+
+/* ---------- link do ürÛd≥a (formularz + strona przepisu) ---------- */
+
+.prd-source-link {
+    color: #2f6243;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+}
+
+    .prd-source-link:hover {
+        color: #1f4630;
+        text-decoration-thickness: 2px;
+    }
+
+.prd-source-ext {
+    margin-left: 3px;
+    font-size: 0.8em;
+    text-decoration: none;
+    display: inline-block;
+}
+
+
+/* ---------- strona przepisu: ürÛd≥o i stosowanie ---------- */
+
+.prd-source {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    margin: 20px 0 0;
+    padding-top: 16px;
+    border-top: 1px dashed #dfe5e1;
+}
+
+.prd-source-text {
+    color: #3d4a43;
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+}
+
+.prd-usage-card {
+    margin-top: 20px;
+}
+
+/* dawka: zachowane nowe linie z formularza */
+.prd-dosage {
+    color: #26352b;
+    font-size: 1rem;
+    line-height: 1.7;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+
+/* ---------- filtry bibliotek (roúliny i przepisy) ---------- */
+
+.lib-filters {
+    margin: 0 0 24px;
+    padding: 14px 18px;
+    border: 1px solid #dfe5e1;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(27, 42, 33, 0.04);
+}
+
+.lib-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+}
+
+.lib-filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    border: 0;
+    background: none;
+    color: #1b2a21;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.lib-filters-icon {
+    font-size: 1.05rem;
+    color: #2f6243;
+}
+
+.lib-filters-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #2f6243;
+    color: #fff;
+    font-size: 0.78rem;
+}
+
+.lib-filters-caret {
+    color: #7a857f;
+    transition: transform 0.2s ease;
+}
+
+.lib-filters-clear {
+    padding: 6px 12px;
+    border: 1px solid #dfe5e1;
+    border-radius: 8px;
+    background: #f6faf8;
+    color: #2f6243;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .lib-filters-clear:hover {
+        border-color: #9cc5ab;
+    }
+
+.lib-filters-summary {
+    margin-left: auto;
+    color: #7a857f;
+    font-size: 0.85rem;
+}
+
+/* komputer: rozwiniÍte, "Filtry" zwija */
+.lib-filters-body {
+    margin-top: 14px;
+}
+
+.lib-filters.is-toggled .lib-filters-body {
+    display: none;
+}
+
+.lib-filters.is-toggled .lib-filters-caret {
+    transform: rotate(-90deg);
+}
+
+.lib-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px 16px;
+}
+
+.lib-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.lib-filter-label {
+    color: #344538;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.lib-filter-select {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 1px solid #d8e1d5;
+    border-radius: 10px;
+    background: #fbfcf9;
+    color: #26372a;
+    font: inherit;
+    font-size: 0.92rem;
+    text-overflow: ellipsis;
+}
+
+    .lib-filter-select:focus {
+        outline: none;
+        border-color: #52745a;
+        box-shadow: 0 0 0 3px rgba(82, 116, 90, 0.14);
+    }
+
+    .lib-filter-select.is-active {
+        border-color: #39815c;
+        background: #eef6f1;
+        font-weight: 600;
+    }
+
+/* przeciwwskazania do wykluczenia */
+.lib-filter-exclude {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed #e0e6df;
+}
+
+.lib-filter-hint {
+    margin: 4px 0 10px;
+    color: #7a857f;
+    font-size: 0.82rem;
+}
+
+.lib-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lib-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    min-height: 36px;
+    padding: 6px 12px 6px 8px;
+    border: 1px solid #dfe5e1;
+    border-radius: 999px;
+    background: #f6faf8;
+    color: #3d4a43;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+    .lib-chip:hover {
+        border-color: #c9d6ce;
+    }
+
+    .lib-chip.is-excluded {
+        border-color: #e7b9b2;
+        background: #fbecea;
+        color: #9c3b2f;
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+    }
+
+.lib-chip-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    font-size: 0.75rem;
+    text-decoration: none;
+}
+
+.lib-chip.is-excluded .lib-chip-mark {
+    background: #b04a3f;
+    color: #fff;
+}
+
+/* biblioteka roúlin: pastylka "Trujπca" */
+.plant-type.plant-poison {
+    border-color: #e7b9b2;
+    background: #fbecea;
+    color: #9c3b2f;
+}
+
+
+/* ---------- telefon: filtry schowane, "Filtry" je rozwija ---------- */
+
+@media (max-width: 700px) {
+    .lib-filters {
+        padding: 10px 14px;
+    }
+
+    .lib-filters-body {
+        display: none;
+    }
+
+    .lib-filters.is-toggled .lib-filters-body {
+        display: block;
+    }
+
+    .lib-filters-caret {
+        transform: rotate(-90deg);
+    }
+
+    .lib-filters.is-toggled .lib-filters-caret {
+        transform: none;
+    }
+
+    .lib-filters-summary {
+        flex-basis: 100%;
+        margin-left: 0;
+    }
+
+    .lib-filter-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 :root[data-theme="dark"] .prod-form-link {
     color: var(--d-accent);
 }
@@ -2802,6 +3181,110 @@ a.admin-btn {
     color: var(--d-text-2);
     border-color: var(--d-border);
 }
+
+/* ---------- tryb ciemny ---------- */
+
+:root[data-theme="dark"] .submission-field .submission-label,
+:root[data-theme="dark"] .lib-filter-label {
+    color: var(--d-text-2);
+}
+
+:root[data-theme="dark"] .route-toggle,
+:root[data-theme="dark"] .lib-chip,
+:root[data-theme="dark"] .lib-filters-clear {
+    border-color: var(--d-border-strong);
+    background: var(--d-surface-2);
+    color: var(--d-text-2);
+}
+
+    :root[data-theme="dark"] .route-toggle.is-on {
+        border-color: var(--d-accent-strong);
+        background: var(--d-accent-soft);
+        color: var(--d-accent);
+    }
+
+:root[data-theme="dark"] .route-toggle-mark,
+:root[data-theme="dark"] .lib-chip-mark {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="dark"] .route-toggle.is-on .route-toggle-mark {
+    background: var(--d-accent-strong);
+    color: #fff;
+}
+
+:root[data-theme="dark"] .lib-filters-clear {
+    color: var(--d-accent);
+}
+
+:root[data-theme="dark"] .prd-source-link {
+    color: var(--d-accent);
+}
+
+    :root[data-theme="dark"] .prd-source-link:hover {
+        color: #b4e0bf;
+    }
+
+:root[data-theme="dark"] .prd-source {
+    border-top-color: var(--d-border);
+}
+
+:root[data-theme="dark"] .prd-source-text,
+:root[data-theme="dark"] .prd-source-preview,
+:root[data-theme="dark"] .prd-dosage {
+    color: var(--d-text-2);
+}
+
+:root[data-theme="dark"] .lib-filters {
+    border-color: var(--d-border);
+    background: var(--d-surface);
+    box-shadow: none;
+}
+
+:root[data-theme="dark"] .lib-filters-toggle {
+    color: var(--d-text);
+}
+
+:root[data-theme="dark"] .lib-filters-icon {
+    color: var(--d-accent);
+}
+
+:root[data-theme="dark"] .lib-filters-count {
+    background: var(--d-accent-strong);
+}
+
+:root[data-theme="dark"] .lib-filters-caret,
+:root[data-theme="dark"] .lib-filters-summary,
+:root[data-theme="dark"] .lib-filter-hint {
+    color: var(--d-muted);
+}
+
+:root[data-theme="dark"] .lib-filter-select {
+    border-color: var(--d-border-strong);
+    background: var(--d-soft);
+    color: var(--d-text);
+}
+
+    :root[data-theme="dark"] .lib-filter-select.is-active {
+        border-color: var(--d-accent-strong);
+        background: var(--d-accent-soft);
+    }
+
+:root[data-theme="dark"] .lib-filter-exclude {
+    border-top-color: var(--d-border);
+}
+
+:root[data-theme="dark"] .lib-chip.is-excluded,
+:root[data-theme="dark"] .plant-type.plant-poison {
+    border-color: var(--d-err-border);
+    background: var(--d-err-bg);
+    color: var(--d-err-text);
+}
+
+    :root[data-theme="dark"] .lib-chip.is-excluded .lib-chip-mark {
+        background: var(--d-err-border);
+    }
+
 
 @media (max-width: 500px) {
 

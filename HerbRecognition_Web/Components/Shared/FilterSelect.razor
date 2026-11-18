@@ -1,0 +1,43 @@
+@*
+    Jedno pole filtra: lista rozwijana "Wszystkie / wartość (liczba)".
+    Value = null -> filtr wyłączony.
+    Wybrana wartość zostaje na liście, nawet jeśli zniknęła z danych
+    (np. po wyłączeniu zgłoszeń) – żeby było widać, co filtruje.
+*@
+
+<label class="lib-filter">
+    <span class="lib-filter-label">@Label</span>
+
+    <select class="lib-filter-select @(Value is null ? "" : "is-active")"
+            value="@(Value ?? "")"
+            @onchange="OnChangeAsync">
+        <option value="">@AllText</option>
+
+        @foreach (var option in Options)
+        {
+            <option value="@option.Value">@option.Text@(option.Count is int c ? $" ({c})" : "")</option>
+        }
+
+        @if (Value is not null && !Options.Any(o => o.Value == Value))
+        {
+            <option value="@Value">@Value (0)</option>
+        }
+    </select>
+</label>
+
+@code {
+    public sealed record Option(string Value, string Text, int? Count = null);
+
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public string AllText { get; set; } = "Wszystkie";
+    [Parameter] public IReadOnlyList<Option> Options { get; set; } = Array.Empty<Option>();
+
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    private async Task OnChangeAsync(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(string.IsNullOrEmpty(raw) ? null : raw);
+    }
+}

@@ -11,6 +11,7 @@ namespace HerbRecognition_Web.Communication.DTOs
         public List<int>? DiseaseIds { get; set; }
         public List<int>? HealthPropertyIds { get; set; }
         public List<int>? ActiveSubstanceIds { get; set; }
+        public List<int>? AdministrationRouteIds { get; set; }
         public List<int>? ExcludeContraindicationIds { get; set; }
 
         public int MinMatchPercent { get; set; }

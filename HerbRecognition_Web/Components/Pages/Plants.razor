@@ -48,6 +48,20 @@
         </div>
     </section>
 
+    @if (!isLoading && string.IsNullOrEmpty(errorMessage) && BaseCards.Any())
+    {
+        <LibraryFilters ActiveCount="ActiveFilterCount"
+                        OnClear="ClearFilters"
+                        Summary="@($"Rośliny: {Cards.Count()} z {BaseCards.Count()}")">
+            <div class="lib-filter-grid">
+                <FilterSelect Label="Typ (drzewo, zioło, grzyb…)" Options="typeOptions" @bind-Value="filterType" />
+                <FilterSelect Label="Występowanie" Options="occuranceOptions" @bind-Value="filterOccurance" />
+                <FilterSelect Label="Miesiąc zbioru" Options="monthOptions" @bind-Value="filterMonth" />
+                <FilterSelect Label="Trujące / bezpieczne" Options="LibraryFilter.PoisonOptions" @bind-Value="filterPoison" />
+            </div>
+        </LibraryFilters>
+    }
+
 
     @if (isLoading)
     {
@@ -64,11 +78,21 @@
             <button @onclick="LoadPlantsAsync">Spróbuj ponownie</button>
         </div>
     }
-    else if (!Cards.Any())
+    else if (!BaseCards.Any())
     {
         <div class="plants-status">
             <h2>Brak roślin</h2>
             <p>Baza nie zawiera jeszcze żadnych roślin.</p>
+        </div>
+    }
+    else if (!Cards.Any())
+    {
+        <div class="plants-status">
+            <h2>Żadna roślina nie pasuje do filtrów</h2>
+            <p>Zmień albo wyczyść filtry@(showPending ? "" : " – możesz też włączyć rośliny czekające na weryfikację").</p>
+            <p><button type="button" class="lib-filters-clear" @onclick="ClearFilters">Wyczyść filtry</button></p>
+            <p>Nie ma rośliny, której szukasz? Możesz zgłosić ją za pomocą formularza.</p>
+            <a href="/plant-form" class="plant-form-button">Przejdź do formularza <span>→</span></a>
         </div>
     }
     else
@@ -101,6 +125,11 @@
                             @if (!string.IsNullOrEmpty(card.MonthOfHarvestName))
                             {
                                 <span class="plant-type plant-month">Zbiór: @card.MonthOfHarvestName</span>
+                            }
+
+                            @if (card.IsPoisonous)
+                            {
+                                <span class="plant-type plant-poison" title="Roślina trująca">☠ Trująca</span>
                             }
 
                             @if (card.IsPending)
@@ -174,20 +203,57 @@
     private static readonly StringComparer PolishOrder =
         StringComparer.Create(Polish, ignoreCase: true);
 
-    // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie posortowane po nazwie polskiej.
+    // ----- filtry (null = wyłączony) -----
+    private string? filterType;
+    private string? filterOccurance;
+    private string? filterMonth;
+    private string? filterPoison;
+
+    private List<FilterSelect.Option> typeOptions = new();
+    private List<FilterSelect.Option> occuranceOptions = new();
+    private List<FilterSelect.Option> monthOptions = new();
+
+    private int ActiveFilterCount =>
+        new[] { filterType, filterOccurance, filterMonth, filterPoison }.Count(f => f is not null);
+
+    // zatwierdzone + (opcjonalnie) zgłoszenia – zanim zadziałają filtry.
     // Zgłoszenia celowo bez zdjęć – nie były jeszcze sprawdzone przez admina.
-    private IEnumerable<LibraryCard> Cards =>
+    private IEnumerable<LibraryCard> BaseCards =>
         plants.Select(p => new LibraryCard(
                 p.Id, p.PolishName, p.LatinName,
                 p.PlantTypeDTO?.Name, p.MonthOfHarvestName,
+                p.Occurance?.Occurance,
+                LibraryFilter.IsPoisonous(p.PoisonabilityDescription),
                 SafeUrl.Image(p.MainThumbnailUrl), IsPending: false))
             .Concat(showPending
                 ? pendingPlants.Select(p => new LibraryCard(
                     p.Id, p.PolishName, p.LatinName,
                     p.PlantTypeName, p.MonthOfHarvestName,
+                    p.OccuranceName,
+                    LibraryFilter.IsPoisonous(p.PoisonabilityDescription),
                     ThumbnailUrl: null, IsPending: true))
-                : Enumerable.Empty<LibraryCard>())
+                : Enumerable.Empty<LibraryCard>());
+
+    // po filtrach, posortowane po nazwie polskiej
+    private IEnumerable<LibraryCard> Cards =>
+        BaseCards
+            .Where(c => LibraryFilter.Is(filterType, c.PlantTypeName)
+                        && LibraryFilter.Is(filterOccurance, c.OccuranceName)
+                        && LibraryFilter.Is(filterMonth, c.MonthOfHarvestName)
+                        && LibraryFilter.MatchesPoison(filterPoison, c.IsPoisonous))
             .OrderBy(c => c.PolishName, PolishOrder);
+
+    private void RebuildOptions()
+    {
+        var cards = BaseCards.ToList();
+
+        typeOptions = LibraryFilter.Options(cards, c => c.PlantTypeName);
+        occuranceOptions = LibraryFilter.Options(cards, c => c.OccuranceName);
+        monthOptions = LibraryFilter.Options(cards, c => c.MonthOfHarvestName, LibraryFilter.MonthOrder);
+    }
+
+    private void ClearFilters() =>
+        filterType = filterOccurance = filterMonth = filterPoison = null;
 
     /// <summary>Piktogram typu rośliny – po nazwie typu ze słownika.</summary>
     private static string TypeIcon(string? typeName)
@@ -214,6 +280,7 @@
         try
         {
             plants = await PlantApiService.GetAllPlantsAsync();
+            RebuildOptions();
         }
         catch (Exception ex)
         {
@@ -229,7 +296,11 @@
     // zgłoszenia pobieramy dopiero przy pierwszym włączeniu przełącznika
     private async Task OnShowPendingChangedAsync()
     {
-        if (!showPending || pendingLoaded) return;
+        if (!showPending || pendingLoaded)
+        {
+            RebuildOptions();
+            return;
+        }
 
         isLoadingPending = true;
         pendingError = null;
@@ -247,6 +318,7 @@
         finally
         {
             isLoadingPending = false;
+            RebuildOptions();
         }
     }
 
@@ -256,6 +328,8 @@
         string? LatinName,
         string? PlantTypeName,
         string? MonthOfHarvestName,
+        string? OccuranceName,
+        bool IsPoisonous,
         string? ThumbnailUrl,
         bool IsPending);
 }

@@ -40,6 +40,7 @@ namespace HerbRecognition_APIs.Services
         Task<List<GetActiveSubstanceDTO>> GetAllDictActiveSubstancesAsync();
         Task<List<GetDiseaseDTO>> GetAllDictDiseasesAsync();
         Task<List<GetContraindicationDTO>> GetAllDictContraindicationsAsync();
+        Task<List<GetAdministrationRouteDTO>> GetAllDictAdministrationRoutesAsync();
     }
 
     public class DbService(HerbRecognitionDbContext data) : IDbService 
@@ -223,6 +224,11 @@ namespace HerbRecognition_APIs.Services
                         },
                         PoisonabilityDescription = p.Poisonability == null? null :p.Poisonability.Description,
                         MonthOfHarvestName = p.MonthOfHarvest != null ? p.MonthOfHarvest.MonthName : null,
+                        Occurance = p.Occurance == null ? null : new GetOccuranceDTO
+                        {
+                            OccuranceId = p.Occurance.Id,
+                            Occurance = p.Occurance.OccuranceName
+                        },
                     }
                 )
                .OrderBy(p => p.PolishName)
@@ -381,6 +387,10 @@ namespace HerbRecognition_APIs.Services
             await data.Contraindications.OrderBy(x => x.Name)
                 .Select(x => new GetContraindicationDTO { ContraindicationId = x.Id, Name = x.Name })
                 .ToListAsync();//contraindications
+        public async Task<List<GetAdministrationRouteDTO>> GetAllDictAdministrationRoutesAsync() =>
+    await data.AdministrationRoutes.OrderBy(x => x.Name)
+        .Select(x => new GetAdministrationRouteDTO { AdministrationRouteId = x.Id, Name = x.Name })
+        .ToListAsync();//administrationRoute
 
         // ----------- UserInput Controller api/userInput/ ------
         private async Task<List<SimilarPlantCandidateDTO>> MapSubmissionsToCandidatesAsync(IEnumerable<UserInput> submissions)
@@ -537,7 +547,8 @@ namespace HerbRecognition_APIs.Services
                     ["healthProperty"] = (typeof(Healthproperty), nameof(Healthproperty.Property)),
                     ["activeSubstance"] = (typeof(Activesubstance), nameof(Activesubstance.Activesubstance1)),
                     ["disease"] = (typeof(Disease), nameof(Disease.Name)),
-                    ["contraindication"] = (typeof(Contraindication), nameof(Contraindication.Name))
+                    ["contraindication"] = (typeof(Contraindication), nameof(Contraindication.Name)),
+                    ["administrationRoute"] = (typeof(AdministrationRoute), nameof(AdministrationRoute.Name))
         };
         private static readonly HashSet<string> EditOnlyDictionaries = new(StringComparer.OrdinalIgnoreCase)//stała liczba, edycja istniejacych
                 {

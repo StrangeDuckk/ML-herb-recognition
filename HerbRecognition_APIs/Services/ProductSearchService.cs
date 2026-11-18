@@ -13,7 +13,8 @@ namespace HerbRecognition_APIs.Services
     /// <summary>
     /// Wyszukiwanie przepisów przez formularz – tak samo jak PlantSearchService.
     /// Porównywane są tylko pola, które użytkownik wypełnił. Wagi:
-    ///   typ produktu, każda wybrana roślina (także z kwarantanny) / choroba / właściwość / substancja = 3
+    ///   typ produktu, każda wybrana roślina (także z kwarantanny) / choroba / właściwość / substancja
+    ///   / sposób podania                                                       = 3
     ///   nazwa i słowa z przepisu                                              = 1
     /// Wynik = suma wag zgodnych cech / suma wag wszystkich porównanych cech.
     /// Przeciwwskazania to filtr: przepis z wykluczonym przeciwwskazaniem nie trafia do wyników.
@@ -56,7 +57,8 @@ namespace HerbRecognition_APIs.Services
                     p.Diseases.Select(d => d.Id).ToList(),
                     p.Healthproperties.Select(h => h.Id).ToList(),
                     p.Activesubstances.Select(a => a.Id).ToList(),
-                    p.Contraindications.Select(c => c.Id).ToList()))
+                    p.Contraindications.Select(c => c.Id).ToList(),
+                    p.AdministrationRoutes.Select(r => r.Id).ToList()))
                 .ToListAsync();
 
             // ---------- kandydaci: zgłoszenia ----------
@@ -80,7 +82,8 @@ namespace HerbRecognition_APIs.Services
                         dto.DiseaseIds ?? new List<int>(),
                         dto.HealthPropertyIds ?? new List<int>(),
                         dto.ActiveSubstanceIds ?? new List<int>(),
-                        dto.ContraindicationIds ?? new List<int>()));
+                        dto.ContraindicationIds ?? new List<int>(),
+                        dto.AdministrationRouteIds ?? new List<int>()));
                 }
             }
 
@@ -132,6 +135,8 @@ namespace HerbRecognition_APIs.Services
                     Diseases = preview.Diseases,
                     HealthProperties = preview.HealthProperties,
                     ActiveSubstances = preview.ActiveSubstances,
+                    AdministrationRoutes = preview.AdministrationRoutes,
+                    Contraindications = preview.Contraindications,
                     MainThumbnailUrl = preview.MainThumbnailUrl,
                     IsPending = candidate.IsPending,
                     MatchPercent = percent,
@@ -168,6 +173,7 @@ namespace HerbRecognition_APIs.Services
             EachOf(s, c.DiseaseIds, p.DiseaseIds);
             EachOf(s, c.HealthPropertyIds, p.HealthPropertyIds);
             EachOf(s, c.ActiveSubstanceIds, p.ActiveSubstanceIds);
+            EachOf(s, c.AdministrationRouteIds, p.AdministrationRouteIds);
 
             return s;
         }
@@ -207,6 +213,7 @@ namespace HerbRecognition_APIs.Services
             c.DiseaseIds = Clean(c.DiseaseIds);
             c.HealthPropertyIds = Clean(c.HealthPropertyIds);
             c.ActiveSubstanceIds = Clean(c.ActiveSubstanceIds);
+            c.AdministrationRouteIds = Clean(c.AdministrationRouteIds);
             c.ExcludeContraindicationIds = Clean(c.ExcludeContraindicationIds);
         }
 
@@ -241,10 +248,11 @@ namespace HerbRecognition_APIs.Services
             List<int> DiseaseIds,
             List<int> HealthPropertyIds,
             List<int> ActiveSubstanceIds,
-            List<int> ContraindicationIds)
+            List<int> ContraindicationIds,
+            List<int> AdministrationRouteIds)
         {
             public static readonly Candidate Empty =
-                new(0, false, "", "", 0, new(), new(), new(), new(), new(), new());
+                new(0, false, "", "", 0, new(), new(), new(), new(), new(), new(), new());
         }
 
         private sealed class Score

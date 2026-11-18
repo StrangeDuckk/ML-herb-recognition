@@ -44,11 +44,49 @@
                 <span class="prod-note is-error">@pendingError</span>
             }
         </div>
-
-        <a href="/products/search" class="search-form-link prod-form-link">
-            Szukasz przepisu na konkretną dolegliwość? Wyszukaj przez formularz →
-        </a>
     </section>
+
+    @if (!isLoading && errorMessage is null && BaseCards.Any())
+    {
+        <LibraryFilters ActiveCount="ActiveFilterCount"
+                        OnClear="ClearFilters"
+                        Summary="@($"Przepisy: {Cards.Count()} z {BaseCards.Count()}")">
+
+            <div class="lib-filter-grid">
+                <FilterSelect Label="Typ produktu" Options="typeOptions" @bind-Value="filterType" />
+                <FilterSelect Label="Sposób podania" Options="routeOptions" @bind-Value="filterRoute" />
+                <FilterSelect Label="Dolegliwość" Options="diseaseOptions" @bind-Value="filterDisease" />
+                <FilterSelect Label="Właściwość" Options="propertyOptions" @bind-Value="filterProperty" />
+                <FilterSelect Label="Roślina" Options="plantOptions" @bind-Value="filterPlant" />
+                <FilterSelect Label="Substancja czynna" Options="substanceOptions" @bind-Value="filterSubstance" />
+            </div>
+
+            @if (contraindicationOptions.Count > 0)
+            {
+                <div class="lib-filter-exclude">
+                    <span class="lib-filter-label" id="exclude-label">Bez przeciwwskazania</span>
+                    <p class="lib-filter-hint">
+                        Zaznacz, co Cię dotyczy – np. „ciąża”. Ukryjemy przepisy z tym przeciwwskazaniem.
+                    </p>
+
+                    <div class="lib-chip-row" role="group" aria-labelledby="exclude-label">
+                        @foreach (var option in contraindicationOptions)
+                        {
+                            var isOn = excluded.Contains(option.Value);
+
+                            <button type="button"
+                                    class="lib-chip @(isOn ? "is-excluded" : "")"
+                                    aria-pressed="@(isOn ? "true" : "false")"
+                                    @onclick="() => ToggleExcluded(option.Value)">
+                                <span class="lib-chip-mark" aria-hidden="true">@(isOn ? "✕" : "+")</span>
+                                @option.Text
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </LibraryFilters>
+    }
 
     @if (isLoading)
     {
@@ -68,10 +106,16 @@
     else if (!Cards.Any())
     {
         <div class="prod-status">
-            @if (string.IsNullOrWhiteSpace(query))
+            @if (!BaseCards.Any() && string.IsNullOrWhiteSpace(query))
             {
                 <h2>Brak przepisów</h2>
                 <p>Baza nie zawiera jeszcze przepisów. Dodaj pierwszy!</p>
+            }
+            else if (ActiveFilterCount > 0)
+            {
+                <h2>Żaden przepis nie pasuje do filtrów</h2>
+                <p>Zmień albo wyczyść filtry – albo dodaj przepis, którego szukasz.</p>
+                <p><button type="button" class="lib-filters-clear" @onclick="ClearFilters">Wyczyść filtry</button></p>
             }
             else
             {
@@ -83,8 +127,6 @@
     }
     else
     {
-        <p class="prod-note prod-count">Przepisy: @Cards.Count()</p>
-
         <section class="prod-grid">
             @foreach (var item in Cards)
             {
@@ -123,17 +165,44 @@
     private bool isLoadingPending;
     private string? pendingError;
 
-    // zatwierdzone + (opcjonalnie) zgłoszenia, wspólnie po nazwie, z filtrem tekstowym
+    // ----- filtry (null = wyłączony) -----
+    private string? filterType;
+    private string? filterRoute;
+    private string? filterDisease;
+    private string? filterProperty;
+    private string? filterPlant;
+    private string? filterSubstance;
+    private readonly HashSet<string> excluded = new(StringComparer.Create(new CultureInfo("pl-PL"), true));
+
+    // opcje list – liczone z kafelków po każdej zmianie danych
+    private List<FilterSelect.Option> typeOptions = new();
+    private List<FilterSelect.Option> routeOptions = new();
+    private List<FilterSelect.Option> diseaseOptions = new();
+    private List<FilterSelect.Option> propertyOptions = new();
+    private List<FilterSelect.Option> plantOptions = new();
+    private List<FilterSelect.Option> substanceOptions = new();
+    private List<FilterSelect.Option> contraindicationOptions = new();
+
+    private int ActiveFilterCount =>
+        new[] { filterType, filterRoute, filterDisease, filterProperty, filterPlant, filterSubstance }
+            .Count(f => f is not null)
+        + excluded.Count;
+
+    /// <summary>Zatwierdzone + (opcjonalnie) zgłoszenia – zanim zadziałają wyszukiwarka i filtry.</summary>
+    private IEnumerable<ProductPreviewDTO> BaseCards =>
+        products.Concat(showPending ? pending : Enumerable.Empty<ProductPreviewDTO>());
+
+    /// <summary>Kafelki po wyszukiwarce i filtrach, posortowane po nazwie.</summary>
     private IEnumerable<ProductPreviewDTO> Cards =>
-        products
-            .Concat(showPending ? pending : Enumerable.Empty<ProductPreviewDTO>())
+        BaseCards
             .Where(Matches)
+            .Where(MatchesFilters)
             .OrderBy(p => p.Name, PolishOrder);
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
-    // wejście z wyszukiwarki (/products?q=...): fraza trafia do pola wyszukiwania,
-    // a wyniki od razu obejmują też zgłoszenia – przełącznik można wyłączyć
+    // tekst z adresu trafia do pola wyszukiwania (także przy kolejnym wyszukaniu ze strony głównej);
+    // przy wyszukiwaniu od razu szukamy też w zgłoszeniach
     protected override async Task OnParametersSetAsync()
     {
         if (Q == appliedQ) return;
@@ -141,7 +210,7 @@
         appliedQ = Q;
         query = Q?.Trim() ?? "";
 
-        if (query.Length > 0)
+        if (query.Length > 0 && !showPending)
         {
             showPending = true;
             await OnShowPendingChangedAsync();
@@ -156,6 +225,7 @@
         try
         {
             products = await ProductApi.GetProductsAsync();
+            RebuildOptions();
         }
         catch (Exception ex)
         {
@@ -171,7 +241,11 @@
     // zgłoszenia pobieramy dopiero przy pierwszym włączeniu przełącznika
     private async Task OnShowPendingChangedAsync()
     {
-        if (!showPending || pendingLoaded) return;
+        if (!showPending || pendingLoaded)
+        {
+            RebuildOptions();
+            return;
+        }
 
         isLoadingPending = true;
         pendingError = null;
@@ -189,27 +263,68 @@
         finally
         {
             isLoadingPending = false;
+            RebuildOptions();
         }
     }
+
+    // ------------------------------------------------------------------
+    //  Filtry
+    // ------------------------------------------------------------------
+
+    private void RebuildOptions()
+    {
+        var cards = BaseCards.ToList();
+
+        typeOptions = LibraryFilter.Options(cards, p => p.ProductTypeName);
+        routeOptions = LibraryFilter.OptionsMany(cards, p => p.AdministrationRoutes);
+        diseaseOptions = LibraryFilter.OptionsMany(cards, p => p.Diseases);
+        propertyOptions = LibraryFilter.OptionsMany(cards, p => p.HealthProperties);
+        plantOptions = LibraryFilter.OptionsMany(cards, p => p.Plants.Select(x => x.Name));
+        substanceOptions = LibraryFilter.OptionsMany(cards, p => p.ActiveSubstances);
+        contraindicationOptions = LibraryFilter.OptionsMany(cards, p => p.Contraindications);
+
+        // wykluczenie, którego nie ma już w danych, nic nie robi – nie pokazujemy go jako włączonego
+        excluded.RemoveWhere(x => !contraindicationOptions.Any(o => LibraryFilter.Same(o.Value, x)));
+    }
+
+    private bool MatchesFilters(ProductPreviewDTO p) =>
+        LibraryFilter.Is(filterType, p.ProductTypeName)
+        && LibraryFilter.Has(filterRoute, p.AdministrationRoutes)
+        && LibraryFilter.Has(filterDisease, p.Diseases)
+        && LibraryFilter.Has(filterProperty, p.HealthProperties)
+        && LibraryFilter.Has(filterPlant, p.Plants.Select(x => x.Name))
+        && LibraryFilter.Has(filterSubstance, p.ActiveSubstances)
+        // np. zaznaczona "ciąża" -> zostają tylko przepisy bez tego przeciwwskazania
+        && !p.Contraindications.Any(c => excluded.Contains(c.Trim()));
+
+    private void ToggleExcluded(string name)
+    {
+        if (!excluded.Remove(name))
+            excluded.Add(name);
+    }
+
+    private void ClearFilters()
+    {
+        filterType = filterRoute = filterDisease = filterProperty = filterPlant = filterSubstance = null;
+        excluded.Clear();
+    }
+
+    // ------------------------------------------------------------------
+    //  Wyszukiwarka tekstowa
+    // ------------------------------------------------------------------
 
     private bool Matches(ProductPreviewDTO p)
     {
         var text = query.Trim();
         if (text.Length == 0) return true;
 
-
-
         return Has(p.Name, text)
-
                || Has(p.ProductTypeName, text)
-
                || p.Plants.Any(x => Has(x.Name, text))
-
                || p.Diseases.Any(x => Has(x, text))
-
                || p.HealthProperties.Any(x => Has(x, text))
-
-               || p.ActiveSubstances.Any(x => Has(x, text));
+               || p.ActiveSubstances.Any(x => Has(x, text))
+               || p.AdministrationRoutes.Any(x => Has(x, text));
     }
 
     private static bool Has(string? source, string text) =>

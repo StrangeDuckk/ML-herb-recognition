@@ -25,6 +25,7 @@ namespace HerbRecognition_APIs.DTOs
         public List<int>? DiseaseIds { get; set; }
         public List<int>? HealthPropertyIds { get; set; }
         public List<int>? ActiveSubstanceIds { get; set; }
+        public List<int>? AdministrationRouteIds { get; set; }
 
         /// <summary>Filtr, nie procent: przepisy z którymkolwiek z tych przeciwwskazań są pomijane.</summary>
         public List<int>? ExcludeContraindicationIds { get; set; }

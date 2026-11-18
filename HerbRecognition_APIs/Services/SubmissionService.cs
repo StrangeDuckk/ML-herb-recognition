@@ -154,6 +154,8 @@ namespace HerbRecognition_APIs.Services
             var submissions = await data.UserInputs.AsNoTracking().ToListAsync();
             var plantTypes = await data.Planttypes.ToDictionaryAsync(t => t.Id, t => t.Name);
             var months = await data.MonthOfHarvests.ToDictionaryAsync(m => m.Id, m => m.MonthName);
+            var occurances = await data.Occurances.ToDictionaryAsync(o => o.Id, o => o.OccuranceName);
+            var poisonabilities = await data.Poisonabilities.ToDictionaryAsync(p => p.Id, p => p.Description);
 
             var result = new List<PendingPlantPreviewDTO>();
 
@@ -178,7 +180,9 @@ namespace HerbRecognition_APIs.Services
                     LatinName = dto.LatinName,
                     Subriquet = dto.Subriquet,
                     PlantTypeName = plantTypes.GetValueOrDefault(dto.PlantTypeID),
-                    MonthOfHarvestName = dto.MonthOfHarvestId is int m ? months.GetValueOrDefault(m) : null
+                    MonthOfHarvestName = dto.MonthOfHarvestId is int m ? months.GetValueOrDefault(m) : null,
+                    OccuranceName = dto.OccuranceId is int oid ? occurances.GetValueOrDefault(oid) : null,
+                    PoisonabilityDescription = dto.PoisonabilityId is int pid ? poisonabilities.GetValueOrDefault(pid) : null
                 });
             }
 

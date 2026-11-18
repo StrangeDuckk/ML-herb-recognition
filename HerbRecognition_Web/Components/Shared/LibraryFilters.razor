@@ -1,0 +1,53 @@
+@*
+    Panel filtrów biblioteki (rośliny i przepisy).
+    - komputer: filtry widoczne od razu, "Filtry" je zwija,
+    - telefon: filtry schowane, "Filtry" je rozwija (żeby nie zasłaniały kafelków).
+    Liczba przy przycisku = ile filtrów jest włączonych; "Wyczyść filtry" wywołuje OnClear.
+*@
+
+<div class="lib-filters @(toggled ? "is-toggled" : "")">
+    <div class="lib-filters-bar">
+        <button type="button"
+                class="lib-filters-toggle"
+                aria-controls="@BodyId"
+                @onclick="() => toggled = !toggled">
+            <span class="lib-filters-icon" aria-hidden="true">⚲</span>
+            Filtry
+            @if (ActiveCount > 0)
+            {
+                <span class="lib-filters-count" aria-label="@($"włączone: {ActiveCount}")">@ActiveCount</span>
+            }
+            <span class="lib-filters-caret" aria-hidden="true">▾</span>
+        </button>
+
+        @if (ActiveCount > 0)
+        {
+            <button type="button" class="lib-filters-clear" @onclick="OnClear">
+                Wyczyść filtry
+            </button>
+        }
+
+        @if (Summary is not null)
+        {
+            <span class="lib-filters-summary">@Summary</span>
+        }
+    </div>
+
+    <div class="lib-filters-body" id="@BodyId">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public int ActiveCount { get; set; }
+    [Parameter] public EventCallback OnClear { get; set; }
+
+    /// <summary>Np. "Wyniki: 12 z 40".</summary>
+    [Parameter] public string? Summary { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool toggled;
+
+    private readonly string BodyId = $"lib-filters-{Guid.NewGuid():N}";
+}

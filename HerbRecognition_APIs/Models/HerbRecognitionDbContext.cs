@@ -21,6 +21,7 @@ public partial class HerbRecognitionDbContext : DbContext
 
     public virtual DbSet<Disease> Diseases { get; set; }
     public virtual DbSet<Contraindication> Contraindications { get; set; }
+    public virtual DbSet<AdministrationRoute> AdministrationRoutes { get; set; }
 
     public virtual DbSet<Flavour> Flavours { get; set; }
 
@@ -68,10 +69,6 @@ public partial class HerbRecognitionDbContext : DbContext
     public virtual DbSet<ProductInput> ProductInputs { get; set; }
 
     public virtual DbSet<MonthOfHarvest> MonthOfHarvests { get; set; }
-
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseNpgsql("DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -152,6 +149,15 @@ public partial class HerbRecognitionDbContext : DbContext
 
             entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
             entity.Property(e => e.Name).HasMaxLength(1000).HasColumnName("name").IsRequired();
+        });
+
+        modelBuilder.Entity<AdministrationRoute>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("administrationroute_pk");
+            entity.ToTable("administrationroute");
+
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
+            entity.Property(e => e.Name).HasMaxLength(100).HasColumnName("name").IsRequired();
         });
 
         modelBuilder.Entity<Flavour>(entity =>
@@ -343,41 +349,6 @@ public partial class HerbRecognitionDbContext : DbContext
             entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
             entity.Property(e => e.Property).HasMaxLength(300).HasColumnName("property").IsRequired();
         });
-        //modelBuilder.Entity<Healthproperty>(entity =>
-        //{
-        //    entity.HasKey(e => e.Id)
-        //        .HasName("healthproperty_pk");
-
-        //    entity.ToTable("healthproperty");
-
-        //    entity.Property(e => e.Id)
-        //        .UseIdentityAlwaysColumn()
-        //        .HasColumnName("id")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Property)
-        //        .HasMaxLength(300)
-        //        .HasColumnName("property")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Activesubstanceid)
-        //        .HasColumnName("activesubstanceid")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Diseaseid)
-        //        .HasColumnName("diseaseid")
-        //        .IsRequired();
-
-        //    entity.HasOne(d => d.Activesubstance).WithMany(p => p.Healthproperties)
-        //        .HasForeignKey(d => d.Activesubstanceid)
-        //        .OnDelete(DeleteBehavior.ClientSetNull)
-        //        .HasConstraintName("healthproperties_activesubstances");
-
-        //    entity.HasOne(d => d.Disease).WithMany(p => p.Healthproperties)
-        //        .HasForeignKey(d => d.Diseaseid)
-        //        .OnDelete(DeleteBehavior.ClientSetNull)
-        //        .HasConstraintName("healthproperties_diseases");
-        //});
 
         modelBuilder.Entity<Leaf>(entity =>
         {
@@ -685,35 +656,6 @@ public partial class HerbRecognitionDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("plants_properties_products");
         });
-        //modelBuilder.Entity<PlantProduct>(entity =>
-        //{
-        //    entity.HasKey(e => e.Id).HasName("plant_product_pk");
-
-        //    entity.ToTable("plant_product");
-
-        //    entity.Property(e => e.Id)
-        //        .UseIdentityAlwaysColumn()
-        //        .HasColumnName("id")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Plantsid)
-        //        .HasColumnName("plantsid")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Productsid)
-        //        .HasColumnName("productsid")
-        //        .IsRequired();
-
-        //    entity.HasOne(d => d.Plants).WithMany(p => p.PlantProducts)
-        //        .HasForeignKey(d => d.Plantsid)
-        //        .OnDelete(DeleteBehavior.ClientSetNull)
-        //        .HasConstraintName("plants_properties_plants");
-
-        //    entity.HasOne(d => d.Products).WithMany(p => p.PlantProducts)
-        //        .HasForeignKey(d => d.Productsid)
-        //        .OnDelete(DeleteBehavior.ClientSetNull)
-        //        .HasConstraintName("plants_properties_products");
-        //});
 
         modelBuilder.Entity<Planttype>(entity =>
         {
@@ -757,6 +699,8 @@ public partial class HerbRecognitionDbContext : DbContext
             entity.Property(e => e.Id).UseIdentityAlwaysColumn().HasColumnName("id");
             entity.Property(e => e.Name).HasMaxLength(300).HasColumnName("name").IsRequired();
             entity.Property(e => e.Recipe).HasColumnName("recipe").IsRequired();
+            entity.Property(e => e.Dosage).HasMaxLength(1000).HasColumnName("dosage");
+            entity.Property(e => e.Source).HasMaxLength(500).HasColumnName("source");
             entity.Property(e => e.Producttypeid).HasColumnName("producttypeid");
 
             entity.HasOne(d => d.Producttype).WithMany(p => p.Products)
@@ -815,49 +759,20 @@ public partial class HerbRecognitionDbContext : DbContext
                         j.ToTable("product_contraindication");
                         j.HasKey("productid", "contraindicationid").HasName("product_contraindication_pk");
                     });
+
+            entity.HasMany(d => d.AdministrationRoutes).WithMany(p => p.Products)
+                .UsingEntity<Dictionary<string, object>>(
+                    "product_administrationroute",
+                    r => r.HasOne<AdministrationRoute>().WithMany().HasForeignKey("administrationrouteid")
+                          .OnDelete(DeleteBehavior.Restrict).HasConstraintName("product_administrationroute_route"),
+                    l => l.HasOne<Product>().WithMany().HasForeignKey("productid")
+                          .OnDelete(DeleteBehavior.Cascade).HasConstraintName("product_administrationroute_product"),
+                    j =>
+                    {
+                        j.ToTable("product_administrationroute");
+                        j.HasKey("productid", "administrationrouteid").HasName("product_administrationroute_pk");
+                    });
         });
-        //modelBuilder.Entity<Product>(entity =>
-        //{
-        //    entity.HasKey(e => e.Id).HasName("product_pk");
-
-        //    entity.ToTable("product");
-
-        //    entity.Property(e => e.Id)
-        //        .UseIdentityAlwaysColumn()
-        //        .HasColumnName("id")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Name)
-        //        .HasMaxLength(300)
-        //        .HasColumnName("name")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Recipe)
-        //        .HasColumnName("recipe")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Healthpropertyid)
-        //        .HasColumnName("healthpropertyid")
-        //        .IsRequired();
-
-        //    entity.Property(e => e.Contraindication)
-        //        .HasMaxLength(100)
-        //        .HasColumnName("contraindication");
-
-        //    entity.Property(e => e.Producttypeid)
-        //        .HasColumnName("producttypeid")
-        //        .IsRequired();
-
-        //    entity.HasOne(d => d.Healthproperty).WithMany(p => p.Products)
-        //        .HasForeignKey(d => d.Healthpropertyid)
-        //        .OnDelete(DeleteBehavior.ClientSetNull)
-        //        .HasConstraintName("products_healthproperties");
-
-        //    entity.HasOne(d => d.Producttype).WithMany(p => p.Products)
-        //        .HasForeignKey(d => d.Producttypeid)
-        //        .OnDelete(DeleteBehavior.ClientSetNull)
-        //        .HasConstraintName("products_producttypes");
-        //});
 
         modelBuilder.Entity<Producttype>(entity =>
         {
