@@ -256,6 +256,115 @@
     }
 
 
+
+/* sekcja z błędem: czerwony pasek z lewej + czerwony tytuł */
+.submission-section.has-error {
+    border-color: #efc9c3;
+    box-shadow: inset 4px 0 0 #c34d4d, 0 5px 18px rgba(42, 61, 47, 0.035);
+}
+
+    .submission-section.has-error .submission-section-head h2 {
+        color: #a33a3a;
+    }
+
+/* sekcja dostaje fokus tylko po to, żeby przeglądarka do niej przewinęła */
+.submission-section:focus {
+    outline: none;
+}
+
+/* przy przewijaniu nie chowa się pod przyklejonym paskiem u góry */
+.submission-section {
+    scroll-margin-top: 96px;
+}
+
+/* pole z błędem: delikatne czerwone tło wokół całego pola –
+   działa też dla własnych komponentów (kolor, wybór roślin, słowniki) */
+.submission-field.is-invalid {
+    margin: -8px -10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: #fff4f2;
+    box-shadow: inset 3px 0 0 #c34d4d;
+}
+
+    .submission-field.is-invalid > label,
+    .submission-field.is-invalid > .submission-label {
+        color: #a33a3a;
+    }
+
+    .submission-field.is-invalid input,
+    .submission-field.is-invalid select,
+    .submission-field.is-invalid textarea {
+        border-color: #c34d4d;
+        background: #ffffff;
+    }
+
+        .submission-field.is-invalid input:focus,
+        .submission-field.is-invalid select:focus,
+        .submission-field.is-invalid textarea:focus {
+            border-color: #c34d4d;
+            box-shadow: 0 0 0 3px rgba(195, 77, 77, 0.16);
+        }
+
+/* opis pod polem */
+.field-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #b33a3a;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+    .field-error::before {
+        content: "!";
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #c34d4d;
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 800;
+    }
+
+/* ---------- tryb ciemny ---------- */
+
+:root[data-theme="dark"] .submission-section.has-error {
+    border-color: var(--d-err-border);
+    box-shadow: inset 4px 0 0 var(--d-err-text);
+}
+
+    :root[data-theme="dark"] .submission-section.has-error .submission-section-head h2 {
+        color: var(--d-err-text);
+    }
+
+:root[data-theme="dark"] .submission-field.is-invalid {
+    background: var(--d-err-bg);
+    box-shadow: inset 3px 0 0 var(--d-err-text);
+}
+
+    :root[data-theme="dark"] .submission-field.is-invalid > label,
+    :root[data-theme="dark"] .submission-field.is-invalid > .submission-label,
+    :root[data-theme="dark"] .field-error {
+        color: var(--d-err-text);
+    }
+
+    :root[data-theme="dark"] .submission-field.is-invalid input,
+    :root[data-theme="dark"] .submission-field.is-invalid select,
+    :root[data-theme="dark"] .submission-field.is-invalid textarea {
+        border-color: var(--d-err-border);
+        background: var(--d-soft);
+    }
+
+:root[data-theme="dark"] .field-error::before {
+    background: var(--d-err-border);
+}
+
+
 /* ---------- tablet / telefon ---------- */
 
 @media (max-width: 760px) {

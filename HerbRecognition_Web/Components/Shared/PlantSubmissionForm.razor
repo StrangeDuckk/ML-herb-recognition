@@ -12,6 +12,8 @@
     - wyszukiwanie: SearchMode = true, nic nie jest wymagane, pola Tak/Nie mają opcję
       "Nie wiem", a przycisk wywołuje OnSearch z kryteriami wyszukiwania.
     Błędy rzucone przez OnSubmit/OnSecondary są wyświetlane nad przyciskami.
+    Po nieudanej próbie wysłania brakujące pola są podświetlone na czerwono (z opisem pod polem),
+    a strona przewija się do pierwszej sekcji z błędem. Podświetlenie znika, gdy pole zostanie uzupełnione.
 *@
 
 @if (isLoading)
@@ -40,7 +42,7 @@ else
         <div class="submission-form">
 
             @* ================= 1. Informacje podstawowe ================= *@
-            <section class="submission-section">
+            <section class="submission-section @SectionError(BasicInvalid)" @ref="basicSection" tabindex="-1">
                 <header class="submission-section-head">
                     <h2>1. Informacje podstawowe</h2>
                 </header>
@@ -51,16 +53,18 @@ else
                 }
 
                 <div class="submission-grid">
-                    <div class="submission-field">
+                    <div class="submission-field @FieldError(Bad(string.IsNullOrWhiteSpace(form.Name)))">
                         <label>Nazwa zwyczajowa@(Req)</label>
                         <InputText @bind-Value="form.Name" maxlength="50" />
                         <ValidationMessage For="@(() => form.Name)" />
+                        @ErrorText(Bad(string.IsNullOrWhiteSpace(form.Name)) && !HasMessage(() => form.Name), "Podaj nazwę zwyczajową.")
                     </div>
 
-                    <div class="submission-field">
+                    <div class="submission-field @FieldError(Bad(string.IsNullOrWhiteSpace(form.PolishName)))">
                         <label>Nazwa polska@(Req)</label>
                         <InputText @bind-Value="form.PolishName" maxlength="50" />
                         <ValidationMessage For="@(() => form.PolishName)" />
+                        @ErrorText(Bad(string.IsNullOrWhiteSpace(form.PolishName)) && !HasMessage(() => form.PolishName), "Podaj nazwę polską.")
                     </div>
 
                     <div class="submission-field">
@@ -73,7 +77,7 @@ else
                         <InputText @bind-Value="form.Subriquet" maxlength="50" />
                     </div>
 
-                    <div class="submission-field">
+                    <div class="submission-field @FieldError(Bad(form.PlantTypeID <= 0))">
                         <label>Typ rośliny@(Req)</label>
                         <InputSelect @bind-Value="form.PlantTypeID" @bind-Value:after="OnPlantTypeChanged">
                             <option value="0">Wybierz typ</option>
@@ -83,9 +87,10 @@ else
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() => form.PlantTypeID)" />
+                        @ErrorText(Bad(form.PlantTypeID <= 0) && !HasMessage(() => form.PlantTypeID), "Wybierz typ rośliny.")
                     </div>
 
-                    <div class="submission-field">
+                    <div class="submission-field @FieldError(Bad(form.OccuranceId <= 0))">
                         <label>Występowanie@(Req)</label>
                         <InputSelect @bind-Value="form.OccuranceId">
                             <option value="0">Wybierz występowanie</option>
@@ -95,6 +100,7 @@ else
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() => form.OccuranceId)" />
+                        @ErrorText(Bad(form.OccuranceId <= 0) && !HasMessage(() => form.OccuranceId), "Wybierz występowanie.")
                     </div>
 
                     <div class="submission-field">
@@ -144,7 +150,7 @@ else
             @* ================= 2. Łodyga / pień / trzon ================= *@
             @if (CanHaveStalk)
             {
-                <section class="submission-section @(ShowStalkSection ? "" : "is-off")">
+                <section class="submission-section @SectionError(StalkInvalid) @(ShowStalkSection ? "" : "is-off")" @ref="stalkSection" tabindex="-1">
                     <header class="submission-section-head">
                         <h2>2. @StalkTitle</h2>
                         <label class="switch-label">
@@ -157,7 +163,7 @@ else
                     @if (ShowStalkSection)
                     {
                         <div class="submission-grid">
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateStalkDTO!.StalkShapeId <= 0))">
                                 <label>Kształt@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateStalkDTO!.StalkShapeId">
                                     <option value="0">Wybierz kształt</option>
@@ -166,14 +172,16 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateStalkDTO!.StalkShapeId <= 0), "Wybierz kształt.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateStalkDTO!.StalkColorId <= 0))">
                                 <label>Kolor@(Req)</label>
                                 <ColorSelect @bind-Value="form.CreateStalkDTO!.StalkColorId" Colors="colors" />
+                                @ErrorText(Bad(form.CreateStalkDTO!.StalkColorId <= 0), "Wybierz kolor.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateStalkDTO!.StalkSurfaceId <= 0))">
                                 <label>Powierzchnia@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateStalkDTO!.StalkSurfaceId">
                                     <option value="0">Wybierz powierzchnię</option>
@@ -182,6 +190,7 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateStalkDTO!.StalkSurfaceId <= 0), "Wybierz powierzchnię.")
                             </div>
 
                             <div class="submission-field">
@@ -211,7 +220,7 @@ else
             @* ================= 3. Sok ================= *@
             @if (CanHaveSap)
             {
-                <section class="submission-section @(ShowSapSection ? "" : "is-off")">
+                <section class="submission-section @SectionError(SapInvalid) @(ShowSapSection ? "" : "is-off")" @ref="sapSection" tabindex="-1">
                     <header class="submission-section-head">
                         <h2>3. Sok</h2>
                         <label class="switch-label">
@@ -224,9 +233,10 @@ else
                     @if (ShowSapSection)
                     {
                         <div class="submission-grid">
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateSapDTO!.SapColorId <= 0))">
                                 <label>Kolor soku@(Req)</label>
                                 <ColorSelect @bind-Value="form.CreateSapDTO!.SapColorId" Colors="colors" />
+                                @ErrorText(Bad(form.CreateSapDTO!.SapColorId <= 0), "Wybierz kolor soku.")
                             </div>
 
                             <div class="submission-field">
@@ -257,7 +267,7 @@ else
             @* ================= 4. Korzeń ================= *@
             @if (CanHaveRoot)
             {
-                <section class="submission-section @(ShowRootSection ? "" : "is-off")">
+                <section class="submission-section @SectionError(RootInvalid) @(ShowRootSection ? "" : "is-off")" @ref="rootSection" tabindex="-1">
                     <header class="submission-section-head">
                         <h2>4. Korzeń</h2>
                         <label class="switch-label">
@@ -270,12 +280,13 @@ else
                     @if (ShowRootSection)
                     {
                         <div class="submission-grid">
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateRootDTO!.RootColorId <= 0))">
                                 <label>Kolor korzenia@(Req)</label>
                                 <ColorSelect @bind-Value="form.CreateRootDTO!.RootColorId" Colors="colors" />
+                                @ErrorText(Bad(form.CreateRootDTO!.RootColorId <= 0), "Wybierz kolor korzenia.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateRootDTO!.RootSurfaceId <= 0))">
                                 <label>Powierzchnia@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateRootDTO!.RootSurfaceId">
                                     <option value="0">Wybierz powierzchnię</option>
@@ -284,9 +295,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateRootDTO!.RootSurfaceId <= 0), "Wybierz powierzchnię.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateRootDTO!.RootThicknessId <= 0))">
                                 <label>Grubość@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateRootDTO!.RootThicknessId">
                                     <option value="0">Wybierz grubość</option>
@@ -295,6 +307,7 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateRootDTO!.RootThicknessId <= 0), "Wybierz grubość.")
                             </div>
 
                             <div class="submission-field">
@@ -324,7 +337,7 @@ else
             @* ================= 5. Kapelusz ================= *@
             @if (CanHaveHat)
             {
-                <section class="submission-section @(ShowHatSection ? "" : "is-off")">
+                <section class="submission-section @SectionError(HatInvalid) @(ShowHatSection ? "" : "is-off")" @ref="hatSection" tabindex="-1">
                     <header class="submission-section-head">
                         <h2>5. Kapelusz</h2>
                         <label class="switch-label">
@@ -337,12 +350,13 @@ else
                     @if (ShowHatSection)
                     {
                         <div class="submission-grid">
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateHatDTO!.HatColorId <= 0))">
                                 <label>Kolor kapelusza@(Req)</label>
                                 <ColorSelect @bind-Value="form.CreateHatDTO!.HatColorId" Colors="colors" />
+                                @ErrorText(Bad(form.CreateHatDTO!.HatColorId <= 0), "Wybierz kolor kapelusza.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateHatDTO!.HatShapeId <= 0))">
                                 <label>Kształt@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateHatDTO!.HatShapeId">
                                     <option value="0">Wybierz kształt</option>
@@ -351,9 +365,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateHatDTO!.HatShapeId <= 0), "Wybierz kształt.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateHatDTO!.HatThicknessId <= 0))">
                                 <label>Grubość@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateHatDTO!.HatThicknessId">
                                     <option value="0">Wybierz grubość</option>
@@ -362,9 +377,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateHatDTO!.HatThicknessId <= 0), "Wybierz grubość.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateHatDTO!.HatSurfaceId <= 0))">
                                 <label>Powierzchnia@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateHatDTO!.HatSurfaceId">
                                     <option value="0">Wybierz powierzchnię</option>
@@ -373,6 +389,7 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateHatDTO!.HatSurfaceId <= 0), "Wybierz powierzchnię.")
                             </div>
 
                             <div class="submission-field">
@@ -404,7 +421,7 @@ else
             @* ================= 6. Liście ================= *@
             @if (CanHaveLeaf)
             {
-                <section class="submission-section @(ShowLeafSection ? "" : "is-off")">
+                <section class="submission-section @SectionError(LeafInvalid) @(ShowLeafSection ? "" : "is-off")" @ref="leafSection" tabindex="-1">
                     <header class="submission-section-head">
                         <h2>6. Liście</h2>
                         <label class="switch-label">
@@ -417,7 +434,7 @@ else
                     @if (ShowLeafSection)
                     {
                         <div class="submission-grid">
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateLeafDTO!.LeafShapeId <= 0))">
                                 <label>Kształt@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateLeafDTO!.LeafShapeId">
                                     <option value="0">Wybierz kształt</option>
@@ -426,14 +443,16 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateLeafDTO!.LeafShapeId <= 0), "Wybierz kształt.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateLeafDTO!.LeafColorId <= 0))">
                                 <label>Kolor liścia@(Req)</label>
                                 <ColorSelect @bind-Value="form.CreateLeafDTO!.LeafColorId" Colors="colors" />
+                                @ErrorText(Bad(form.CreateLeafDTO!.LeafColorId <= 0), "Wybierz kolor liścia.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateLeafDTO!.LeafSurfaceId <= 0))">
                                 <label>Powierzchnia@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateLeafDTO!.LeafSurfaceId">
                                     <option value="0">Wybierz powierzchnię</option>
@@ -442,9 +461,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateLeafDTO!.LeafSurfaceId <= 0), "Wybierz powierzchnię.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateLeafDTO!.LeafThicknessId <= 0))">
                                 <label>Grubość@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateLeafDTO!.LeafThicknessId">
                                     <option value="0">Wybierz grubość</option>
@@ -453,9 +473,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateLeafDTO!.LeafThicknessId <= 0), "Wybierz grubość.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(!form.CreateLeafDTO!.LeafFlavourId.HasValue))">
                                 <label>Smak@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateLeafDTO!.LeafFlavourId">
                                     <option value="">Wybierz smak</option>
@@ -464,6 +485,7 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(!form.CreateLeafDTO!.LeafFlavourId.HasValue), "Wybierz smak.")
                             </div>
 
                             <div class="submission-field">
@@ -500,7 +522,7 @@ else
             @* ================= 7. Kwiaty ================= *@
             @if (CanHaveFlower)
             {
-                <section class="submission-section @(ShowFlowerSection ? "" : "is-off")">
+                <section class="submission-section @SectionError(FlowerInvalid) @(ShowFlowerSection ? "" : "is-off")" @ref="flowerSection" tabindex="-1">
                     <header class="submission-section-head">
                         <h2>7. Kwiaty</h2>
                         <label class="switch-label">
@@ -518,12 +540,13 @@ else
                                 <InputNumber @bind-Value="form.CreateFlowerDTO!.FlowerSizeInCm" min="0.1" />
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateFlowerDTO!.FlowerColorId <= 0))">
                                 <label>Kolor główny kwiatu@(Req)</label>
                                 <ColorSelect @bind-Value="form.CreateFlowerDTO!.FlowerColorId" Colors="colors" />
+                                @ErrorText(Bad(form.CreateFlowerDTO!.FlowerColorId <= 0), "Wybierz kolor kwiatu.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateFlowerDTO!.FlowerShapeId <= 0))">
                                 <label>Kształt@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerShapeId">
                                     <option value="0">Wybierz kształt</option>
@@ -532,9 +555,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateFlowerDTO!.FlowerShapeId <= 0), "Wybierz kształt.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(!form.CreateFlowerDTO!.FlowerFlavourId.HasValue))">
                                 <label>Smak@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateFlowerDTO!.FlowerFlavourId">
                                     <option value="">Wybierz smak</option>
@@ -543,6 +567,7 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(!form.CreateFlowerDTO!.FlowerFlavourId.HasValue), "Wybierz smak.")
                             </div>
 
                             <div class="submission-field">
@@ -591,7 +616,7 @@ else
             @* ================= 8. Owoce ================= *@
             @if (CanHaveFruit)
             {
-                <section class="submission-section @(ShowFruitSection ? "" : "is-off")">
+                <section class="submission-section @SectionError(FruitInvalid) @(ShowFruitSection ? "" : "is-off")" @ref="fruitSection" tabindex="-1">
                     <header class="submission-section-head">
                         <h2>8. Owoce</h2>
                         <label class="switch-label">
@@ -604,7 +629,7 @@ else
                     @if (ShowFruitSection)
                     {
                         <div class="submission-grid">
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(!form.CreateFruitDTO!.FruitFlavourId.HasValue))">
                                 <label>Smak@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateFruitDTO!.FruitFlavourId">
                                     <option value="">Wybierz smak</option>
@@ -613,9 +638,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(!form.CreateFruitDTO!.FruitFlavourId.HasValue), "Wybierz smak.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateFruitDTO!.FruitShapeId <= 0))">
                                 <label>Kształt@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateFruitDTO!.FruitShapeId">
                                     <option value="0">Wybierz kształt</option>
@@ -624,14 +650,16 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateFruitDTO!.FruitShapeId <= 0), "Wybierz kształt.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateFruitDTO!.FruitColorId <= 0))">
                                 <label>Kolor główny owocu@(Req)</label>
                                 <ColorSelect @bind-Value="form.CreateFruitDTO!.FruitColorId" Colors="colors" />
+                                @ErrorText(Bad(form.CreateFruitDTO!.FruitColorId <= 0), "Wybierz kolor owocu.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateFruitDTO!.FruitSurfaceId <= 0))">
                                 <label>Powierzchnia@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateFruitDTO!.FruitSurfaceId">
                                     <option value="0">Wybierz powierzchnię</option>
@@ -640,9 +668,10 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateFruitDTO!.FruitSurfaceId <= 0), "Wybierz powierzchnię.")
                             </div>
 
-                            <div class="submission-field">
+                            <div class="submission-field @FieldError(Bad(form.CreateFruitDTO!.FruitThicknessId <= 0))">
                                 <label>Grubość@(Req)</label>
                                 <InputSelect @bind-Value="form.CreateFruitDTO!.FruitThicknessId">
                                     <option value="0">Wybierz grubość</option>
@@ -651,6 +680,7 @@ else
                                         <option value="@x.Id">@x.Name</option>
                                     }
                                 </InputSelect>
+                                @ErrorText(Bad(form.CreateFruitDTO!.FruitThicknessId <= 0), "Wybierz grubość.")
                             </div>
 
                             <div class="submission-field">
@@ -1058,15 +1088,18 @@ else
     private async Task RunAsync(EventCallback<CreatePlantDTO> action, string label)
     {
         submitError = null;
+        showErrors = true;
 
-        if (!editContext.Validate())
+        // obie walidacje naraz – żeby od razu podświetlić wszystkie brakujące pola
+        var annotationsOk = editContext.Validate();
+        var requiredOk = ValidateRequiredFields();
+
+        if (!annotationsOk || !requiredOk)
         {
-            submitError = "Popraw pola zaznaczone na początku formularza.";
+            submitError ??= "Uzupełnij pola zaznaczone na czerwono.";
+            await FocusFirstErrorAsync();
             return;
         }
-
-        if (!ValidateRequiredFields())
-            return;
 
         busyAction = label;
 
@@ -1108,59 +1141,127 @@ else
 
     private bool ValidateRequiredFields()
     {
-        if (string.IsNullOrWhiteSpace(form.Name) || string.IsNullOrWhiteSpace(form.PolishName))
-        {
-            submitError = "Uzupełnij nazwę zwyczajową i nazwę polską.";
-            return false;
-        }
+        // te same warunki co podświetlenie pól (Bad / *Invalid poniżej)
+        var missing = new List<string>();
+        if (BasicInvalid) missing.Add("informacje podstawowe");
+        if (StalkInvalid) missing.Add(StalkTitle.ToLower());
+        if (SapInvalid) missing.Add("sok");
+        if (RootInvalid) missing.Add("korzeń");
+        if (HatInvalid) missing.Add("kapelusz");
+        if (LeafInvalid) missing.Add("liście");
+        if (FlowerInvalid) missing.Add("kwiaty");
+        if (FruitInvalid) missing.Add("owoce");
 
-        var invalid = form.PlantTypeID <= 0 || form.OccuranceId <= 0;
+        if (missing.Count == 0) return true;
 
-        if (ShowStalkSection)
-            invalid |= form.CreateStalkDTO!.StalkShapeId <= 0
-                    || form.CreateStalkDTO.StalkColorId <= 0
-                    || form.CreateStalkDTO.StalkSurfaceId <= 0;
+        submitError = $"Uzupełnij pola zaznaczone na czerwono – sekcje: {string.Join(", ", missing)}.";
+        return false;
+    }
 
-        if (ShowSapSection)
-            invalid |= form.CreateSapDTO!.SapColorId <= 0;
+    // ------------------------------------------------------------------
+    //  Podświetlanie brakujących pól
+    // ------------------------------------------------------------------
 
-        if (ShowRootSection)
-            invalid |= form.CreateRootDTO!.RootColorId <= 0
-                    || form.CreateRootDTO.RootSurfaceId <= 0
-                    || form.CreateRootDTO.RootThicknessId <= 0;
+    /// <summary>Włączane przy pierwszej nieudanej próbie wysłania – wcześniej nic nie świeci na czerwono.</summary>
+    private bool showErrors;
 
-        if (ShowHatSection)
-            invalid |= form.CreateHatDTO!.HatColorId <= 0
-                    || form.CreateHatDTO.HatShapeId <= 0
-                    || form.CreateHatDTO.HatThicknessId <= 0
-                    || form.CreateHatDTO.HatSurfaceId <= 0;
+    private ElementReference basicSection;
+    private ElementReference stalkSection;
+    private ElementReference sapSection;
+    private ElementReference rootSection;
+    private ElementReference hatSection;
+    private ElementReference leafSection;
+    private ElementReference flowerSection;
+    private ElementReference fruitSection;
 
-        if (ShowLeafSection)
-            invalid |= form.CreateLeafDTO!.LeafShapeId <= 0
-                    || form.CreateLeafDTO.LeafColorId <= 0
-                    || form.CreateLeafDTO.LeafSurfaceId <= 0
-                    || form.CreateLeafDTO.LeafThicknessId <= 0
-                    || !form.CreateLeafDTO.LeafFlavourId.HasValue;
+    /// <summary>Pole wymagane i puste – po próbie wysłania (w wyszukiwaniu nigdy).</summary>
+    private bool Bad(bool missing) => showErrors && !SearchMode && missing;
 
-        if (ShowFlowerSection)
-            invalid |= form.CreateFlowerDTO!.FlowerColorId <= 0
-                    || form.CreateFlowerDTO.FlowerShapeId <= 0
-                    || !form.CreateFlowerDTO.FlowerFlavourId.HasValue;
+    private bool BasicInvalid =>
+        Bad(string.IsNullOrWhiteSpace(form.Name)) ||
+        Bad(string.IsNullOrWhiteSpace(form.PolishName)) ||
+        Bad(form.PlantTypeID <= 0) ||
+        Bad(form.OccuranceId <= 0);
 
-        if (ShowFruitSection)
-            invalid |= !form.CreateFruitDTO!.FruitFlavourId.HasValue
-                    || form.CreateFruitDTO.FruitShapeId <= 0
-                    || form.CreateFruitDTO.FruitColorId <= 0
-                    || form.CreateFruitDTO.FruitSurfaceId <= 0
-                    || form.CreateFruitDTO.FruitThicknessId <= 0;
+    private bool StalkInvalid => ShowStalkSection && Bad(
+        form.CreateStalkDTO!.StalkShapeId <= 0 ||
+        form.CreateStalkDTO.StalkColorId <= 0 ||
+        form.CreateStalkDTO.StalkSurfaceId <= 0);
 
+    private bool SapInvalid => ShowSapSection && Bad(form.CreateSapDTO!.SapColorId <= 0);
+
+    private bool RootInvalid => ShowRootSection && Bad(
+        form.CreateRootDTO!.RootColorId <= 0 ||
+        form.CreateRootDTO.RootSurfaceId <= 0 ||
+        form.CreateRootDTO.RootThicknessId <= 0);
+
+    private bool HatInvalid => ShowHatSection && Bad(
+        form.CreateHatDTO!.HatColorId <= 0 ||
+        form.CreateHatDTO.HatShapeId <= 0 ||
+        form.CreateHatDTO.HatThicknessId <= 0 ||
+        form.CreateHatDTO.HatSurfaceId <= 0);
+
+    private bool LeafInvalid => ShowLeafSection && Bad(
+        form.CreateLeafDTO!.LeafShapeId <= 0 ||
+        form.CreateLeafDTO.LeafColorId <= 0 ||
+        form.CreateLeafDTO.LeafSurfaceId <= 0 ||
+        form.CreateLeafDTO.LeafThicknessId <= 0 ||
+        !form.CreateLeafDTO.LeafFlavourId.HasValue);
+
+    private bool FlowerInvalid => ShowFlowerSection && Bad(
+        form.CreateFlowerDTO!.FlowerColorId <= 0 ||
+        form.CreateFlowerDTO.FlowerShapeId <= 0 ||
+        !form.CreateFlowerDTO.FlowerFlavourId.HasValue);
+
+    private bool FruitInvalid => ShowFruitSection && Bad(
+        !form.CreateFruitDTO!.FruitFlavourId.HasValue ||
+        form.CreateFruitDTO.FruitShapeId <= 0 ||
+        form.CreateFruitDTO.FruitColorId <= 0 ||
+        form.CreateFruitDTO.FruitSurfaceId <= 0 ||
+        form.CreateFruitDTO.FruitThicknessId <= 0);
+
+    /// <summary>Pole ma już komunikat z adnotacji DTO (ValidationMessage) – nie dublujemy go.</summary>
+    private bool HasMessage(System.Linq.Expressions.Expression<Func<object>> field) =>
+        editContext.GetValidationMessages(field).Any();
+
+    private static string FieldError(bool invalid) => invalid ? "is-invalid" : "";
+    private static string SectionError(bool invalid) => invalid ? "has-error" : "";
+
+    private static RenderFragment ErrorText(bool invalid, string text) => __builder =>
+    {
         if (invalid)
         {
-            submitError = "Uzupełnij wszystkie wymagane pola widocznych sekcji.";
-            return false;
+            <span class="field-error" role="alert">@text</span>
         }
+    };
 
-        return true;
+    /// <summary>Przewija do pierwszej sekcji z brakującym polem.</summary>
+    private async Task FocusFirstErrorAsync()
+    {
+        // ValidationSummary na górze formularza – błąd nazw z adnotacji też jest w sekcji 1
+        var basicByAnnotations = editContext.GetValidationMessages().Any();
+
+        ElementReference? target =
+            BasicInvalid || basicByAnnotations ? basicSection :
+            StalkInvalid ? stalkSection :
+            SapInvalid ? sapSection :
+            RootInvalid ? rootSection :
+            HatInvalid ? hatSection :
+            LeafInvalid ? leafSection :
+            FlowerInvalid ? flowerSection :
+            FruitInvalid ? fruitSection :
+            null;
+
+        if (target is null) return;
+
+        try
+        {
+            await target.Value.FocusAsync();   // przeglądarka sama przewija do elementu
+        }
+        catch
+        {
+            // sekcja niewyrenderowana – komunikat nad przyciskami i tak jest widoczny
+        }
     }
 
     // ------------------------------------------------------------------

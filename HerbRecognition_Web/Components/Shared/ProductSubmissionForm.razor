@@ -14,6 +14,8 @@
       przeciwwskazania działają jako filtr, przycisk wywołuje OnSearch z kryteriami.
     Sposób podania to mały słownik admina – wybór kafelkami, bez "Dodaj nową".
     Błędy rzucone przez OnSubmit/OnSecondary/OnSearch są wyświetlane nad przyciskami.
+    Po nieudanej próbie wysłania brakujące pola są podświetlone na czerwono (z opisem pod polem),
+    a strona przewija się do pierwszej sekcji z błędem. Podświetlenie znika, gdy pole zostanie uzupełnione.
 *@
 
 @if (isLoading)
@@ -37,7 +39,7 @@ else
         <div class="submission-form">
 
             @* ================= 1. Informacje podstawowe ================= *@
-            <section class="submission-section">
+            <section class="submission-section @SectionError(NameInvalid || TypeInvalid)" @ref="basicSection" tabindex="-1">
                 <header class="submission-section-head">
                     <h2>1. Informacje podstawowe</h2>
                 </header>
@@ -48,27 +50,31 @@ else
                 }
 
                 <div class="submission-grid">
-                    <div class="submission-field">
+                    <div class="submission-field @FieldError(NameInvalid)">
                         <label for="product-name">Nazwa produktu@(Req)</label>
                         <InputText id="product-name" @bind-Value="model.Name" maxlength="300"
+                                   aria-invalid="@AriaInvalid(NameInvalid)"
                                    placeholder="@(SearchMode ? "np. syrop" : "np. Syrop z kwiatów mniszka")" />
+                        @ErrorText(NameInvalid, "Podaj nazwę produktu (co najmniej 2 znaki).")
                     </div>
 
-                    <div class="submission-field">
+                    <div class="submission-field @FieldError(TypeInvalid)">
                         <label for="product-type">Typ produktu@(Req)</label>
-                        <InputSelect id="product-type" @bind-Value="model.ProductTypeId">
+                        <InputSelect id="product-type" @bind-Value="model.ProductTypeId"
+                                     aria-invalid="@AriaInvalid(TypeInvalid)">
                             <option value="0">@(SearchMode ? "Nie wiem / dowolny" : "Wybierz typ")</option>
                             @foreach (var type in productTypes)
                             {
                                 <option value="@type.ProductTypeId">@type.Name</option>
                             }
                         </InputSelect>
+                        @ErrorText(TypeInvalid, "Wybierz typ produktu.")
                     </div>
                 </div>
             </section>
 
             @* ================= 2. Rośliny ================= *@
-            <section class="submission-section">
+            <section class="submission-section @SectionError(PlantsInvalid)" @ref="plantsSection" tabindex="-1">
                 <header class="submission-section-head">
                     <h2>2. Rośliny@(Req)</h2>
                 </header>
@@ -93,11 +99,14 @@ else
                     </div>
                 }
 
-                <SimilarPlantPicker @bind-Selected="plants" ExcludePlantId="FixedPlant?.Id" />
+                <div class="submission-field @FieldError(PlantsInvalid)">
+                    <SimilarPlantPicker @bind-Selected="plants" ExcludePlantId="FixedPlant?.Id" />
+                    @ErrorText(PlantsInvalid, "Wskaż przynajmniej jedną roślinę.")
+                </div>
             </section>
 
             @* ================= 3. Na co działa ================= *@
-            <section class="submission-section">
+            <section class="submission-section @SectionError(DiseaseInvalid)" @ref="effectsSection" tabindex="-1">
                 <header class="submission-section-head">
                     <h2>3. Na co działa</h2>
                 </header>
@@ -116,19 +125,20 @@ else
                 </p>
 
                 <div class="product-dict-grid">
-                    @DictionaryField(ProductDictionary.Disease, $"Choroby{Req}", "np. przeziębienie, kaszel")
-                    @DictionaryField(ProductDictionary.HealthProperty, "Właściwości zdrowotne", "np. przeciwzapalne")
-                    @DictionaryField(ProductDictionary.ActiveSubstance, "Substancje czynne", "np. flawonoidy")
-                </div>
-            </section>
+                    @DictionaryField(ProductDictionary.Disease, $"Choroby{Req}", "np. przeziębienie, kaszel",
+                    DiseaseInvalid, "Wskaż przynajmniej jedną chorobę, na którą działa produkt.")
+                @DictionaryField(ProductDictionary.HealthProperty, "Właściwości zdrowotne", "np. przeciwzapalne")
+                @DictionaryField(ProductDictionary.ActiveSubstance, "Substancje czynne", "np. flawonoidy")
+            </div>
+        </section>
 
-            @* ================= 4. Przeciwwskazania ================= *@
-            <section class="submission-section">
-                <header class="submission-section-head">
-                    <h2>4. @(SearchMode ? "Bezpieczeństwo" : "Przeciwwskazania")</h2>
-                </header>
-                <p class="section-description">
-                    @if (SearchMode)
+        @* ================= 4. Przeciwwskazania ================= *@
+        <section class="submission-section">
+            <header class="submission-section-head">
+                <h2>4. @(SearchMode ? "Bezpieczeństwo" : "Przeciwwskazania")</h2>
+            </header>
+            <p class="section-description">
+                @if (SearchMode)
                     {
                         <text>
                             Pomiń przepisy z wybranymi przeciwwskazaniami – np. „ciąża”.
@@ -146,7 +156,7 @@ else
         </section>
 
         @* ================= 5. Przepis ================= *@
-        <section class="submission-section">
+        <section class="submission-section @SectionError(RecipeInvalid)" @ref="recipeSection" tabindex="-1">
             <header class="submission-section-head">
                 <h2>5. Przepis@(Req)</h2>
             </header>
@@ -165,11 +175,13 @@ else
                 {
                     <p class="section-description">Składniki, kolejne kroki przygotowania i sposób stosowania.</p>
 
-                    <div class="submission-field submission-field--wide">
+                    <div class="submission-field submission-field--wide @FieldError(RecipeInvalid)">
                         <label for="product-recipe" class="visually-hidden">Przepis</label>
                         <InputTextArea id="product-recipe" class="product-recipe" rows="10" maxlength="10000"
                                        @bind-Value="model.Recipe"
+                                       aria-invalid="@AriaInvalid(RecipeInvalid)"
                                        placeholder="1. Zbierz kwiaty… 2. Zalej wodą… 3. Gotuj 15 minut…" />
+                        @ErrorText(RecipeInvalid, "Opisz przepis (co najmniej 10 znaków).")
                         <p class="photo-hint">@model.Recipe.Length / 10 000 znaków</p>
                     </div>
 
@@ -358,6 +370,61 @@ else
     private bool IsBusy => busyAction is not null;
 
     private string Req => SearchMode ? "" : " *";
+
+    // ------------------------------------------------------------------
+    //  Podświetlanie brakujących pól
+    // ------------------------------------------------------------------
+
+    /// <summary>Włączane przy pierwszej nieudanej próbie wysłania – wcześniej nic nie świeci na czerwono.</summary>
+    private bool showErrors;
+
+    private ElementReference basicSection;
+    private ElementReference plantsSection;
+    private ElementReference effectsSection;
+    private ElementReference recipeSection;
+
+    private bool Check(bool missing) => showErrors && !SearchMode && missing;
+
+    private bool NameInvalid => Check(model.Name.Trim().Length < 2);
+    private bool TypeInvalid => Check(model.ProductTypeId <= 0);
+    private bool PlantsInvalid => Check((FixedPlant is null ? 0 : 1) + plants.Count == 0);
+    private bool DiseaseInvalid => Check(selected.GetValueOrDefault(ProductDictionary.Disease)?.Count
+                                         + proposals.GetValueOrDefault(ProductDictionary.Disease)?.Count == 0);
+    private bool RecipeInvalid => Check(model.Recipe.Trim().Length < 10);
+
+    private static string FieldError(bool invalid) => invalid ? "is-invalid" : "";
+    private static string SectionError(bool invalid) => invalid ? "has-error" : "";
+    private static string? AriaInvalid(bool invalid) => invalid ? "true" : null;
+
+    private static RenderFragment ErrorText(bool invalid, string text) => __builder =>
+    {
+        if (invalid && !string.IsNullOrEmpty(text))
+        {
+            <span class="field-error" role="alert">@text</span>
+        }
+    };
+
+    /// <summary>Przewija do pierwszej sekcji z brakującym polem.</summary>
+    private async Task FocusFirstErrorAsync()
+    {
+        ElementReference? target =
+            NameInvalid || TypeInvalid ? basicSection :
+            PlantsInvalid ? plantsSection :
+            DiseaseInvalid ? effectsSection :
+            RecipeInvalid ? recipeSection :
+            null;
+
+        if (target is null) return;
+
+        try
+        {
+            await target.Value.FocusAsync();   // przeglądarka sama przewija do elementu
+        }
+        catch
+        {
+            // np. sekcja jeszcze niewyrenderowana – komunikat na dole i tak jest widoczny
+        }
+    }
     private int ProposalCount => proposals.Values.Sum(p => p.Count);
 
     // ------------------------------------------------------------------
@@ -443,8 +510,9 @@ else
     //  Słowniki
     // ------------------------------------------------------------------
 
-    private RenderFragment DictionaryField(ProductDictionary kind, string label, string placeholder) =>
-        @<div class="submission-field submission-field--wide">
+    private RenderFragment DictionaryField(ProductDictionary kind, string label, string placeholder,
+                                           bool invalid = false, string? error = null) =>
+        @<div class="submission-field submission-field--wide @FieldError(invalid)">
         <label>@label</label>
         <DictionaryMultiPicker Kind="kind"
                                Entries="entries[kind]"
@@ -457,6 +525,7 @@ else
                                Disabled="IsBusy"
                                OnChanged="() => submitError = null"
                                OnResolve="p => resolving = (kind, p)" />
+    @ErrorText(invalid, error ?? "")
     </div>;
 
     private void ToggleRoute(int id)
@@ -497,7 +566,11 @@ else
     private async Task RunAsync(EventCallback<CreateProductDTO> action, string label, bool requireResolved)
     {
         submitError = Validate(requireResolved);
-        if (submitError is not null) return;
+        if (submitError is not null)
+        {
+            await FocusFirstErrorAsync();
+            return;
+        }
 
         busyAction = label;
 
@@ -539,6 +612,18 @@ else
 
     private string? Validate(bool requireResolved)
     {
+        showErrors = true;
+
+        var missing = new List<string>();
+        if (NameInvalid) missing.Add("nazwa");
+        if (TypeInvalid) missing.Add("typ produktu");
+        if (PlantsInvalid) missing.Add("rośliny");
+        if (DiseaseInvalid) missing.Add("choroby");
+        if (RecipeInvalid) missing.Add("przepis");
+
+        if (missing.Count > 1)
+            return $"Uzupełnij pola zaznaczone na czerwono: {string.Join(", ", missing)}.";
+
         if (model.Name.Trim().Length < 2)
             return "Podaj nazwę produktu (co najmniej 2 znaki).";
 
