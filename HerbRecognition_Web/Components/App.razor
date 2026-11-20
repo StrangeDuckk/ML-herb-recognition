@@ -5,10 +5,13 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* viewport-fit=cover – dolny pasek omija pasek gestów iPhonów (env(safe-area-inset-bottom)) *@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f8f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121915" media="(prefers-color-scheme: dark)" />
     <base href="/" />
 
-    @* Ciemny motyw *@
+    @* motyw przed narysowaniem strony – bez białego mignięcia *@ 
     <script>
         (function () {
             var root = document.documentElement;
@@ -25,7 +28,7 @@
                 ? saved
                 : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
 
-            // przycisk z atrybutem data-theme-toggle (MainLayout)
+            // przycisk z atrybutem data-theme-toggle (MainLayout) – działa na każdej stronie
             document.addEventListener("click", function (e) {
                 if (!e.target.closest("[data-theme-toggle]")) return;
 
@@ -34,11 +37,52 @@
                 try { localStorage.setItem("theme", next); } catch (e) { }
             });
         })();
+
+        // chowany górny pasek (telefon): w dół – chowa się, w górę – wraca.
+        // ustawia atrybut na <html>; chowa się -> decyduje CSS (mobile.css, do 760 px).
+        (function () {
+            var root = document.documentElement;
+            var last = window.scrollY;
+            var ticking = false;
+            var THRESHOLD = 8;     // drobne drgnięcia palca nic nie zmieniają
+            var ALWAYS_SHOW = 80;  // przy samej górze pasek jest zawsze widoczny
+
+            function setHidden(hidden) {
+                if (hidden) root.setAttribute("data-topbar-hidden", "");
+                else root.removeAttribute("data-topbar-hidden");
+            }
+
+            function update() {
+                ticking = false;
+                var y = Math.max(window.scrollY, 0);
+                var delta = y - last;
+
+                if (y < ALWAYS_SHOW) {
+                    setHidden(false);
+                    last = y;
+                } else if (Math.abs(delta) > THRESHOLD) {
+                    setHidden(delta > 0);
+                    last = y;
+                }
+            }
+
+            window.addEventListener("scroll", function () {
+                if (!ticking) {
+                    ticking = true;
+                    window.requestAnimationFrame(update);
+                }
+            }, { passive: true });
+
+            document.addEventListener("focusin", function (e) {
+                if (e.target.closest && e.target.closest(".top-bar")) setHidden(false);
+            });
+        })();
     </script>
 
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["HerbRecognition_Web.styles.css"]" />
+    <link rel="stylesheet" href="@Assets["mobile.css"]" />
     <link rel="stylesheet" href="@Assets["dark.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -51,28 +95,3 @@
 </body>
 
 </html>
-
-
-@* @using static Microsoft.AspNetCore.Components.Web.RenderMode
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["HerbRecognition_Web.styles.css"]" />
-    <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
-</head>
-
-<body>
-    <Routes @rendermode="InteractiveServer" />
-    <script src="_framework/blazor.web.js"></script>
-</body>
-
-</html> *@

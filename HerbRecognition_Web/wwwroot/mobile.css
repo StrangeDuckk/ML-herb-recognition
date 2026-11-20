@@ -1,0 +1,520 @@
+/* =====================================================================
+   UKŁAD TELEFONU – chowany górny pasek + dolny pasek nawigacji.
+   Wklej na koniec wwwroot/app.css.
+   Komputer wygląda tak jak dotąd – wszystko poniżej działa do 760 px.
+   ===================================================================== */
+
+/* ---------- komputer: bez zmian ---------- */
+
+.bottom-nav,
+.admin-link-icon,
+.admin-link-short {
+    display: none;
+}
+
+.top-bar {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+
+/* =====================================================================
+   TELEFON
+   ===================================================================== */
+
+@media (max-width: 760px) {
+
+    :root {
+        --top-bar-h: 56px;
+        --bottom-nav-h: 64px;
+
+        /* pasek admina (AdminNav) przykleja się pod górnym paskiem… */
+        --admin-topbar-offset: var(--top-bar-h);
+    }
+
+    /* …a gdy górny pasek się schowa – przy samej górze */
+    :root[data-topbar-hidden] {
+        --admin-topbar-offset: 0px;
+    }
+
+    .admin-topbar {
+        transition: top 0.25s ease;
+    }
+
+    /* miejsce na dolny pasek, żeby nie zasłaniał stopki ani przycisków */
+    .app {
+        padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* ---------- górny pasek ---------- */
+
+    .top-bar {
+        height: var(--top-bar-h);
+        box-shadow: 0 1px 0 rgba(27, 42, 33, 0.02);
+    }
+
+    :root[data-topbar-hidden] .top-bar {
+        transform: translateY(-100%);
+        box-shadow: none;
+    }
+
+    .top-bar-content {
+        gap: 12px;
+        padding: 0 16px;
+    }
+
+    .brand {
+        min-width: 0;
+        gap: 8px;
+        font-size: 1.02rem;
+    }
+
+    .brand-icon {
+        font-size: 1.35rem;
+    }
+
+    .brand-name {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* linki do sekcji są w dolnym pasku */
+    .main-nav {
+        display: none;
+    }
+
+    .top-bar-actions {
+        flex: 0 0 auto;
+        gap: 8px;
+    }
+
+    .theme-toggle {
+        width: 38px;
+        height: 38px;
+    }
+
+    .admin-link {
+        gap: 6px;
+        height: 38px;
+        padding: 0 12px;
+        font-size: 0.88rem;
+    }
+
+    .admin-link-text {
+        display: none;
+    }
+
+    .admin-link-short {
+        display: inline;
+    }
+
+    .admin-link-icon {
+        display: block;
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* ---------- dolny pasek ---------- */
+
+    .bottom-nav {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 90;   /* nad treścią, pod oknami dialogowymi (300) */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        background: rgba(255, 255, 255, 0.96);
+        border-top: 1px solid #e2e6df;
+        box-shadow: 0 -4px 16px rgba(27, 42, 33, 0.06);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .bottom-nav-link {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        color: #6b776f;
+        font-size: 0.74rem;
+        font-weight: 600;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+        .bottom-nav-link:focus-visible {
+            outline: 2px solid #315c3e;
+            outline-offset: -4px;
+            border-radius: 12px;
+        }
+
+    .bottom-nav-icon {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.2s ease;
+    }
+
+    /* aktywna sekcja: zielona ikona na jasnozielonej "pigułce" */
+    .bottom-nav-link.active {
+        color: #2f6243;
+    }
+
+        .bottom-nav-link.active::before {
+            content: "";
+            position: absolute;
+            top: 7px;
+            left: 50%;
+            width: 56px;
+            height: 30px;
+            border-radius: 999px;
+            background: #e3f0e8;
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+
+        .bottom-nav-link.active .bottom-nav-icon {
+            stroke-width: 2.1;
+        }
+
+    .bottom-nav-link:active .bottom-nav-icon {
+        transform: scale(0.92);
+    }
+
+    /* ---------- stopka: jedna kolumna ---------- */
+
+    .footer-content {
+        flex-direction: column;
+        gap: 16px;
+        padding: 36px 20px 28px;
+    }
+
+    .footer-bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px 20px 20px;
+        line-height: 1.5;
+    }
+
+    /* kotwice i przewijanie do sekcji nie chowają się pod paskiem */
+    html {
+        scroll-padding-top: var(--top-bar-h);
+    }
+}
+
+/* bardzo wąskie telefony */
+@media (max-width: 360px) {
+    .brand-name {
+        font-size: 0.95rem;
+    }
+
+    .admin-link-short {
+        display: none;
+    }
+
+    .admin-link {
+        width: 38px;
+        padding: 0;
+        justify-content: center;
+    }
+}
+
+/* bez animacji, jeśli ktoś ich nie chce */
+@media (prefers-reduced-motion: reduce) {
+    .top-bar,
+    .admin-topbar,
+    .bottom-nav-icon {
+        transition: none;
+    }
+}
+
+
+/* ---------- tryb ciemny ---------- */
+
+@media (max-width: 760px) {
+    :root[data-theme="dark"] .bottom-nav {
+        background: rgba(18, 25, 21, 0.96);
+        border-top-color: var(--d-border);
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    :root[data-theme="dark"] .bottom-nav-link {
+        color: var(--d-muted);
+    }
+
+        :root[data-theme="dark"] .bottom-nav-link.active {
+            color: var(--d-accent);
+        }
+
+            :root[data-theme="dark"] .bottom-nav-link.active::before {
+                background: var(--d-accent-soft);
+            }
+
+        :root[data-theme="dark"] .bottom-nav-link:focus-visible {
+            outline-color: var(--d-accent);
+        }
+}
+
+
+/* =====================================================================
+   STRONY NA TELEFONIE: start, biblioteka roślin, biblioteka przepisów.
+   Prefiks ".app .main-content" – żeby wygrać ze stylami komponentów
+   (Home.razor.css itp. ładują się po app.css i mają atrybut [b-…]).
+   ===================================================================== */
+
+@media (max-width: 760px) {
+
+    /* ---------- START ---------- */
+
+    .app .main-content .hero {
+        min-height: 0;
+    }
+
+    .app .main-content .hero-content {
+        grid-template-columns: 1fr;
+        gap: 36px;
+        padding: 28px 16px 44px;
+    }
+
+    .app .main-content .hero-text {
+        max-width: none;
+    }
+
+    .app .main-content .hero-label,
+    .app .main-content .section-label {
+        margin-bottom: 12px;
+    }
+
+    .app .main-content .hero h1 {
+        font-size: clamp(2.5rem, 12vw, 3.3rem);
+        line-height: 1;
+        letter-spacing: -0.055em;
+    }
+
+    .app .main-content .hero-description {
+        margin-top: 18px;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+        .app .main-content .hero-description.secondary {
+            font-size: 0.92rem;
+        }
+
+    /* przyciski jeden pod drugim, na całą szerokość – łatwo trafić kciukiem */
+    .app .main-content .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .app .main-content .primary-button,
+    .app .main-content .secondary-button {
+        justify-content: center;
+        min-height: 48px;
+    }
+
+    .app .main-content .hero-image-wrapper {
+        height: min(78vw, 340px);
+        margin-right: 10px;   /* miejsce na przesuniętą ramkę */
+    }
+
+    .app .main-content .hero-image,
+    .app .main-content .image-decoration {
+        border-radius: 110px 110px 14px 14px;
+    }
+
+    .app .main-content .image-decoration {
+        right: -10px;
+        bottom: -10px;
+    }
+
+    .app .main-content .hero-caption {
+        margin-top: 24px;
+    }
+
+    .app .main-content .about-section {
+        padding: 56px 16px;
+    }
+
+    .app .main-content .about-content h2 {
+        font-size: clamp(2rem, 9vw, 2.6rem);
+    }
+
+    .app .main-content .about-content p {
+        margin-top: 18px;
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+
+    /* ---------- nagłówki bibliotek ---------- */
+
+    .app .main-content .plants-page,
+    .app .main-content .prod-page {
+        padding: 24px 16px 40px;
+    }
+
+    .app .main-content .plants-header,
+    .app .main-content .prod-page-header {
+        margin-bottom: 20px;
+    }
+
+        .app .main-content .plants-header h1,
+        .app .main-content .prod-page-header h1 {
+            font-size: clamp(2.3rem, 11vw, 3rem);
+        }
+
+        .app .main-content .plants-header p,
+        .app .main-content .prod-page-header p {
+            margin-top: 10px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+    .app .main-content .lib-filters {
+        margin-bottom: 16px;
+    }
+
+    /* licznik "Rośliny: 6 z 12" w tym samym rzędzie co "Filtry" */
+    .app .main-content .lib-filters-summary {
+        flex-basis: auto;
+        margin-left: auto;
+    }
+
+
+    /* ---------- biblioteka roślin: dwie kolumny kafelków ---------- */
+    /* tylko kafelki ze zdjęciem (biblioteka); wyniki wyszukiwania zostają w jednej kolumnie */
+
+    .app .main-content .plants-grid:has(.plant-card-image) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+        .app .main-content .plants-grid:has(.plant-card-image) > .plant-card-content {
+            grid-column: 1 / -1;   /* "Nie ma rośliny…" na całą szerokość */
+            padding: 20px;
+        }
+
+    .app .main-content .plant-card:has(.plant-card-image) {
+        aspect-ratio: 3 / 4;
+        border-radius: 14px;
+    }
+
+        .app .main-content .plant-card:has(.plant-card-image):hover {
+            transform: none;   /* na dotyk nie ma "najechania" */
+        }
+
+    .app .main-content .plant-card-image {
+        padding: 8px;
+    }
+
+    .app .main-content .plant-card-placeholder {
+        font-size: 3rem;
+    }
+
+    .app .main-content .plant-card-pills {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        gap: 4px;
+    }
+
+        .app .main-content .plant-card-pills .plant-type {
+            padding: 2px 8px;
+            font-size: 0.7rem;
+        }
+
+        /* na małym kafelku zostaje typ, "Trująca" i "Niezweryfikowana" – miesiąc jest w filtrach */
+        .app .main-content .plant-card-pills .plant-month {
+            display: none;
+        }
+
+    .app .main-content .plant-card-edit {
+        top: auto;
+        bottom: 8px;
+        right: 8px;
+        padding: 4px 10px;
+        font-size: 0.72rem;
+    }
+
+    .app .main-content .plant-card-info {
+        padding: 10px 12px 12px;
+    }
+
+        .app .main-content .plant-card-info h2 {
+            font-size: 1rem;
+        }
+
+    .app .main-content .plant-card-meta {
+        font-size: 0.78rem;
+    }
+
+
+    /* ---------- biblioteka przepisów: niższe zdjęcie, gęstsze kafelki ---------- */
+
+    .app .main-content .prod-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .app .main-content .prod-card:hover {
+        transform: none;
+    }
+
+    .app .main-content .prod-card-media {
+        aspect-ratio: 16 / 9;
+        padding: 8px;
+    }
+
+    .app .main-content .prod-card-placeholder {
+        font-size: 3rem;
+    }
+
+    .app .main-content .prod-card-pills {
+        top: 10px;
+        left: 10px;
+    }
+
+    .app .main-content .prod-card-body {
+        padding: 14px 16px 16px;
+    }
+
+        .app .main-content .prod-card-body h3 {
+            font-size: 1.1rem;
+        }
+
+    /* wyszukiwarka i przełącznik zgłoszeń jeden pod drugim */
+    .app .main-content .prod-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+        .app .main-content .prod-filters > * {
+            flex: none;   /* w kolumnie flex-basis zamieniłby się w wysokość */
+        }
+
+    .app .main-content .prod-search {
+        width: 100%;
+        max-width: none;
+    }
+}

@@ -1,5 +1,3 @@
-- zrobic widok ekranu telefonu porzadnie, jak na ick tlumaczyl
-
 - testy jednostkowe bazy i api
 
 ------------------------------------- jesli starczy czasu: -------------------------

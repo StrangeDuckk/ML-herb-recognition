@@ -2,26 +2,33 @@
 
 <div class="app">
 
+    @*
+        Górny pasek.
+        Telefon: pasek, chowa się przy przewijaniu w dół i wraca przy przewijaniu w górę
+        (skrypt w App.razor ustawia na <html> atrybut data-topbar-hidden).
+        Linki do sekcji są wtedy w dolnym pasku (bottom-nav).
+    *@
     <header class="top-bar">
 
         <div class="top-bar-content">
 
-            <a class="brand" href="/">
-                <span class="brand-icon">🌿</span>
-                <span>eZielnik</span>
+            <a class="brand" href="/" aria-label="Herb Recognition – strona główna">
+                <span class="brand-icon" aria-hidden="true">🌿</span>
+                <span class="brand-name">Herb Recognition</span>
             </a>
 
-            <nav class="main-nav">
+            <nav class="main-nav" aria-label="Główne sekcje">
                 <NavLink href="/plants" class="nav-link">
                     Wszystkie zioła
                 </NavLink>
+
                 <NavLink href="/products" class="nav-link">
-                    Wszystkie przepisy
+                    Przepisy
                 </NavLink>
             </nav>
 
             <div class="top-bar-actions">
-                @* obsługa kliknięcia trybu ciemnego: z App.razor (data-theme-toggle) *@
+                @* obsługa kliknięcia: skrypt w App.razor (data-theme-toggle) *@
                 <button type="button"
                         class="theme-toggle"
                         data-theme-toggle
@@ -31,7 +38,14 @@
                     <span class="icon-sun" aria-hidden="true">☀️</span>
                 </button>
 
-                <a href="/admin" class="admin-link">Panel admina</a>
+                <a href="/admin" class="admin-link" aria-label="Panel admina">
+                    <svg class="admin-link-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="5" y="11" width="14" height="10" rx="2" />
+                        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                    </svg>
+                    <span class="admin-link-text">Panel admina</span>
+                    <span class="admin-link-short" aria-hidden="true">Admin</span>
+                </a>
             </div>
 
         </div>
@@ -47,7 +61,7 @@
         <div class="footer-content">
 
             <div class="footer-description">
-                <h3>eZielnik</h3>
+                <h3>Herb Recognition</h3>
 
                 <p>
                     Aplikacja wspierająca rozpoznawanie i poznawanie
@@ -76,6 +90,37 @@
             </span>
         </div>
     </footer>
+
+
+    @* Dolny pasek – tylko na telefonie (CSS). Zawsze widoczny, pod kciukiem. *@
+    <nav class="bottom-nav" aria-label="Główne sekcje">
+
+        <NavLink href="/" Match="NavLinkMatch.All" class="bottom-nav-link">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" />
+            </svg>
+            <span>Start</span>
+        </NavLink>
+
+        <NavLink href="/plants" class="bottom-nav-link">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 21c0-9 5-15 15-16-1 10-7 15-15 16Z" />
+                <path d="M5 21c3-5 6-8 10-11" />
+            </svg>
+            <span>Rośliny</span>
+        </NavLink>
+
+        <NavLink href="/products" class="bottom-nav-link">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 3h8" />
+                <path d="M9 3v3.5L6.2 10A6 6 0 0 0 5 13.6V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5.4a6 6 0 0 0-1.2-3.6L15 6.5V3" />
+                <path d="M5.5 14h13" />
+            </svg>
+            <span>Przepisy</span>
+        </NavLink>
+
+    </nav>
 
 </div>
 
